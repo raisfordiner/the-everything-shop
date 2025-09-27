@@ -25,6 +25,7 @@ router.post('/setup', async (req, res) => {
     `
     try {
         await pool.query(query)
+        res.status(201).send({ msg: "Table created successfully" })
     } catch (err) {
         res.status(500).send({ error: err.message })
     }

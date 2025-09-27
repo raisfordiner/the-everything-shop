@@ -3,16 +3,19 @@ services:
   db:
     image: postgres
     environment:
-      POSTGRES_PASSWORD: pass123
-      POSTGRES_USER: user123
-      POSTGRES_DB: db123
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_DB: ${POSTGRES_DB}
     ports:
-      - 5432:5432
+      - ${POSTGRES_PORT}:${POSTGRES_PORT}
 
   app:
+    build: .
     image: my-express-backend
+    env_file:
+      .env
     ports:
-      - 3000:3000
+      - ${PORT}:${PORT}
     depends_on:
       - db
 
