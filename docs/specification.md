@@ -16,8 +16,8 @@
 ## 2. Architecture Overview
 - **Architecture Style**: Client–Server, REST API, JWT Authentication.  
 - **Frontend**: React SPA, includes admin/seller dashboards.  
-- **Backend**: ExpressJS REST API, stateless, JWT + OAuth.  
-- **Database**: PostgreSQL relational schema, optimized for simplicity.  
+- **Backend**: ExpressJS REST API, stateless, JWT.  
+- **Database**: PostgreSQL relational schema with Prisma as ORM.  
 - **Media**: Stored on file system or object storage (DB keeps URLs only).  
 - **Payment**: Mock APIs for VNPay, MoMo, PayPal.  
 
@@ -38,8 +38,7 @@
 ## 4. Functional Modules
 
 ### FR1 – User Management & Security
-- JWT-based authentication (login with email/phone + password).  
-- OAuth login (Google, Facebook).  
+- JWT-based authentication (login with email/phone + password).   
 - Automatic session timeout.  
 - Role-based access control (Admin, Seller, Customer, Guest).  
 - Sensitive data encryption.  
@@ -123,7 +122,6 @@
 ### Auth
 - `POST /auth/register`  
 - `POST /auth/login`  
-- `POST /auth/oauth` (Google/Facebook)  
 - `POST /auth/logout`  
 
 ### Users
