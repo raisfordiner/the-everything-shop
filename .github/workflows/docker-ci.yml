@@ -46,7 +46,7 @@ jobs:
       - name: Test Api health
         run: |
           for i in {1..10}; do
-            if curl -f http://localhost:3000/sample/user > /dev/null; then
+            if curl -f http://localhost:3000/sample > /dev/null; then
               echo "Backend is up!"
               exit 0
             fi
