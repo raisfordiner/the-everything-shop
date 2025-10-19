@@ -8,11 +8,19 @@ services:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_DB: ${POSTGRES_DB}
     ports:
-      - ${POSTGRES_PORT}:${POSTGRES_PORT}
+      - ${POSTGRES_PORT}:5432
+    networks:
+      - the-everything-shop
+    # healthcheck:
+    #   test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+    #   interval: 5s
+    #   timeout: 2s
+    #   retries: 20
+    # command: postgres -c listen_addresses='*'
 
   app:
     build: .
-    image: my-express-backend
+    image: the-everything-shop-backend
     restart: unless-stopped
     env_file:
       .env
@@ -20,4 +28,9 @@ services:
       - ${PORT}:${PORT}
     depends_on:
       - db
+    networks:
+      - the-everything-shop
+
+networks:
+  the-everything-shop:
 
