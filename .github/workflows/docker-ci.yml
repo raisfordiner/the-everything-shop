@@ -31,8 +31,8 @@ jobs:
 
       - name: Eslint (backend)
         run: |
-          npm ci
-          npx eslint .
+          docker run --rm -v $PWD:/app -w /app node:20 \
+          sh -c "npm ci && npx eslint ."
 
       - name: Run Docker compose (backend)
         run: |
