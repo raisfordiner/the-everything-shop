@@ -31,6 +31,22 @@ services:
     networks:
       - the-everything-shop
 
+  prisma-studio:
+    image: node:alpine
+    working_dir: /usr/src/app
+    volumes:
+      - .:/usr/src/app
+    command: npx prisma studio --port 5555 --browser none
+    ports:
+      - "5555:5555"
+    env_file:
+      - .env
+    networks:
+      - the-everything-shop
+    depends_on:
+      - db
+      - app
+
 networks:
   the-everything-shop:
 

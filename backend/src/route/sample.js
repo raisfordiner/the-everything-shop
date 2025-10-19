@@ -22,10 +22,26 @@ router.get('/', (req, res) => {
 router.get('/user', async (req, res) => {
     const userCount = await prisma.user.count();
     res.json(
-        userCount != 0
-            ? "Maybe some users found"
-            : "No users found, say zero"
+        userCount !== 0
+        ? "Maybe some users found"
+        : "No users found, say zero"
     );
+});
+
+// Also, this is for testing
+router.get('/user/:id', async (req, res) => {
+    const id = parseInt(req.params.id, 10);
+    if (isNaN(id)) {
+        return res.status(400).json({ error: 'Invalid user ID' });
+    }
+    const user = await prisma.user.findUnique({
+        where: { id },
+    });
+    if (user) {
+        res.json(user);
+    } else {
+        res.status(404).json({ message: 'User not found' });
+    }
 });
 
 module.exports = router;
