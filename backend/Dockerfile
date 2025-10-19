@@ -10,4 +10,4 @@ COPY . .
 
 EXPOSE $PORT
 
-CMD [ "npm", "start" ]
+CMD [ "sh", "-c", "npm run db:deploy && npm start" ]
