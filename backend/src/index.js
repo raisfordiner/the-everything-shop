@@ -1,18 +1,13 @@
-const express = require('express')
-const routes = require('./routes')
+const app = require("./app");
+const { logger } = require("./utils/logger");
 
 require('dotenv').config()
-const PORT = process.env.PORT
-const app = express()
-
-app.use(express.json())
-
-app.use('/', routes)
+const PORT = process.env.PORT || 800;
 
 app.listen(PORT, (error) => {
     if (error) {
         throw error;
     }
 
-    console.log("Listening on port ", PORT)
+    logger.info(`Listening on port  ${PORT}`)
 })
