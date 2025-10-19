@@ -27,12 +27,17 @@ jobs:
 
       - name: Set up environment
         run: |
+          pwd
+          cat .env.example
           cp .env.example .env
+
+      - name: Install dependencies
+        run:
+          npm ci
 
       - name: Eslint (backend)
         run: |
-          docker run --rm -v $PWD:/app/backend -w /app/backend node:latest \
-          sh -c "npm ci && npx eslint ."
+          npx eslint ./src
 
       - name: Run Docker compose (backend)
         run: |
