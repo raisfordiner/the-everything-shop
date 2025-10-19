@@ -1,0 +1,53 @@
+name: Docker CI pipeline
+
+on:
+  push:
+    branches:
+      - main - devel
+  pull_request:
+    branches:
+      - main
+      - devel
+      - hotfix/*
+
+jobs:
+  docker-build-test:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Eslint (backend)
+        run: |
+          npm ci
+          npx eslint .
+
+      - name: Run Docker compose (backend)
+        run: |
+          docker compose up -d --build
+
+      - name: Test Api health
+        run: |
+          for i in {1..10}; do
+            if curl -f http://localhost:3000/sample/user > /dev/null; then
+              echo "Backend is up!"
+              exit 0
+            fi
+            echo "Waiting backend..."
+            sleep 3
+          done
+          echo "Backend failed to start"
+          docker compose logs
+          docker compose down
+          exit 1
+
+      - name: Stop containers
+        fi: always()
+        run: docker compose down
