@@ -6,6 +6,7 @@
     "scripts": {
         "test": "echo \"Error: no test specified\" && exit 1",
         "start": "node --watch src/index.js",
+        "db:dev": "npx prisma migrate dev --name init && npx prisma generate",
         "db:deploy": "npx prisma migrate deploy && npx prisma generate"
     },
     "keywords": [],
