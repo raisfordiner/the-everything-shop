@@ -12,6 +12,9 @@ const cookieParser = require("cookie-parser");
 const helmet = require("helmet");
 // gzip
 const compression = require('compression')
+// API documentation
+const { specs, swaggerUi } = require('./swagger');
+
 
 const app = express();
 
@@ -22,6 +25,7 @@ app.use(morgan("dev"));
 app.use(cookieParser())
 app.use(helmet());
 app.use(compression());
+app.use('/docs', swaggerUi.serve, swaggerUi.setup(specs));
 
 
 app.use('/', routes);
