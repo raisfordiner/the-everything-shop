@@ -1,4 +1,4 @@
-const { ErrorHandler } = require("../helpers/error");
+const { ErrorHandler } = require("../helper/error");
 const jwt = require("jsonwebtoken");
 
 const verifyToken = (req, res, next) => {

@@ -1,6 +1,6 @@
 const express = require('express')
-const routes = require('./routes')
-const { handleError } = require("./helpers/error");
+const route = require('./route')
+const { handleError } = require("./helper/error");
 const unknownEndpoint = require("./middleware/unknownEndpoint");
 
 const cors = require("cors");
@@ -28,7 +28,7 @@ app.use(compression());
 app.use('/docs', swaggerUi.serve, swaggerUi.setup(specs));
 
 
-app.use('/', routes);
+app.use('/', route);
 
 app.use(unknownEndpoint);
 app.use(handleError);

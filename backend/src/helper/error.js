@@ -1,4 +1,4 @@
-const { logger } = require("../utils/logger");
+const { logger } = require("../util/logger");
 
 class ErrorHandler extends Error {
     constructor(statusCode, message) {
@@ -19,7 +19,7 @@ const handleError = (err, req, res, next) => {
         statusCode: statusCode || 500,
         message: statusCode === 500 ? "An error occurred" : message,
     });
-    
+
     next();
 };
 
