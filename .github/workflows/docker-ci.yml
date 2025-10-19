@@ -9,6 +9,7 @@ on:
       - main
       - devel
       - hotfix/*
+  workflow_dispatch:
 
 jobs:
   docker-build-test:
