@@ -1,5 +1,5 @@
 const app = require("./app");
-const { logger } = require("./utils/logger");
+const { logger } = require("./util/logger");
 
 require('dotenv').config()
 const PORT = process.env.PORT || 800;
