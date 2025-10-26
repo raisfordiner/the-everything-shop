@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-  import { CreateUserDto } from "../dto/user";
+import { CreateUserDto } from "../dto/user";
 import { forgotPasswordService, loginUserService, registerUserService } from "../services/auth.service";
 
 export async function registerUser (req: Request, res: Response): Promise<void> {

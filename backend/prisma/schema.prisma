@@ -340,7 +340,7 @@ model Report {
   updatedAt   DateTime @updatedAt
 }
 
-model SystemParamater {
+model SystemParameter {
   id          String   @id @default(cuid())
   key         String   @unique
   value       String
