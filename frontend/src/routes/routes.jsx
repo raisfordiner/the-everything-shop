@@ -1,0 +1,28 @@
+import CustomerLayout from '../components/layouts/CustomerLayout/CustomerLayout.jsx';
+import AdminLayout from '../components/layouts/AdminLayout/AdminLayout.jsx';
+import Home from '../pages/customer/Home/Home.jsx';
+import DashBoard from '../pages/admin/DashBoard/DashBoard.jsx';
+
+
+export const routes = [
+    {
+        path: '/',
+        element: <CustomerLayout />,
+        children: [
+            {
+                path: '/',
+                element: <Home />
+            }
+        ]
+    },
+    {
+        path: '/admin',
+        element: <AdminLayout />,
+        children: [
+            {
+                path: "dashboard",
+                element: <DashBoard />
+            }
+        ]
+    }
+]
