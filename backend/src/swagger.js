@@ -12,7 +12,7 @@ const options = {
     },
     // Apparently Swagger starts from the root
     // even tho `swagger.js` is in scr ???
-    apis: ['./src/routes/*.js'], // Path to your API routes
+    apis: ['./src/routes.ts', './src/auth/routes/auth.route.ts'], // Path to your API routes
 };
 
 const specs = swaggerJsdoc(options);

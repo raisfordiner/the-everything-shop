@@ -5,7 +5,7 @@
     "main": "src/app.js",
     "scripts": {
         "test": "echo \"Error: no test specified\" && exit 1",
-        "start": "node --watch src/index.js",
+        "start": "ts-node-dev --respawn --transpile-only src/index.ts",
         "db:dev": "npx prisma migrate dev --name init && npx prisma generate",
         "db:deploy": "npx prisma migrate deploy && npx prisma generate"
     },
@@ -14,7 +14,7 @@
     "license": "ISC",
     "type": "commonjs",
     "dependencies": {
-        "@prisma/client": "^6.17.1",
+        "@prisma/client": "^6.18.0",
         "bcryptjs": "^3.0.2",
         "compression": "^1.8.1",
         "cookie-parser": "^1.4.7",
@@ -31,10 +31,14 @@
     },
     "devDependencies": {
         "@eslint/js": "^9.38.0",
+        "@types/express": "^5.0.4",
+        "@types/node": "^24.9.1",
         "eslint": "^9.38.0",
         "eslint-config-prettier": "^10.1.8",
         "globals": "^16.4.0",
         "prettier": "3.6.2",
-        "prisma": "^6.17.1"
+        "prisma": "^6.18.0",
+        "ts-node-dev": "^2.0.0",
+        "typescript": "^5.9.3"
     }
 }
