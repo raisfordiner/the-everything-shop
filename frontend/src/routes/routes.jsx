@@ -2,6 +2,8 @@ import CustomerLayout from '../components/layouts/CustomerLayout/CustomerLayout.
 import AdminLayout from '../components/layouts/AdminLayout/AdminLayout.jsx';
 import Home from '../pages/customer/Home/Home.jsx';
 import DashBoard from '../pages/admin/DashBoard/DashBoard.jsx';
+import Login from "../pages/public/Login/Login.jsx";
+import Register from "../pages/customer/Register/Register.jsx";
 
 
 export const routes = [
@@ -12,6 +14,14 @@ export const routes = [
             {
                 path: '/',
                 element: <Home />
+            },
+            {
+                path: '/login',
+                element: <Login />,
+            },
+            {
+                path: '/register',
+                element: <Register />,
             }
         ]
     },
