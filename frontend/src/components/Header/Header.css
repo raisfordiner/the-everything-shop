@@ -1,0 +1,19 @@
+.header__upper {
+    display: flex;
+    justify-content: space-between;
+    background-color: whitesmoke;
+}
+
+.upper__right {
+    display: flex;
+    gap: 15px;
+}
+
+.last-col {
+    position: absolute;
+    right: 0;
+}
+
+.icon {
+    color: #008ecc;
+}

@@ -1,3 +1,4 @@
+import Header from '../../Header/Header'
 import React from 'react'
 import {Outlet} from "react-router-dom"
 import {Layout} from "antd";
@@ -9,7 +10,7 @@ const CustomerLayout = () => {
     <>
       <Layout>
           <header>
-              Header
+              <Header/>
           </header>
           <Content style={{ padding: '80px 120px' }}>
               <Outlet />
