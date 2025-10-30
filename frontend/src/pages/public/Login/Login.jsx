@@ -1,9 +1,65 @@
 import React from 'react'
+import {Button, Col, Form, Input, Row} from "antd";
+import LoginImage from "../../../assets/LoginImage.png"
+import {Link} from "react-router";
+import "./Login.scss"
 
 const Login = () => {
   return (
-    <div>Login</div>
+    <>
+      <div className={"login"}>
+        <Row gutter={24} align="middle">
+          <Col span={12}>
+            <div className="login__image">
+              <img src={LoginImage} alt="Login Image"/>
+            </div>
+          </Col>
+          <Col span={12}>
+            <Form layout="vertical" name={"login_form"} className="login_form">
+              <h2 className={"login__form-title"}>Welcome Back</h2>
+              <p className={"login__form-subtitle"}>LOGIN TO CONTINUE</p>
+
+              <Form.Item
+                  label="Email Address"
+                  name="email"
+                  rules={[{required: true, message: 'Please input your email!'}, {
+                    type: 'email',
+                    message: 'Invalid email!'
+                  }]}
+              >
+                <Input placeholder="Example@gmail.com" size="large"/>
+              </Form.Item>
+
+              <Form.Item
+                  label="Password"
+                  name="password"
+                  rules={[{required: true, message: 'Please input your password!'}]}
+              >
+                <Input.Password placeholder="..." size="large"/>
+              </Form.Item>
+
+              <Form.Item style={{marginBottom: '24px', marginTop: '-12px'}}>
+                <a>
+                  Forgot Password?
+                </a>
+              </Form.Item>
+
+              <Form.Item style={{marginBottom: '16px'}}>
+                <Button type="primary" htmlType="submit" size="large" style={{padding:'22px 42px', color: "white", backgroundColor: "#008ECC"}}>
+                  LOGIN
+                </Button>
+              </Form.Item>
+
+              <div>
+                <span style={{color: "#999"}}>NEW USER? </span>
+                <Link to="/register">SIGN UP</Link>
+              </div>
+            </Form>
+          </Col>
+        </Row>
+      </div>
+    </>
   )
 }
 
-export default Login
+export default Login;

@@ -1,8 +1,73 @@
 import React from 'react'
+import LoginImage from "../../../assets/LoginImage.png"
+import {Button, Col, Form, Input, Row} from "antd";
+import {Link} from "react-router";
+import "./Register.scss"
 
 const Register = () => {
   return (
-    <div>Register</div>
+      <div className={"register"}>
+        <Row gutter={24} align="middle">
+          <Col span={12}>
+            <div className="register__image">
+              <img src={LoginImage} alt="Register Image"/>
+            </div>
+          </Col>
+          <Col span={12}>
+            <Form layout="vertical" name={"register_form"} className="register_form">
+              <h2 className={"register__form-title"}>Register</h2>
+              <p className={"register__form-subtitle"}>JOIN TO US</p>
+
+              <Form.Item
+                  label="Your Name"
+                  name="name"
+                  rules={[{required: true, message: 'Please input your name!', whitespace: true}]}
+              >
+                <Input placeholder="John Doe" size="large"/>
+              </Form.Item>
+
+              <Form.Item
+                  label="Email Address"
+                  name="email"
+                  rules={[{required: true, message: 'Please input your email!'}, {
+                    type: 'email',
+                    message: 'Invalid email!'
+                  }]}
+              >
+                <Input placeholder="Example@gmail.com" size="large"/>
+              </Form.Item>
+
+              <Form.Item
+                  label="Password"
+                  name="password"
+                  rules={[{required: true, message: 'Please input your password!'}]}
+              >
+                <Input.Password placeholder="..." size="large"/>
+              </Form.Item>
+
+              <Form.Item
+                  label="Confirm Password"
+                  name="confirm-password"
+                  rules={[{required: true, message: 'Please input your confirm password!'}]}
+              >
+                <Input.Password placeholder="..." size="large"/>
+              </Form.Item>
+
+              <Form.Item style={{marginBottom: '16px'}}>
+                <Button type="primary" htmlType="submit" size="large"
+                        style={{padding: '22px 42px', color: "white", backgroundColor: "#008ECC"}}>
+                  REGISTER
+                </Button>
+              </Form.Item>
+
+              <div>
+                <span style={{color: "#999"}}>ALREADY USER? </span>
+                <Link to="/login">LOGIN</Link>
+              </div>
+            </Form>
+          </Col>
+        </Row>
+      </div>
   )
 }
 
