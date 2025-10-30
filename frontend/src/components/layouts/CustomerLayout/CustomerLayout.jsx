@@ -5,8 +5,17 @@ import {Outlet} from "react-router-dom"
 const CustomerLayout = () => {
   return (
     <>
-      <Header/>
-      <Outlet />
+      <Layout>
+          <header>
+              <Header/>
+          </header>
+          <Content style={{ padding: '80px 120px' }}>
+              <Outlet />
+          </Content>
+          <Footer>
+              The everything shop ©2025
+          </Footer>
+      </Layout>
     </>
   )
 }
