@@ -11,7 +11,7 @@ const CustomerLayout = () => {
     <>
       <Layout>
           <header>
-              Header
+              <Header/>
           </header>
           <LayoutContent style={{ padding: '80px 120px' }}>
               <Outlet />
