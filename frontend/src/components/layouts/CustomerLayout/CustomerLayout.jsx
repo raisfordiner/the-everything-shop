@@ -1,8 +1,9 @@
 import Header from '../../Header/Header'
+import Footer from '../../Footer/Footer'
 import React from 'react'
 import {Outlet} from "react-router-dom"
 import {Layout} from "antd";
-const { Header, Footer, Content } = Layout;
+const { Header: LayoutHeader, Footer: LayoutFooter, Content: LayoutContent } = Layout;
 
 
 const CustomerLayout = () => {
@@ -12,12 +13,12 @@ const CustomerLayout = () => {
           <header>
               Header
           </header>
-          <Content style={{ padding: '80px 120px' }}>
+          <LayoutContent style={{ padding: '80px 120px' }}>
               <Outlet />
-          </Content>
-          <Footer>
-              The everything shop ©2025
-          </Footer>
+          </LayoutContent>
+          <footer>
+              <Footer/>
+          </footer>
       </Layout>
     </>
   )
