@@ -7,6 +7,7 @@ import Register from "../pages/customer/Register/Register.jsx";
 import Profile from "../components/layouts/Profile/Profile.jsx";
 import AccountInfo from "../pages/customer/AccountInfo/AccountInfo.jsx";
 import Address from "../pages/customer/Address/Address.jsx";
+import ChangePassword from "../pages/customer/ChangePassword/ChangePassword.jsx";
 
 
 export const routes = [
@@ -37,6 +38,10 @@ export const routes = [
                     {
                         path: 'my-address',
                         element: <Address />,
+                    },
+                    {
+                        path: 'change-password',
+                        element: <ChangePassword />,
                     }
                 ]
             }

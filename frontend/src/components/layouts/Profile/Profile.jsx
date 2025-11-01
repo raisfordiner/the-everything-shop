@@ -51,13 +51,15 @@ const Profile = () => {
         {
             key: "change-password",
             label: (
-                <div className={"profile__menu-item"}>
-                    <div className="profile__menu-item-left">
-                        <LockOutlined/>
-                        <span>Change password</span>
+                <Link to="change-password">
+                    <div className={"profile__menu-item"}>
+                        <div className="profile__menu-item-left">
+                            <LockOutlined/>
+                            <span>Change password</span>
+                        </div>
+                        <RightOutlined className="profile__menu-item-right"/>
                     </div>
-                    <RightOutlined className="profile__menu-item-right"/>
-                </div>
+                </Link>
             ),
         },
     ];
