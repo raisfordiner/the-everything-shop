@@ -4,6 +4,8 @@ import Home from '../pages/customer/Home/Home.jsx';
 import DashBoard from '../pages/admin/DashBoard/DashBoard.jsx';
 import Login from "../pages/public/Login/Login.jsx";
 import Register from "../pages/customer/Register/Register.jsx";
+import Profile from "../components/layouts/Profile/Profile.jsx";
+import AccountInfo from "../pages/customer/AccountInfo/AccountInfo.jsx";
 
 
 export const routes = [
@@ -22,6 +24,16 @@ export const routes = [
             {
                 path: '/register',
                 element: <Register />,
+            },
+            {
+                path: '/profile',
+                element: <Profile />,
+                children: [
+                    {
+                        index: true,
+                        element: <AccountInfo/>
+                    }
+                ]
             }
         ]
     },
