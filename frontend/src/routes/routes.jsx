@@ -6,6 +6,7 @@ import Login from "../pages/public/Login/Login.jsx";
 import Register from "../pages/customer/Register/Register.jsx";
 import Profile from "../components/layouts/Profile/Profile.jsx";
 import AccountInfo from "../pages/customer/AccountInfo/AccountInfo.jsx";
+import Address from "../pages/customer/Address/Address.jsx";
 
 
 export const routes = [
@@ -32,6 +33,10 @@ export const routes = [
                     {
                         index: true,
                         element: <AccountInfo/>
+                    },
+                    {
+                        path: 'my-address',
+                        element: <Address />,
                     }
                 ]
             }

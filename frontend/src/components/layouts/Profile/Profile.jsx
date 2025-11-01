@@ -37,13 +37,15 @@ const Profile = () => {
         {
             key: "my-address",
             label: (
-                <div className={"profile__menu-item"}>
-                    <div className="profile__menu-item-left">
-                        <HomeOutlined/>
-                        <span>My address</span>
+                <Link to="my-address">
+                    <div className={"profile__menu-item"}>
+                        <div className="profile__menu-item-left">
+                            <HomeOutlined/>
+                            <span>My address</span>
+                        </div>
+                        <RightOutlined className="profile__menu-item-right"/>
                     </div>
-                    <RightOutlined className="profile__menu-item-right"/>
-                </div>
+                </Link>
             ),
         },
         {
@@ -51,7 +53,7 @@ const Profile = () => {
             label: (
                 <div className={"profile__menu-item"}>
                     <div className="profile__menu-item-left">
-                        <LockOutlined />
+                        <LockOutlined/>
                         <span>Change password</span>
                     </div>
                     <RightOutlined className="profile__menu-item-right"/>
