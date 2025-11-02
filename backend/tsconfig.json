@@ -13,15 +13,9 @@
     "types": ["node"],
     "noEmit": true,
     "lib": ["es6"],
-    // Path aliases: ./utils → @utils
     "outDir": "./dist",
     "rootDir": "./src",
     "baseUrl": "./src",
-    "paths": {
-      "@middlewares/*": ["middleware/*"],
-      "@util/*": ["util/*"],
-      "@helper/*": ["helper/*"]
-    }
   },
   "include": ["src/**/*"],
   "exclude": ["node_modules", "dist"]

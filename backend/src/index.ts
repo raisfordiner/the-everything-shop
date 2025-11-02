@@ -1,16 +1,6 @@
-// TypeScript entrypoint (keeps CommonJS-style requires for compatibility)
-import dotenv from "dotenv";
-import app from "./app";
-import { logger } from "./util/logger";
+import "tsconfig-paths/register";
+import "dotenv/config";
 
-dotenv.config();
-
-const PORT = process.env.PORT || 800;
-
-app.listen(PORT, (error: any) => {
-  if (error) {
-    throw error;
-  }
-
-  logger.info(`Listening on port  ${PORT}`);
-});
+import App from "app";
+const app = new App();
+app.start();

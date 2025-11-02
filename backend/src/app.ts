@@ -1,7 +1,5 @@
-import express from "express";
-import route from "./routes";
-import { handleError } from "./helper/error";
-import unknownEndpoint from "./middleware/unknownEndpoint";
+import express, { Express } from "express";
+
 import cors from "cors";
 import morgan from "morgan";
 import cookieParser from "cookie-parser";
@@ -9,20 +7,71 @@ import helmet from "helmet";
 import compression from "compression";
 import { specs, swaggerUi } from "./util/swagger";
 
-const appInstance = express();
+import { handleError } from "./helper/error";
+import unknownEndpoint from "./middleware/unknownEndpoint";
 
-appInstance.set("trust proxy", 1);
-appInstance.use(cors({ credentials: true, origin: true }));
-appInstance.use(express.json());
-appInstance.use(morgan("dev"));
-appInstance.use(cookieParser());
-appInstance.use(helmet());
-appInstance.use(compression());
-appInstance.use("/docs", swaggerUi.serve, swaggerUi.setup(specs));
+import appConfig from "config/app.config";
 
-appInstance.use("/", route);
+import authRoute from "auth/auth.route";
+import userRoute from "user/user.route";
 
-appInstance.use(unknownEndpoint);
-appInstance.use(handleError);
+import { logger } from "util/logger";
 
-export default appInstance;
+export default class App {
+  private app: Express;
+
+  constructor() {
+    this.app = express();
+
+    this.initMiddlewares();
+    this.initRoutes();
+
+    this.app.set("trust proxy", 1);
+  }
+
+  private initMiddlewares() {
+    this.app.use(express.json());
+    this.app.use(cookieParser());
+
+    this.app.use(
+      cors({
+        origin: [
+          "http://localhost:3000", // your frontend url
+          "https://mywebsite.com", // your production url optional
+        ],
+        methods: ["GET", "POST", "DELETE"],
+        credentials: true,
+      })
+    );
+
+    this.app.use(morgan("dev"));
+    this.app.use(helmet());
+    this.app.use(compression());
+
+    this.app.use("/docs", swaggerUi.serve, swaggerUi.setup(specs));
+
+    this.app.use(unknownEndpoint);
+    this.app.use(handleError);
+  }
+
+  private initRoutes() {
+    this.app.get("/sample", (req: any, res: any) => {
+      res
+        .status(200)
+        .json({ message: "Sample endpoint is working", status: "ok" });
+    });
+
+    this.app.use("/api/auth", authRoute); // /api/auth/*
+    this.app.use("/api/user", userRoute); // /api/user/*
+  }
+
+  public start() {
+    const { port, host } = appConfig;
+
+    this.app.listen(port, host, (error: any) => {
+      if (error) throw error;
+
+      logger.info(`server is running on http://${host}:${port}`);
+    });
+  }
+}
