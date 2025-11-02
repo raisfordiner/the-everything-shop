@@ -7,7 +7,7 @@ import helmet from "helmet";
 import compression from "compression";
 import { specs, swaggerUi } from "./util/swagger";
 
-import { handleError } from "./helper/error";
+import { handleError } from "./util/error";
 import unknownEndpoint from "./middleware/unknownEndpoint";
 
 import appConfig from "config/app.config";
@@ -23,13 +23,15 @@ export default class App {
   constructor() {
     this.app = express();
 
+    // Initiate routes first
+    // so that any unknown route can be catched
     this.initMiddlewares();
     this.initRoutes();
-
-    this.app.set("trust proxy", 1);
   }
 
   private initMiddlewares() {
+    this.app.set("trust proxy", 1);
+
     this.app.use(express.json());
     this.app.use(cookieParser());
 
@@ -49,20 +51,20 @@ export default class App {
     this.app.use(compression());
 
     this.app.use("/docs", swaggerUi.serve, swaggerUi.setup(specs));
-
-    this.app.use(unknownEndpoint);
-    this.app.use(handleError);
   }
 
   private initRoutes() {
-    this.app.get("/sample", (req: any, res: any) => {
-      res
-        .status(200)
-        .json({ message: "Sample endpoint is working", status: "ok" });
-    });
+    // this.app.get("/", (req: any, res: any) => {
+    //   res
+    //     .status(200)
+    //     .json({ message: "Sample endpoint is working", status: "ok" });
+    // });
 
     this.app.use("/api/auth", authRoute); // /api/auth/*
     this.app.use("/api/user", userRoute); // /api/user/*
+
+    // this.app.use(unknownEndpoint);
+    // this.app.use(handleError);
   }
 
   public start() {

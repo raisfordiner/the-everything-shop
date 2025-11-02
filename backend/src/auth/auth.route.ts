@@ -1,103 +1,39 @@
-import { Router } from "express";
-import { forgotPassword, loginUser, registerUser } from "./auth.controller";
+import AuthController from "./auth.controller";
+import BaseRouter, { RouteConfig } from "util/router";
+import ValidationMiddleware from "middleware/validation.middleware";
+import authSchema from "./auth.schema";
+import AuthMiddleware from "./auth.middleware";
 
-const authRouter = Router();
+class AuthRouter extends BaseRouter {
+  protected routes(): RouteConfig[] {
+    return [
+      {
+        method: "post",
+        path: "/login",
+        middlewares: [ValidationMiddleware.validateBody(authSchema.login)],
+        controller: AuthController.login,
+      },
+      {
+        method: "post",
+        path: "/register",
+        middlewares: [ValidationMiddleware.validateBody(authSchema.register)],
+        controller: AuthController.register,
+      },
+      {
+        method: "post",
+        path: "/logout",
+        middlewares: [AuthMiddleware.authenticateUser], // check if user is logged in
+        controller: AuthController.logout,
+      },
 
-/**
- * @swagger
- * /auth/signup:
- *   post:
- *     summary: Register a new user
- *     tags:
- *       - Authentication
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               email:
- *                 type: string
- *                 format: email
- *               password:
- *                 type: string
- *                 format: password
- *               name:
- *                 type: string
- *     responses:
- *       200:
- *         description: User successfully registered
- *       500:
- *         description: Server error
- */
-authRouter.post("/signup", registerUser);
+      {
+        method: "post",
+        path: "/refresh-token",
+        middlewares: [AuthMiddleware.refreshTokenValidation], // checks if refresh token is valid
+        controller: AuthController.refreshToken,
+      },
+    ];
+  }
+}
 
-/**
- * @swagger
- * /auth/login:
- *   post:
- *     summary: Login user
- *     tags:
- *       - Authentication
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               email:
- *                 type: string
- *                 format: email
- *               password:
- *                 type: string
- *                 format: password
- *     responses:
- *       200:
- *         description: User successfully logged in
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 token:
- *                   type: string
- *       401:
- *         description: Invalid credentials
- */
-authRouter.post("/login", loginUser);
-
-/**
- * @swagger
- * /auth/forgot-password:
- *   post:
- *     summary: Request password reset email
- *     tags:
- *       - Authentication
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               email:
- *                 type: string
- *                 format: email
- *     responses:
- *       200:
- *         description: Password reset email sent successfully
- *       500:
- *         description: Server error
- */
-authRouter.post("/forgot-password", forgotPassword);
-
-// token for reset password
-// router.post("/check-token", verifyResetToken);
-
-// router.post("/reset-password", resetPassword);
-
-// router.post("/refresh-token", refreshToken);
-
-export default authRouter;
+export default new AuthRouter().router;

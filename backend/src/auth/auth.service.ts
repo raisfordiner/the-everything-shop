@@ -1,20 +1,66 @@
-import { CreateUserDto, UserDto } from "./dto/user";
+import { prisma } from "util/db";
+import jwt from "jsonwebtoken";
+import authConfig from "config/auth.config";
+import { comparePassword, hashPassword } from "util/hash";
+import { z } from "zod";
+import authSchema from "./auth.schema";
 
-export async function registerUserService(
-  data: CreateUserDto
-): Promise<UserDto> {
-  // Implementation for registering a user
-  return {} as UserDto; // Placeholder
-}
+const ONE_MINUTE: number = 60 * 1000; // one minute in milliseconds
 
-export async function loginUserService(
-  email: string,
-  password: string
-): Promise<{ token: string }> {
-  // Implementation for logging in a user
-  return { token: "" }; // Placeholder
-}
+export default class AuthService {
+  static async login(email: string, password: string) {
+    const user = await prisma.user.findUnique({ where: { email } });
+    if (!user || !comparePassword(password, user.password)) {
+      throw new Error("Invalid credentials");
+    }
 
-export async function forgotPasswordService(email: string): Promise<void> {
-  // Implementation for forgot password
+    const accessToken = jwt.sign({ userId: user.id }, authConfig.secret, {
+      expiresIn: authConfig.secret_expires_in as any,
+    });
+
+    const refreshToken = jwt.sign(
+      { userId: user.id },
+      authConfig.refresh_secret,
+      { expiresIn: authConfig.refresh_secret_expires_in as any }
+    );
+
+    await prisma.user.update({ where: { email }, data: { refreshToken } });
+
+    return { user, accessToken, refreshToken };
+  }
+
+  static async register(username: string, email: string, password: string) {
+    if (await prisma.user.findUnique({ where: { email } })) {
+      throw new Error("Email is already in use");
+    }
+
+    const hashedPassword = await hashPassword(password);
+
+    const newUser = await prisma.user.create({
+      data: { username, email, password: hashedPassword },
+    });
+
+    return newUser;
+  }
+
+  static async logout(userId: string) {
+    await prisma.user.update({
+      where: { id: userId },
+      data: { refreshToken: null },
+    });
+  }
+
+  static async refreshToken(userId: string, refreshToken: string) {
+    const user = await prisma.user.findUnique({ where: { id: userId } });
+
+    if (!user || user.refreshToken !== refreshToken) {
+      throw new Error("Invalid refresh token");
+    }
+
+    const newAccessToken = jwt.sign({ userId: user.id }, authConfig.secret, {
+      expiresIn: authConfig.secret_expires_in as any,
+    });
+
+    return newAccessToken;
+  }
 }
