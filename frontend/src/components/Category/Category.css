@@ -1,0 +1,32 @@
+.category-list {
+    display: flex;
+    flex-wrap: wrap;             /* Cho phép xuống hàng khi tràn */
+    /* gap: 8px; */
+    overflow-x: auto;            /* Cho scroll ngang khi quá 2 hàng */
+    max-height: calc(2 * 150px + 8px); /* Giới hạn tối đa 2 hàng (kể cả gap) */
+    padding: 8px;
+}
+
+.category {
+    width: 120px;
+    height: 150px;
+    display: flex;
+    flex-direction: column;
+}
+
+.category__image {
+    width: 100%;
+}
+
+.category__image img {
+    width: 100%;
+}
+
+.category__name {
+    text-align: center;
+    white-space: normal;    /* Cho phép xuống dòng */
+    word-break: break-word; /* Ngắt từ khi quá dài */
+    line-height: 1.2;
+    font-size: 14px;
+    margin-top: 4px;
+}
