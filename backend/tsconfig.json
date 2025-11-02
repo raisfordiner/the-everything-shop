@@ -2,8 +2,6 @@
   "compilerOptions": {
     "target": "ES2022",
     "module": "CommonJS",
-    "rootDir": "src",
-    "outDir": "dist",
     "strict": false,
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
@@ -14,7 +12,16 @@
     "allowJs": true,
     "types": ["node"],
     "noEmit": true,
-    "lib": ["es6"]
+    "lib": ["es6"],
+    // Path aliases: ./utils → @utils
+    "outDir": "./dist",
+    "rootDir": "./src",
+    "baseUrl": "./src",
+    "paths": {
+      "@middlewares/*": ["middleware/*"],
+      "@util/*": ["util/*"],
+      "@helper/*": ["helper/*"]
+    }
   },
   "include": ["src/**/*"],
   "exclude": ["node_modules", "dist"]

@@ -1,4 +1,4 @@
-import { logger } from "../logger";
+import { logger } from "../util/logger";
 
 class ErrorHandler extends Error {
   status: string;

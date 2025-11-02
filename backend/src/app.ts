@@ -7,7 +7,7 @@ import morgan from "morgan";
 import cookieParser from "cookie-parser";
 import helmet from "helmet";
 import compression from "compression";
-import { specs, swaggerUi } from "./swagger";
+import { specs, swaggerUi } from "./util/swagger";
 
 const appInstance = express();
 

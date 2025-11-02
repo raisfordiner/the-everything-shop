@@ -1,7 +1,7 @@
 // TypeScript entrypoint (keeps CommonJS-style requires for compatibility)
 import dotenv from "dotenv";
 import app from "./app";
-import { logger } from "./logger";
+import { logger } from "./util/logger";
 
 dotenv.config();
 
