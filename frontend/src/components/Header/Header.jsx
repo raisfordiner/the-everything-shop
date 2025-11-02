@@ -1,53 +1,87 @@
-import './Header.css'
-import { SearchOutlined, UserOutlined, ShoppingCartOutlined, DownOutlined, TruckOutlined, DropboxOutlined } from '@ant-design/icons'
-import { Input, Flex, Button, Divider, Grid, Row, Col } from 'antd'
-import { Link } from 'react-router-dom'
+import './Header.css';
+import {
+    SearchOutlined,
+    UserOutlined,
+    ShoppingCartOutlined,
+    DownOutlined,
+    TruckOutlined,
+    DropboxOutlined,
+} from '@ant-design/icons';
+import { Input, Button, Divider, Row, Col, Badge } from 'antd';
+import { Link } from 'react-router-dom';
+
 const { Search } = Input;
 
 const Header = () => {
     return (
-        <div className='header'>
+        <header className="header">
             <div className="header__upper">
                 <div className="upper__left">
                     <span>Welcome to my everything-shop!</span>
                 </div>
-                <div className='upper__right'>
+                <div className="upper__right">
                     <span>
-                        <DownOutlined className='icon' />
+                        <DownOutlined className="icon" />
                         Deliver 000000
                     </span>
                     <span>
-                        <TruckOutlined className='icon'/>
+                        <TruckOutlined className="icon" />
                         Track your order
                     </span>
                     <span>
-                        <DropboxOutlined className='icon'/>
+                        <DropboxOutlined className="icon" />
                         All offers
                     </span>
                 </div>
             </div>
-            <Row className="header__lower">
-                <Col span={6}>
-                    <p>E-Commerce</p>   
-                </Col>
-                <Col span={12}>
-                    <Search placeholder="input search text" enterButton />
-                </Col>
-                <Col span={6}>
-                    <div className="last-col">
-                        <Link>
-                            <Button icon={<UserOutlined className='icon'/>} type='link' variant='link' style={{ color: 'black' }}>
-                                Sign Up/Sign In
+
+            <div className="header__lower">
+                <Row align="middle" justify="space-between">
+                    <Col flex="200px">
+                        <Link to="/" className="brand">
+                            E-Commerce
+                        </Link>
+                    </Col>
+
+                    <Col flex="auto" className="search-col">
+                        <Search
+                            placeholder="Search for products..."
+                            enterButton={<SearchOutlined />}
+                            size="large"
+                            allowClear
+                        />
+                    </Col>
+
+                    <Col flex="250px" className="action-col">
+                        <div className="actions">
+                        <Link to="/login">
+                            <Button
+                                icon={<UserOutlined />}
+                                type="text"
+                                className="header-btn"
+                            >
+                                Sign In / Sign Up
                             </Button>
                         </Link>
-                        <Divider type='vertical' size='large' style={{borderColor: 'black'}}/>
-                        <Link>
-                            <Button icon={<ShoppingCartOutlined className='icon'/>} type='link' variant='link' style={{ color: 'black' }}>Cart</Button>
+
+                        <Divider type="vertical" />
+
+                        <Link to="/cart">
+                            <Badge count={3} size="small">
+                            <Button
+                                icon={<ShoppingCartOutlined />}
+                                type="text"
+                                className="header-btn"
+                            >
+                                Cart
+                            </Button>
+                            </Badge>
                         </Link>
-                    </div>
-                </Col>
-            </Row>
-        </div>
+                        </div>
+                    </Col>
+                </Row>
+            </div>
+        </header>
     );
 }
 
