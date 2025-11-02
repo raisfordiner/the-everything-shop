@@ -1,11 +1,16 @@
-import { CreateUserDto, UserDto } from "../dto/user";
+import { CreateUserDto, UserDto } from "./dto/user";
 
-export async function registerUserService(data: CreateUserDto): Promise<UserDto> {
+export async function registerUserService(
+  data: CreateUserDto
+): Promise<UserDto> {
   // Implementation for registering a user
   return {} as UserDto; // Placeholder
 }
 
-export async function loginUserService(email: string, password: string): Promise<{token: string}> {
+export async function loginUserService(
+  email: string,
+  password: string
+): Promise<{ token: string }> {
   // Implementation for logging in a user
   return { token: "" }; // Placeholder
 }

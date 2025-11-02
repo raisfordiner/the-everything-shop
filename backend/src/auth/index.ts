@@ -1,1 +1,0 @@
-export * as authRouter from "./routes/auth.route";

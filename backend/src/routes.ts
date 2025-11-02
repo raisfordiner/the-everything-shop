@@ -1,15 +1,12 @@
-const router = require("express").Router();
-
-// require the concrete auth route file (folder import 'auth' won't resolve)
-const authModule = require("./auth/routes/auth.route");
-// support both `export default` and `module.exports`
-const authRouter = authModule.default || authModule;
+import express from "express";
+const router = express.Router();
 
 // Health check endpoint
 router.get("/sample", (req: any, res: any) => {
   res.status(200).json({ message: "Sample endpoint is working", status: "ok" });
 });
 
+import authRouter from "./auth/auth.route";
 router.use("/auth", authRouter);
 
-module.exports = router;
+export default router;

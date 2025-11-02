@@ -1,6 +1,7 @@
-import { forgotPassword, loginUser, registerUser } from "../controllers/auth.controller";
+import { Router } from "express";
+import { forgotPassword, loginUser, registerUser } from "./auth.controller";
 
-const authRouter = require("express").Router();
+const authRouter = Router();
 
 /**
  * @swagger
