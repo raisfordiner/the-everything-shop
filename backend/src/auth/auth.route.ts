@@ -10,15 +10,15 @@ class AuthRouter extends BaseRouter {
     return [
       {
         method: "post",
-        path: "/login",
-        middlewares: [validateBody(AuthSchema.login)],
-        controller: AuthController.login,
-      },
-      {
-        method: "post",
         path: "/register",
         middlewares: [validateBody(AuthSchema.register)],
         controller: AuthController.register,
+      },
+      {
+        method: "post",
+        path: "/login",
+        middlewares: [validateBody(AuthSchema.login)],
+        controller: AuthController.login,
       },
       {
         method: "post",

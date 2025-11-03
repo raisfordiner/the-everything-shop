@@ -6,7 +6,6 @@ class UserRoutes extends BaseRouter {
   protected routes(): RouteConfig[] {
     return [
       {
-        // get user info
         method: "get",
         path: "/info", // api/user/info
         middlewares: [AuthMiddleware.authenticateUser],

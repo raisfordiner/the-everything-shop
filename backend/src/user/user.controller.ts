@@ -1,16 +1,17 @@
 import Send from "util/response";
 import { prisma } from "util/db";
 import { Request, Response } from "express";
-import { send } from "process";
+import { logger } from "util/logger";
+
+/**
+ * Get the user information based on the authenticated user.
+ * The userId is passed from the AuthMiddleware.
+ */
 
 export default class UserController {
-  /**
-   * Get the user information based on the authenticated user.
-   * The userId is passed from the AuthMiddleware.
-   */
-  static getUser = async (req: Request, res: Response) => {
+  static async getUser(req: Request, res: Response) {
     try {
-      const userId = (req as any).userId; // Extract userId from the authenticated request
+      const userId = (req as any).userId;
 
       const user = await prisma.user.findUnique({
         where: { id: userId },
@@ -29,8 +30,8 @@ export default class UserController {
 
       return Send.success(res, { user });
     } catch (error) {
-      console.error("Error fetching user info:", error);
+      logger.error({ error }, "Error fetching user info");
       return Send.error(res, {}, "Internal server error");
     }
-  };
+  }
 }

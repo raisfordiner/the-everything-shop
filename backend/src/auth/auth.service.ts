@@ -8,8 +8,21 @@ import AuthSchema from "./auth.schema";
 const ONE_MINUTE: number = 60 * 1000; // one minute in milliseconds
 
 export default class AuthService {
+  static async register(username: string, email: string, password: string) {
+    if (await prisma.user.findUnique({ where: { email } })) {
+      throw new Error("Email is already in use");
+    }
+
+    const newUser = await prisma.user.create({
+      data: { username, email, password: await hashPassword(password) },
+    });
+
+    return newUser;
+  }
+
   static async login(email: string, password: string) {
     const user = await prisma.user.findUnique({ where: { email } });
+
     if (!user || !comparePassword(password, user.password)) {
       throw new Error("Invalid credentials");
     }
@@ -18,36 +31,17 @@ export default class AuthService {
       expiresIn: authConfig.secret_expires_in as any,
     });
 
-    const refreshToken = jwt.sign(
-      { userId: user.id },
-      authConfig.refresh_secret,
-      { expiresIn: authConfig.refresh_secret_expires_in as any }
-    );
+    const refreshToken = jwt.sign({ userId: user.id }, authConfig.refresh_secret, {
+      expiresIn: authConfig.refresh_secret_expires_in as any,
+    });
 
     await prisma.user.update({ where: { email }, data: { refreshToken } });
 
     return { user, accessToken, refreshToken };
   }
 
-  static async register(username: string, email: string, password: string) {
-    if (await prisma.user.findUnique({ where: { email } })) {
-      throw new Error("Email is already in use");
-    }
-
-    const hashedPassword = await hashPassword(password);
-
-    const newUser = await prisma.user.create({
-      data: { username, email, password: hashedPassword },
-    });
-
-    return newUser;
-  }
-
   static async logout(userId: string) {
-    await prisma.user.update({
-      where: { id: userId },
-      data: { refreshToken: null },
-    });
+    await prisma.user.update({ where: { id: userId }, data: { refreshToken: null } });
   }
 
   static async refreshToken(userId: string, refreshToken: string) {

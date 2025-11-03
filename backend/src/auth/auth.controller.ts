@@ -8,7 +8,24 @@ import { logger } from "util/logger";
 const ONE_MINUTE: number = 60 * 1000; // one minute in milliseconds
 
 export default class AuthController {
-  static login = async (req: Request, res: Response) => {
+  static async register(req: Request, res: Response) {
+    const { username, email, password } = req.body as z.infer<typeof AuthSchema.register>;
+
+    try {
+      const newUser = await AuthService.register(username, email, password);
+
+      return Send.success(
+        res,
+        { id: newUser.id, username: newUser.username, email: newUser.email },
+        "User successfully registered."
+      );
+    } catch (error) {
+      logger.error({ error }, "Registration failed");
+      return Send.error(res, null, "Registration failed.");
+    }
+  }
+
+  static async login(req: Request, res: Response) {
     const { email, password } = req.body as z.infer<typeof AuthSchema.login>; // request body → fields
 
     try {
@@ -33,27 +50,9 @@ export default class AuthController {
       logger.error({ error }, "Login Failed");
       return Send.error(res, null, "Login failed.");
     }
-  };
+  }
 
-  
-  static register = async (req: Request, res: Response) => {
-    const { username, email, password } = req.body as z.infer<typeof AuthSchema.register>;
-
-    try {
-      const newUser = await AuthService.register(username, email, password);
-
-      return Send.success(
-        res,
-        { id: newUser.id, username: newUser.username, email: newUser.email },
-        "User successfully registered."
-      );
-    } catch (error) {
-      logger.error({ error }, "Registration failed");
-      return Send.error(res, null, "Registration failed.");
-    }
-  };
-
-  static logout = async (req: Request, res: Response) => {
+  static async logout(req: Request, res: Response) {
     try {
       const userId = (req as any).user?.userId;
       if (userId) {
@@ -68,9 +67,9 @@ export default class AuthController {
       logger.error({ error }, "Logout failed");
       return Send.error(res, null, "Logout failed.");
     }
-  };
+  }
 
-  static refreshToken = async (req: Request, res: Response) => {
+  static async refreshToken(req: Request, res: Response) {
     try {
       const userId = (req as any).userId;
       const refreshToken = req.cookies.refreshToken;
@@ -91,5 +90,5 @@ export default class AuthController {
       logger.error({ error }, "Refresh Token failed");
       return Send.error(res, null, "Failed to refresh token");
     }
-  };
+  }
 }
