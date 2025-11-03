@@ -1,8 +1,11 @@
 import React from 'react'
+import CategoryListing from '../../../components/Category/CategoryListing'
 
 const Home = () => {
   return (
-    <div>Home</div>
+    <div>
+      <CategoryListing/>
+    </div>
   )
 }
 

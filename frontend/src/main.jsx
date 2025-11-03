@@ -7,7 +7,9 @@ import {createStore} from "redux";
 import allReducers from './redux/reducers/reducers.js';
 import {Provider} from "react-redux";
 
-const store = createStore(allReducers);
+import store from './redux/store'
+
+// const store = createStore(allReducers);
 
 createRoot(document.getElementById('root')).render(
   <Provider store={store}>

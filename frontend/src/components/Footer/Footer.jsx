@@ -13,9 +13,8 @@ const Footer = () => {
                         <h2>(025) 3686 25 16</h2>
                     </div>
                     <div className="contact__location">
-                        <p>257 Thatcher Road St, Brooklyn, Manhattan, 
-                            <p>NYC 10092</p>
-                        </p>
+                        <p>257 Thatcher Road St, Brooklyn, Manhattan,</p>
+                        <p>NYC 10092</p>
                     </div>
                     <div className="media">
                     <div className="media__icon twitter">
