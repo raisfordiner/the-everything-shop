@@ -1,20 +1,18 @@
 import Send from "util/response";
 import { Request, Response } from "express";
-import authSchema from "./auth.schema";
+import AuthSchema from "./auth.schema";
 import { z } from "zod";
 import AuthService from "./auth.service";
+import { logger } from "util/logger";
 
 const ONE_MINUTE: number = 60 * 1000; // one minute in milliseconds
 
 export default class AuthController {
   static login = async (req: Request, res: Response) => {
-    const { email, password } = req.body as z.infer<typeof authSchema.login>; // request body → fields
+    const { email, password } = req.body as z.infer<typeof AuthSchema.login>; // request body → fields
 
     try {
-      const { user, accessToken, refreshToken } = await AuthService.login(
-        email,
-        password
-      );
+      const { user, accessToken, refreshToken } = await AuthService.login(email, password);
 
       res.cookie("accessToken", accessToken, {
         httpOnly: true, // Ensure the cookie cannot be accessed via JavaScript (security against XSS attacks)
@@ -30,21 +28,16 @@ export default class AuthController {
         sameSite: "strict",
       });
 
-      return Send.success(res, {
-        id: user.id,
-        username: user.username,
-        email: user.email,
-      });
+      return Send.success(res, { id: user.id, username: user.username, email: user.email });
     } catch (error) {
-      console.error("Login Failed:", error);
+      logger.error({ error }, "Login Failed");
       return Send.error(res, null, "Login failed.");
     }
   };
 
+  
   static register = async (req: Request, res: Response) => {
-    const { username, email, password } = req.body as z.infer<
-      typeof authSchema.register
-    >;
+    const { username, email, password } = req.body as z.infer<typeof AuthSchema.register>;
 
     try {
       const newUser = await AuthService.register(username, email, password);
@@ -55,7 +48,7 @@ export default class AuthController {
         "User successfully registered."
       );
     } catch (error) {
-      console.error("Registration failed:", error);
+      logger.error({ error }, "Registration failed");
       return Send.error(res, null, "Registration failed.");
     }
   };
@@ -72,7 +65,7 @@ export default class AuthController {
 
       return Send.success(res, null, "Logged out successfully.");
     } catch (error) {
-      console.error("Logout failed:", error);
+      logger.error({ error }, "Logout failed");
       return Send.error(res, null, "Logout failed.");
     }
   };
@@ -82,10 +75,7 @@ export default class AuthController {
       const userId = (req as any).userId;
       const refreshToken = req.cookies.refreshToken;
 
-      const newAccessToken = await AuthService.refreshToken(
-        userId,
-        refreshToken
-      );
+      const newAccessToken = await AuthService.refreshToken(userId, refreshToken);
 
       res.cookie("accessToken", newAccessToken, {
         httpOnly: true,
@@ -98,7 +88,7 @@ export default class AuthController {
         message: "Access token refreshed successfully",
       });
     } catch (error) {
-      console.error("Refresh Token failed:", error);
+      logger.error({ error }, "Refresh Token failed");
       return Send.error(res, null, "Failed to refresh token");
     }
   };

@@ -17,7 +17,7 @@ export default abstract class BaseRouter {
     this.registerRoutes();
   }
 
-  // Abstract method that must be implemented by subclasses to define the routes
+  // subclasses must implement this to define the routes
   protected abstract routes(): RouteConfig[];
 
   private registerRoutes(): void {

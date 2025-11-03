@@ -1,8 +1,9 @@
 import AuthController from "./auth.controller";
-import BaseRouter, { RouteConfig } from "util/router";
-import ValidationMiddleware from "util/validation";
-import authSchema from "./auth.schema";
+import AuthSchema from "./auth.schema";
 import AuthMiddleware from "./auth.middleware";
+
+import validateBody from "util/validation";
+import BaseRouter, { RouteConfig } from "util/router";
 
 class AuthRouter extends BaseRouter {
   protected routes(): RouteConfig[] {
@@ -10,13 +11,13 @@ class AuthRouter extends BaseRouter {
       {
         method: "post",
         path: "/login",
-        middlewares: [ValidationMiddleware.validateBody(authSchema.login)],
+        middlewares: [validateBody(AuthSchema.login)],
         controller: AuthController.login,
       },
       {
         method: "post",
         path: "/register",
-        middlewares: [ValidationMiddleware.validateBody(authSchema.register)],
+        middlewares: [validateBody(AuthSchema.register)],
         controller: AuthController.register,
       },
       {

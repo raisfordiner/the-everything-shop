@@ -2,21 +2,19 @@ import { Request, Response, NextFunction } from "express";
 import { logger } from "./logger";
 import Send from "./response";
 
-const errorHandler = (
+export default function errorHandler(
   err: any,
   req: Request,
   res: Response,
   next: NextFunction
-): void => {
+): void {
   const statusCode = err.statusCode || 500;
   const message = err.message || "Internal Server Error";
 
-  // Log the error
   logger.error(
     `${statusCode} - ${message} - ${req.originalUrl} - ${req.method} - ${req.ip}`
   );
 
-  // Send structured error response
   Send.error(
     res,
     {
@@ -24,6 +22,4 @@ const errorHandler = (
     },
     message
   );
-};
-
-export default errorHandler;
+}

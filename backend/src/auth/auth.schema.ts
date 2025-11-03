@@ -42,6 +42,6 @@ const register = z
     message: "Passwords do not match",
   });
 
-const authSchema = { login, register };
+const AuthSchema = { login, register };
 
-export default authSchema;
+export default AuthSchema;
