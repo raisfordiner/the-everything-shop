@@ -1,6 +1,6 @@
 import AuthController from "./auth.controller";
 import BaseRouter, { RouteConfig } from "util/router";
-import ValidationMiddleware from "middleware/validation.middleware";
+import ValidationMiddleware from "util/validation";
 import authSchema from "./auth.schema";
 import AuthMiddleware from "./auth.middleware";
 

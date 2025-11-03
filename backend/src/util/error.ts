@@ -1,28 +1,29 @@
+import { Request, Response, NextFunction } from "express";
 import { logger } from "./logger";
+import Send from "./response";
 
-class ErrorHandler extends Error {
-  status: string;
-  statusCode: number;
+const errorHandler = (
+  err: any,
+  req: Request,
+  res: Response,
+  next: NextFunction
+): void => {
+  const statusCode = err.statusCode || 500;
+  const message = err.message || "Internal Server Error";
 
-  constructor(statusCode: number, message: string) {
-    super();
+  // Log the error
+  logger.error(
+    `${statusCode} - ${message} - ${req.originalUrl} - ${req.method} - ${req.ip}`
+  );
 
-    this.status = "error";
-    this.statusCode = statusCode;
-    this.message = message;
-  }
-}
-
-const handleError = (err, req, res, next) => {
-  const { statusCode, message } = err;
-
-  logger.error(err);
-
-  res.status(statusCode || 500).json({
-    status: "error",
-    statusCode: statusCode || 500,
-    message: statusCode === 500 ? "An error occurred" : message,
-  });
+  // Send structured error response
+  Send.error(
+    res,
+    {
+      ...(process.env.NODE_ENV === "development" && { stack: err.stack }),
+    },
+    message
+  );
 };
 
-export { ErrorHandler, handleError };
+export default errorHandler;

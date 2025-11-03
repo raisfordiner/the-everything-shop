@@ -1,14 +1,14 @@
 import express, { Express } from "express";
 
 import cors from "cors";
-import morgan from "morgan";
-import cookieParser from "cookie-parser";
-import helmet from "helmet";
-import compression from "compression";
+import morgan from "morgan"; // HTTP request logger
+import cookieParser from "cookie-parser"; // parse Cookie header
+import helmet from "helmet"; // set security-related HTTP headers
+import compression from "compression"; // gzip the response
 import { specs, swaggerUi } from "./util/swagger";
 
-import { handleError } from "./util/error";
-import unknownEndpoint from "./middleware/unknownEndpoint";
+import errorHandler from "./util/error";
+import unknownEndpoint from "./util/unknownEndpoint";
 
 import appConfig from "config/app.config";
 
@@ -23,8 +23,6 @@ export default class App {
   constructor() {
     this.app = express();
 
-    // Initiate routes first
-    // so that any unknown route can be catched
     this.initMiddlewares();
     this.initRoutes();
   }
@@ -38,8 +36,8 @@ export default class App {
     this.app.use(
       cors({
         origin: [
-          "http://localhost:3000", // your frontend url
-          "https://mywebsite.com", // your production url optional
+          "http://localhost:3000", // frontend url
+          "https://mywebsite.com", // production url optional
         ],
         methods: ["GET", "POST", "DELETE"],
         credentials: true,
@@ -54,17 +52,15 @@ export default class App {
   }
 
   private initRoutes() {
-    // this.app.get("/", (req: any, res: any) => {
-    //   res
-    //     .status(200)
-    //     .json({ message: "Sample endpoint is working", status: "ok" });
-    // });
-
     this.app.use("/api/auth", authRoute); // /api/auth/*
     this.app.use("/api/user", userRoute); // /api/user/*
 
-    // this.app.use(unknownEndpoint);
-    // this.app.use(handleError);
+    this.app.get("/error", (req, res) => {
+      throw new Error("Test error"); // Test route to trigger error
+    });
+
+    this.app.use(unknownEndpoint);
+    this.app.use(errorHandler);
   }
 
   public start() {
