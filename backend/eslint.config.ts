@@ -17,7 +17,16 @@ export default defineConfig([
     plugins: { "@typescript-eslint": plugin },
     rules: {
       ...plugin.configs.recommended.rules,
-      "no-unused-vars": ["warn", { argsIgnorePattern: "req|res" }],
+      "no-unused-vars": [
+          "warn",
+          { 
+              argsIgnorePattern: "req|res|next|_",
+              varsIgnorePattern: "^_",
+          }
+      ],
+
+      "@typescript-eslint/no-explicit-any": "off",
+
       "no-undef": "warn",
     },
     extends: [prettierConfig],
