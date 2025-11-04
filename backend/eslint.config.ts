@@ -19,10 +19,11 @@ export default defineConfig([
       ...plugin.configs.recommended.rules,
       "no-unused-vars": [
           "warn",
-          { 
-              argsIgnorePattern: "req|res|next|_",
+          {
+              argsIgnorePattern: "^(req|res|next|_)$",
               varsIgnorePattern: "^_",
-          }
+              caughtErrorsIgnorePattern: "^_",
+          },
       ],
 
       "@typescript-eslint/no-explicit-any": "off",
