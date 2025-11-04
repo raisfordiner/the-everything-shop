@@ -31,9 +31,7 @@ jobs:
 
       - name: Set up environment
         run: |
-          pwd
-          cat .env.example
-          cp .env.example .env
+          cat .env
 
       - name: Install dependencies
         run:
