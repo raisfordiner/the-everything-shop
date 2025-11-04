@@ -48,6 +48,7 @@ jobs:
 
       - name: Test Api health
         run: |
+          source .env
           for i in {1..10}; do
             if curl -f http://localhost:${APP_PORT}/api/health > /dev/null; then
               echo "Backend is up!"
