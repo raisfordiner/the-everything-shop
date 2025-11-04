@@ -17,7 +17,7 @@ export default defineConfig([
     plugins: { "@typescript-eslint": plugin },
     rules: {
       ...plugin.configs.recommended.rules,
-      "no-unused-vars": [
+      "@typescript-eslint/no-unused-vars": [
           "warn",
           {
               argsIgnorePattern: "^(req|res|next|_)$",
