@@ -14,6 +14,7 @@ import appConfig from "config/app.config";
 
 import authRoute from "auth/auth.route";
 import userRoute from "user/user.route";
+import healthRoute from "health/health.route";
 
 import { logger } from "util/logger";
 
@@ -54,6 +55,7 @@ export default class App {
   private initRoutes() {
     this.app.use("/api/auth", authRoute); // /api/auth/*
     this.app.use("/api/user", userRoute); // /api/user/*
+    this.app.use("/api", healthRoute); // /api/healthcheck
 
     this.app.get("/error", (req, res) => {
       throw new Error("Test error"); // Test route to trigger error
