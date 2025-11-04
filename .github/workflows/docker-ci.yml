@@ -3,16 +3,16 @@ name: Docker CI pipeline
 on:
   push:
     branches:
-      - main 
-      - devel
-      - hotfix/*
-      - fix/**/*
+      # - main 
+      # - devel
+      # - hotfix/*
+      # - fix/**/*
   pull_request:
     branches:
       - main
       - devel
       - feat/*
-      - hotfix/*
+      # - hotfix/*
   workflow_dispatch:
 
 jobs:
