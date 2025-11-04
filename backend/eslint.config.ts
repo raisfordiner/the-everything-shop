@@ -8,7 +8,7 @@ export default defineConfig([
     files: ["**/*.{js,mjs,cjs,ts}"],
     languageOptions: {
       globals: globals.node,
-      sourceType: "commonjs",
+      sourceType: "module",
     },
     extends: [js.configs.recommended, prettierConfig],
     rules: {
