@@ -3,9 +3,9 @@ import jwt from "jsonwebtoken";
 import authConfig from "config/auth.config";
 import { comparePassword, hashPassword } from "util/hash";
 // import { z } from "zod";
-import AuthSchema from "./auth.schema";
+// import AuthSchema from "./auth.schema";
 
-const ONE_MINUTE: number = 60 * 1000; // one minute in milliseconds
+// const ONE_MINUTE: number = 60 * 1000; // one minute in milliseconds
 
 export default class AuthService {
   static async register(username: string, email: string, password: string) {
