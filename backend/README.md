@@ -1,27 +1,6 @@
-# Order
+# Guides
+- [Step-by-Step Guide to Secure JWT Authentication with Refresh Tokens in Express.js, TypeScript, and Prisma](https://medium.com/@gigi.shalamberidze2022/implementing-secure-authentication-authorization-in-express-js-with-jwt-typescript-and-prisma-087c90596889)
 
-Routes → Controllers → Service, sử dụng Prisma
-
-# Routes
-
-- Định nghĩa các route
-- Route gì sử dụng Controller gì
-- Bắt đầu từ `index.js` trước
-
-## Vì sao trong `user.js` định nghĩa route `/` ?
-
-- `index.js` định nghĩa các route trong `user.js` đều bắt đầu bằng `/user`
-- Thế nên:
-  - `/` → `/user`
-  - `/profile` → `/user/profile`
-  - `/:id` → `user/:id`
-
-# Controllers
-
-- Xử lý Request và Respond từ các route
-- Truyền dữ liệu của Request cho service xử lí
-
-# Service
-
-- Tương tác với Prisma
-- Nhớ sử dụng `try/catch` và `ErrorHandler`
+# Adding routes
+- Register each domain's routes in its own file first. E.g. `auth.route.ts`
+- Initiate routes in `app.ts`

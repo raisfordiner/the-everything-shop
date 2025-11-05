@@ -8,6 +8,6 @@ RUN npm install
 
 COPY . .
 
-EXPOSE $PORT
+EXPOSE $APP_PORT
 
 CMD [ "sh", "-c", "npm run db:dev && npm start" ]

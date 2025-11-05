@@ -77,7 +77,7 @@ enum Variants{
 
 model User {
   id        String   @id @default(cuid())
-  name      String
+  username      String
   email     String   @unique
   password  String?
   emailVerified DateTime?
@@ -89,6 +89,7 @@ model User {
   seller    Seller?
   admin     Admin?
   notifications Notification[]
+  refreshToken String?
 }
 
 model Customer {
