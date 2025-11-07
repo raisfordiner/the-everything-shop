@@ -69,7 +69,7 @@ enum ReportType {
   ORDERS
 }
 
-enum Variants{
+enum Variants {
   SIZE
   COLOR
   MATERIAL

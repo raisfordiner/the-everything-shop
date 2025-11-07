@@ -3,6 +3,8 @@ import Send from "util/response";
 import { logger } from "util/logger";
 import { NextFunction, Request, Response } from "express";
 import jwt from "jsonwebtoken";
+import { prisma } from "util/db";
+import { UserRole } from "@prisma/client";
 
 export interface DecodedToken {
   userId: number;
@@ -46,6 +48,30 @@ export default class AuthMiddleware {
       return Send.unauthorized(res, {
         message: "Invalid or expired refresh token",
       });
+    }
+  };
+
+  static requireAdmin = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const userId = (req as any).userId;
+
+      if (!userId) {
+        return Send.unauthorized(res, null);
+      }
+
+      const user = await prisma.user.findUnique({
+        where: { id: userId },
+        select: { role: true },
+      });
+
+      if (!user || user.role !== UserRole.ADMIN) {
+        return Send.forbidden(res, { message: "Admin access required" });
+      }
+
+      next();
+    } catch (error) {
+      logger.error({ error }, "Admin check failed");
+      return Send.error(res, {}, "Internal server error");
     }
   };
 }
