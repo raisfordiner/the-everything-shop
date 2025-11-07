@@ -16,17 +16,15 @@ services:
       interval: 5s
       timeout: 2s
       retries: 20
-    # command: postgres -c listen_addresses='*'
 
-  app:
-    build: .
+  backend:
+    build: ./backend
     image: the-everything-shop-backend
     restart: unless-stopped
     env_file:
-      .env
+      - ./backend/.env
     ports:
-      - ${APP_PORT}:${APP_PORT}
-      # - ${APP_HOST}:${APP_HOST}
+      - ${BE_PORT}:${BE_PORT}
     environment:
       AUTH_SECRET: ${AUTH_SECRET}
       AUTH_SECRET_EXPIRES_IN: ${AUTH_SECRET_EXPIRES_IN}
@@ -37,22 +35,35 @@ services:
     networks:
       - the-everything-shop
 
+  frontend:
+    build: ./frontend
+    image: the-everything-shop-frontend
+    restart: unless-stopped
+    ports:
+      - ${FE_PORT}:5173
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    depends_on:
+      - backend
+    networks:
+      - the-everything-shop
+
   prisma-studio:
     image: node:alpine
     working_dir: /usr/src/app
     volumes:
-      - .:/usr/src/app
+      - ./backend:/usr/src/app
     command: npx prisma studio --port 5555 --browser none
     ports:
-      - "5555:5555"
+      - $PRISMA_STUDIO_PORT:5555
     env_file:
-      - .env
+      - ./backend/.env
     networks:
       - the-everything-shop
     depends_on:
       - db
-      - app
+      - backend
 
 networks:
   the-everything-shop:
-

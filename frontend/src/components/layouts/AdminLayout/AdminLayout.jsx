@@ -1,6 +1,8 @@
 import React from 'react'
 import {Outlet} from "react-router-dom";
 import {Layout} from "antd";
+import AdminHeader from '../../AdminHeader/AdminHeader'
+import AdminSidebar from '../../AdminSidebar/AdminSidebar'
 const { Header, Footer, Sider, Content } = Layout;
 
 
@@ -8,15 +10,9 @@ const AdminLayout = () => {
   return (
     <>
         <Layout>
-            <header>
-                Header
-            </header>
-
+            <AdminHeader/>
             <Layout>
-                <Sider theme={"light"}>
-                    Slider
-                </Sider>
-
+                <AdminSidebar/>
                 <Content className="content">
                     Content
                     <Outlet/>

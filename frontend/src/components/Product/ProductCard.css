@@ -1,0 +1,95 @@
+/* Đảm bảo mọi card có chiều cao bằng nhau */
+.ant-card {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    height: 100%;
+    border-radius: 10px !important;
+    transition: all 0.2s ease;
+}
+
+/* Ảnh thu gọn hợp lý, cùng chiều cao */
+.ant-card-cover img {
+    height: 160px;
+    width: 100%;
+    object-fit: contain;
+    border-top-left-radius: 10px;
+    border-top-right-radius: 10px;
+    background-color: #fff;
+}
+
+/* Vùng thông tin sản phẩm */
+.product-info {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    flex-grow: 1;
+    min-height: 120px;
+}
+
+/* Tên sản phẩm xuống 2 dòng */
+.product-info .ant-typography {
+    font-size: 13.5px;
+    line-height: 1.4;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: normal;
+}
+
+/* Giá */
+.product-prices {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    margin-top: 4px;
+    gap: 2px;
+}
+
+.product-sale-price {
+    font-size: 15px;
+    font-weight: 600;
+    color: #e60023 !important;
+}
+
+.product-old {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.product-original {
+    font-size: 13px;
+    color: #888 !important;
+}
+
+.product-discount {
+    font-size: 13px;
+    color: #ff4d4f;
+    font-weight: 500;
+}
+
+.product-rating {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 8px;
+}
+
+.rating-left {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.rating-score {
+    font-size: 13px;
+    color: #333;
+}
+
+.sold-count {
+    font-size: 12px !important;
+    color: #888 !important;
+}
