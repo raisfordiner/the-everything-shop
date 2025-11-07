@@ -1,5 +1,6 @@
 node_modules
 # No need to ignore .env as it only contain default value anyway
 # .env 
+development.env
 
 /generated/prisma

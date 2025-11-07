@@ -8,7 +8,8 @@
     "start": "ts-node-dev --respawn --transpile-only src/index.ts",
     "dev": "ts-node-dev --respawn --transpile-only src/index.ts",
     "db:dev": "npx prisma migrate dev --name init && npx prisma generate",
-    "db:deploy": "npx prisma migrate deploy && npx prisma generate"
+    "db:deploy": "npx prisma migrate deploy && npx prisma generate",
+    "db:seed": "node -r dotenv/config -r ts-node/register src/db/seed.ts"
   },
   "keywords": [],
   "author": "",
