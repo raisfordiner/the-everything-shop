@@ -1,6 +1,8 @@
 import BaseRouter, { RouteConfig } from "util/router";
 import AuthMiddleware from "auth/auth.middleware";
 import UsersController from "./users.controller";
+import validateBody from "util/validation";
+import AuthSchema from "auth/auth.schema";
 
 /**
  * @swagger
@@ -177,7 +179,7 @@ class UsersRoutes extends BaseRouter {
       {
         method: "post",
         path: "/",
-        middlewares: [AuthMiddleware.authenticateUser, AuthMiddleware.requireAdmin],
+        middlewares: [AuthMiddleware.authenticateUser, AuthMiddleware.requireAdmin, validateBody(AuthSchema.register)],
         controller: UsersController.createUser,
       },
       /**
@@ -223,7 +225,7 @@ class UsersRoutes extends BaseRouter {
       {
         method: "put",
         path: "/:id",
-        middlewares: [AuthMiddleware.authenticateUser, AuthMiddleware.requireAdmin],
+        middlewares: [AuthMiddleware.authenticateUser, AuthMiddleware.requireAdmin, validateBody(AuthSchema.register)],
         controller: UsersController.updateUser,
       },
       /**
