@@ -1,10 +1,10 @@
 import {combineReducers} from "redux";
-import loginReducer from "./login";
 import { categoryReducer } from "./categoryReducer";
 import { productReducer } from "./productReducer";
+import authReducer from "./authReducer.js";
 
 const allReducers = combineReducers({
-    loginReducer,
+    authReducer,
     allCategories: categoryReducer,
     allProducts: productReducer
 });
