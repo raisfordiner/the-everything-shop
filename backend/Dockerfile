@@ -10,4 +10,4 @@ COPY . .
 
 EXPOSE $APP_PORT
 
-CMD [ "sh", "-c", "npm run db:dev && npm start" ]
+CMD [ "sh", "-c", "npm run db:dev && npm run db:seed && npm start" ]
