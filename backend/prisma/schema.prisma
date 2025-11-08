@@ -70,7 +70,7 @@ enum ReportType {
   ORDERS
 }
 
-enum Variants{
+enum Variants {
   SIZE
   COLOR
   MATERIAL
@@ -161,6 +161,7 @@ model Product {
   variantTypes Variants[]
   variantOptions Json
   productVariants ProductVariant[]
+  is_deleted  Boolean     @default(false)
   createdAt     DateTime    @default(now())
   updatedAt     DateTime    @updatedAt
 }

@@ -27,11 +27,11 @@ export default class AuthService {
       throw new Error("Invalid credentials");
     }
 
-    const accessToken = jwt.sign({ userId: user.id }, authConfig.secret, {
+    const accessToken = jwt.sign({ userId: user.id, role: user.role }, authConfig.secret, {
       expiresIn: authConfig.secret_expires_in as any,
     });
 
-    const refreshToken = jwt.sign({ userId: user.id }, authConfig.refresh_secret, {
+    const refreshToken = jwt.sign({ userId: user.id, role: user.role }, authConfig.refresh_secret, {
       expiresIn: authConfig.refresh_secret_expires_in as any,
     });
 
