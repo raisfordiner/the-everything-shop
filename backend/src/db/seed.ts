@@ -12,6 +12,16 @@ async function hash(p: string) {
 async function main() {
   console.log('🌱 Starting database seeding...');
 
+  // Check if seeding has already been done
+  const existingAdmin = await prisma.user.findUnique({
+      where: { email: "admin@example.com" },
+  });
+
+  if (existingAdmin) {
+      console.log("Seeding already completed, skipping...");
+      return;
+  } 
+
   // ============ USERS ============
   const adminPassword = await hashPassword('AdminPass123!');
   const sellerPassword = await hashPassword('SellerPass123!');
