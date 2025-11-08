@@ -116,9 +116,9 @@ const getAllProductsQuery = paginationParams.extend({
   search: z.string().max(255).optional(),
 });
 
-export interface CreateProductRequest extends z.infer<typeof createProduct> {}
-export interface UpdateProductRequest extends z.infer<typeof updateProduct> {}
-export interface GetAllProductsQuery extends z.infer<typeof getAllProductsQuery> {}
+export type CreateProductRequest = z.infer<typeof createProduct>;
+export type UpdateProductRequest = z.infer<typeof updateProduct>;
+export type GetAllProductsQuery = z.infer<typeof getAllProductsQuery>;
 
 const ProductSchema = {
   createProduct,

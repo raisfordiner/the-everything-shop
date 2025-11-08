@@ -74,7 +74,7 @@ export default class ProductService {
    * Get a single product by ID
    */
   static async getProductById(productId: string) : Promise<Product> {
-    const product = await prisma.product.findUnique({
+    const product = await prisma.product.findFirst({
       where: { 
         id: productId,
         is_deleted: false,
@@ -177,7 +177,7 @@ export default class ProductService {
    */
   static async updateProduct(
     productId: string,
-    userContext: { userId: string; role: string; sellerId?: string },
+    userContext: { userId: string; sellerId: string },
     updateData: {
       name?: string;
       description?: string;
@@ -189,7 +189,7 @@ export default class ProductService {
     }
   ) : Promise<Product> {
     // Verify product exists
-    const product = await prisma.product.findUnique({
+    const product = await prisma.product.findFirst({
       where: { 
         id: productId,
         is_deleted: false,
@@ -200,11 +200,9 @@ export default class ProductService {
       throw new Error("Product not found");
     }
 
-    // Check authorization: allow if user is admin OR if user is the product creator (seller)
-    const isAdmin = userContext.role === "ADMIN";
     const isProductCreator = userContext.sellerId && product.createdBy === userContext.sellerId;
 
-    if (!isAdmin && !isProductCreator) {
+    if (!isProductCreator) {
       throw new Error("You are not authorized to update this product");
     }
 
@@ -285,7 +283,7 @@ export default class ProductService {
           promotions: true,
         },
       }),
-      prisma.product.count({ where: { createdBy: sellerId } }),
+      prisma.product.count({ where: { createdBy: sellerId, is_deleted: false } }),
     ]);
 
     return {
@@ -336,7 +334,7 @@ export default class ProductService {
           promotions: true,
         },
       }),
-      prisma.product.count({ where: { categoryId } }),
+      prisma.product.count({ where: { categoryId, is_deleted: false } }),
     ]);
 
     return {

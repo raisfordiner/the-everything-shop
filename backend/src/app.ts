@@ -18,6 +18,7 @@ import healthRoute from "health/health.route";
 
 import { logger } from "util/logger";
 import productRoute from "products/product.route";
+import usersRoute from "users/users.route";
 
 export default class App {
   private app: Express;
@@ -57,6 +58,8 @@ export default class App {
     this.app.use("/api/auth", authRoute); // /api/auth/*
     this.app.use("/api/user", userRoute); // /api/user/*
     this.app.use("/api/products", productRoute); // /api/products/*
+    this.app.use("/api/users", usersRoute); // /api/user/*
+
     this.app.use("/api", healthRoute); // /api/healthcheck
 
     this.app.get("/error", (req, res) => {

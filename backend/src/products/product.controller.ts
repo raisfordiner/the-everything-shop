@@ -1,5 +1,4 @@
 import { Request, Response } from "express";
-import { z } from "zod";
 import Send from "util/response";
 import ProductService from "./product.service";
 import ProductSchema, {
@@ -137,12 +136,11 @@ export default class ProductController {
 
       const updateData = bodyValidation.data as UpdateProductRequest;
 
-      // Get userId and role from token (already validated by adminOrSellerGuard middleware)
-      const { userId, role } = ProductController.getTokenData(req);
+      // Get userId from token (already validated by adminOrSellerGuard middleware)
+      const { userId } = ProductController.getTokenData(req);
 
       // Get seller profile for the user (only needed if user is a seller)
       let sellerId: string | undefined;
-      if (role === "SELLER") {
         const seller = await prisma.seller.findUnique({
           where: { userId },
         });
@@ -152,9 +150,8 @@ export default class ProductController {
         }
 
         sellerId = seller.id;
-      }
 
-      const product = await ProductService.updateProduct(id, { userId, role, sellerId }, updateData);
+      const product = await ProductService.updateProduct(id, { userId, sellerId }, updateData);
 
       return Send.success(res, product, "Product updated successfully");
     } catch (error: any) {

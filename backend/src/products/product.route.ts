@@ -1,6 +1,6 @@
 import ProductController from "./product.controller";
 import BaseRouter, { RouteConfig } from "util/router";
-import { adminOrSellerGuard, authGuard, sellerGuard } from "middlewares/authGuard";
+import { adminOrSellerGuard, sellerGuard } from "middlewares/authGuard";
 
 /**
  * @swagger
@@ -177,7 +177,7 @@ import { adminOrSellerGuard, authGuard, sellerGuard } from "middlewares/authGuar
  *         description: Failed to update product
  *
  *   delete:
- *     summary: Delete a product (Seller only)
+ *     summary: Delete a product (Seller & Admin)
  *     tags: [Products]
  *     security:
  *       - cookieAuth: []
@@ -296,7 +296,7 @@ class ProductRouter extends BaseRouter {
       {
         method: "put",
         path: "/:id",
-        middlewares: [adminOrSellerGuard],
+        middlewares: [sellerGuard],
         controller: ProductController.updateProduct,
       },
       {
