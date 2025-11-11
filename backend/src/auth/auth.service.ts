@@ -13,17 +13,29 @@ export default class AuthService {
       throw new Error("Email is already in use");
     }
 
-    const newUser = await prisma.user.create({
-      data: { username, email, password: await hashPassword(password) },
+    const user = await prisma.$transaction(async (prisma) => {
+      const createdUser = await prisma.user.create({
+        data: { username, email, password: await hashPassword(password) },
+      });
+
+      await prisma.customer.create({
+        data: { userId: createdUser.id },
+      });
+
+      return createdUser;
     });
 
-    return newUser;
+    return user;
   }
 
   static async login(email: string, password: string) {
     const user = await prisma.user.findUnique({ where: { email } });
+    if (!user) {
+      throw new Error("Invalid credentials");
+    }
 
-    if (!user || !comparePassword(password, user.password)) {
+    const isPasswordValid = await comparePassword(password, user.password);
+    if (!isPasswordValid) {
       throw new Error("Invalid credentials");
     }
 

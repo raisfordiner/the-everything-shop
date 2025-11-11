@@ -2,6 +2,7 @@ import Send from "util/response";
 import { Request, Response } from "express";
 import { logger } from "util/logger";
 import UsersService from "./users.service";
+import UsersSchema from "./users.schema";
 
 export default class UsersController {
   static async getUsers(req: Request, res: Response) {
@@ -65,7 +66,12 @@ export default class UsersController {
       });
 
       return Send.success(res, { user }, "User created successfully");
-    } catch (error) {
+    } catch (error: any) {
+      if (error.code === "P2002") {
+        // P2002 Prisma error code: unique constraint violation
+        return Send.error(res, {}, "Email already exists");
+      }
+
       logger.error({ error }, "Error creating user");
       return Send.error(res, {}, "Internal server error");
     }
@@ -83,7 +89,12 @@ export default class UsersController {
       });
 
       return Send.success(res, { user }, "User updated successfully");
-    } catch (error) {
+    } catch (error: any) {
+      if (error.code === "P2002") {
+        // P2002 Prisma error code: unique constraint violation
+        return Send.error(res, {}, "Email already exists");
+      }
+
       logger.error({ error }, "Error updating user");
       return Send.error(res, {}, "Internal server error");
     }

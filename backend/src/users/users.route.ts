@@ -1,8 +1,8 @@
 import BaseRouter, { RouteConfig } from "util/router";
 import AuthMiddleware from "auth/auth.middleware";
 import UsersController from "./users.controller";
-import validateBody from "util/validation";
-import AuthSchema from "auth/auth.schema";
+import { validateBody, validateQuery } from "util/validation";
+import UsersSchema from "./users.schema";
 
 /**
  * @swagger
@@ -100,7 +100,7 @@ class UsersRoutes extends BaseRouter {
       {
         method: "get",
         path: "/search",
-        middlewares: [AuthMiddleware.authenticateUser, AuthMiddleware.requireAdmin],
+        middlewares: [AuthMiddleware.authenticateUser, AuthMiddleware.requireAdmin, validateQuery(UsersSchema.search)],
         controller: UsersController.searchUsers,
       },
       /**
@@ -179,7 +179,7 @@ class UsersRoutes extends BaseRouter {
       {
         method: "post",
         path: "/",
-        middlewares: [AuthMiddleware.authenticateUser, AuthMiddleware.requireAdmin, validateBody(AuthSchema.register)],
+        middlewares: [AuthMiddleware.authenticateUser, AuthMiddleware.requireAdmin, validateBody(UsersSchema.create)],
         controller: UsersController.createUser,
       },
       /**
@@ -225,7 +225,7 @@ class UsersRoutes extends BaseRouter {
       {
         method: "put",
         path: "/:id",
-        middlewares: [AuthMiddleware.authenticateUser, AuthMiddleware.requireAdmin, validateBody(AuthSchema.register)],
+        middlewares: [AuthMiddleware.authenticateUser, AuthMiddleware.requireAdmin, validateBody(UsersSchema.update)],
         controller: UsersController.updateUser,
       },
       /**
