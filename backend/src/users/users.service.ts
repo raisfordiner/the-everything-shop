@@ -50,9 +50,14 @@ export default class UsersService {
   }
 
   static async create(data: { username: string; email: string; password?: string; role?: UserRole }) {
+    const check_for_email = await prisma.user.findUnique({ where: { email: data.email } });
+    if (check_for_email) {
+      throw new Error("Email is already in use");
+    }
+
     const hashedPassword = data.password ? await hashPassword(data.password) : null;
 
-    return await prisma.user.create({
+    const user = await prisma.user.create({
       data: {
         username: data.username,
         email: data.email,
@@ -68,6 +73,24 @@ export default class UsersService {
         role: true,
       },
     });
+
+    if (data.role === UserRole.CUSTOMER) {
+      await prisma.customer.create({
+        data: {
+          userId: user.id,
+        },
+      });
+    }
+
+    if (data.role === UserRole.SELLER) {
+      await prisma.seller.create({
+        data: {
+          userId: user.id,
+        },
+      });
+    }
+
+    return user;
   }
 
   static async update(
@@ -78,6 +101,16 @@ export default class UsersService {
       role?: UserRole;
     }
   ) {
+    if (data.email) {
+      const existingUser = await prisma.user.findUnique({
+        where: { email: data.email },
+      });
+
+      if (existingUser && existingUser.id !== id) {
+        throw new Error("Email is already in use");
+      }
+    }
+
     return await prisma.user.update({
       where: { id },
       data,

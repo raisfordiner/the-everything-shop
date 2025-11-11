@@ -2,7 +2,7 @@ import AuthController from "./auth.controller";
 import AuthSchema from "./auth.schema";
 import AuthMiddleware from "./auth.middleware";
 
-import validateBody from "util/validation";
+import { validateBody } from "util/validation";
 import BaseRouter, { RouteConfig } from "util/router";
 
 /**

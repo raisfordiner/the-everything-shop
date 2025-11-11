@@ -19,7 +19,12 @@ export default class AuthController {
         { id: newUser.id, username: newUser.username, email: newUser.email },
         "User successfully registered."
       );
-    } catch (error) {
+    } catch (error: any) {
+      if (error.code === "P2002") {
+        // P2002 Prisma error code: unique constraint violation
+        return Send.error(res, null, "Email already exists.");
+      }
+
       logger.error({ error }, "Registration failed");
       return Send.error(res, null, "Registration failed.");
     }
