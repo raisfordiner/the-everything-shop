@@ -91,9 +91,14 @@ export default class UsersService {
       }
     }
 
+    const updateData = { ...data };
+    if (data.password) {
+      updateData.password = await hashPassword(data.password);
+    }
+
     return await prisma.user.update({
       where: { id },
-      data,
+      data: updateData,
       select: {
         id: true,
         username: true,
