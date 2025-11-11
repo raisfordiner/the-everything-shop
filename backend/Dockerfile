@@ -6,8 +6,8 @@ COPY package*.json ./
 
 RUN npm install
 
-COPY . .
+# COPY ./prisma .
 
 EXPOSE $APP_PORT
 
-CMD [ "sh", "-c", "npm run db:dev && npm run db:seed && npm start" ]
+CMD [ "sh", "-c", "npm run db:dev && npm run db:seed && npm run dev" ]
