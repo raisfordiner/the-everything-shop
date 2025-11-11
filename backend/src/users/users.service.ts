@@ -3,20 +3,19 @@ import { hashPassword } from "util/hash";
 import { UserRole } from "@prisma/client";
 
 export default class UsersService {
-  static async findAll() {
-    return await prisma.user.findMany({
-      select: {
-        id: true,
-        username: true,
-        email: true,
-        createdAt: true,
-        updatedAt: true,
-        role: true,
-      },
-    });
-  }
+  static async find(id?: string, q?: string, role?: string) {
+    if (id) {
+      return await prisma.user.findUnique({
+        where: { id },
+        select: {
+          id: true,
+          username: true,
+          email: true,
+          role: true,
+        },
+      });
+    }
 
-  static async search(q?: string, role?: string) {
     return await prisma.user.findMany({
       where: {
         OR: q
@@ -28,48 +27,28 @@ export default class UsersService {
         id: true,
         username: true,
         email: true,
-        createdAt: true,
-        updatedAt: true,
         role: true,
       },
     });
   }
 
-  static async findById(id: string) {
-    return await prisma.user.findUnique({
-      where: { id },
-      select: {
-        id: true,
-        username: true,
-        email: true,
-        createdAt: true,
-        updatedAt: true,
-        role: true,
-      },
-    });
-  }
-
-  static async create(data: { username: string; email: string; password?: string; role?: UserRole }) {
+  static async create(data: { username: string; email: string; password: string; role: UserRole }) {
     const check_for_email = await prisma.user.findUnique({ where: { email: data.email } });
     if (check_for_email) {
       throw new Error("Email is already in use");
     }
 
-    const hashedPassword = data.password ? await hashPassword(data.password) : null;
-
     const user = await prisma.user.create({
       data: {
         username: data.username,
         email: data.email,
-        password: hashedPassword,
-        role: data.role || UserRole.CUSTOMER,
+        password: await hashPassword(data.password),
+        role: data.role,
       },
       select: {
         id: true,
         username: true,
         email: true,
-        createdAt: true,
-        updatedAt: true,
         role: true,
       },
     });
@@ -98,6 +77,7 @@ export default class UsersService {
     data: {
       username?: string;
       email?: string;
+      password?: string;
       role?: UserRole;
     }
   ) {
@@ -118,8 +98,6 @@ export default class UsersService {
         id: true,
         username: true,
         email: true,
-        createdAt: true,
-        updatedAt: true,
         role: true,
       },
     });

@@ -37,6 +37,4 @@ const login = z.object({
   password: z.string().min(1, "Password is required"),
 });
 
-const AuthSchema = { login, register };
-
-export default AuthSchema;
+export { login as loginSchema, register as registerSchema, passwordSchema, usernameSchema };
