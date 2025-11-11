@@ -1,4 +1,3 @@
-version: "3.8"
 services:
   db:
     image: postgres
@@ -22,8 +21,7 @@ services:
     build: .
     image: the-everything-shop-backend
     restart: unless-stopped
-    env_file:
-      .env
+    env_file: .env
     ports:
       - ${APP_PORT}:${APP_PORT}
       # - ${APP_HOST}:${APP_HOST}
@@ -32,6 +30,11 @@ services:
       AUTH_SECRET_EXPIRES_IN: ${AUTH_SECRET_EXPIRES_IN}
       AUTH_REFRESH_SECRET: ${AUTH_REFRESH_SECRET}
       AUTH_REFRESH_SECRET_EXPIRES_IN: ${AUTH_REFRESH_SECRET_EXPIRES_IN}
+    volumes:
+      - ./src:/app/src
+      - ./prisma:/app/prisma
+      - ./.env:/app/.env
+      - ./tsconfig.json:/app/tsconfig.json
     depends_on:
       - db
     networks:
@@ -55,4 +58,3 @@ services:
 
 networks:
   the-everything-shop:
-
