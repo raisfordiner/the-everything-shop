@@ -35,7 +35,7 @@ const Header = () => {
                 </Col>
                 <Col span={6}>
                     <div className="last-col">
-                        <Link>
+                        <Link to='/login'>
                             <Button icon={<UserOutlined className='icon'/>} type='link' variant='link' style={{ color: 'black' }}>
                                 Sign Up/Sign In
                             </Button>
