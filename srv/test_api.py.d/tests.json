@@ -1,0 +1,74 @@
+[
+  {
+    "name": "Health Check",
+    "method": "GET",
+    "endpoint": "/api/health",
+    "data": null,
+    "expected_status": 200,
+    "expected_response": {"status": "ok"}
+  },
+  {
+    "name": "User Registration",
+    "method": "POST",
+    "endpoint": "/api/auth/register",
+    "data": {
+      "username": "testuser",
+      "email": "test@example.com",
+      "password": "Password123!",
+      "password_confirmation": "Password123!"
+    },
+    "expected_status": 201
+  },
+  {
+    "name": "User Login",
+    "method": "POST",
+    "endpoint": "/api/auth/login",
+    "data": {
+      "email": "test@example.com",
+      "password": "Password123!"
+    },
+    "expected_status": 200
+  },
+  {
+    "name": "Get User Info",
+    "method": "GET",
+    "endpoint": "/api/user/info",
+    "data": null,
+    "expected_status": 200
+  },
+  {
+    "name": "Refresh Token",
+    "method": "POST",
+    "endpoint": "/api/auth/refresh-token",
+    "data": null,
+    "expected_status": 200
+  },
+  {
+    "name": "User Logout",
+    "method": "POST",
+    "endpoint": "/api/auth/logout",
+    "data": null,
+    "expected_status": 200
+  },
+  {
+    "name": "Get All Products",
+    "method": "GET",
+    "endpoint": "/api/products/",
+    "data": null,
+    "expected_status": 200
+  },
+  {
+    "name": "Get Products by Category",
+    "method": "GET",
+    "endpoint": "/api/products/category/1",
+    "data": null,
+    "expected_status": 200
+  },
+  {
+    "name": "Get Products by Seller",
+    "method": "GET",
+    "endpoint": "/api/products/seller/1",
+    "data": null,
+    "expected_status": 200
+  }
+]
