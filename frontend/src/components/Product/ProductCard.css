@@ -1,5 +1,5 @@
 /* Đảm bảo mọi card có chiều cao bằng nhau */
-.ant-card {
+.product-card.ant-card {
     display: flex;
     flex-direction: column;
     justify-content: space-between;
@@ -8,14 +8,35 @@
     transition: all 0.2s ease;
 }
 
+/* Container chứa ảnh và tag giảm giá */
+.product-image-container {
+    position: relative;
+    overflow: hidden;
+}
+
 /* Ảnh thu gọn hợp lý, cùng chiều cao */
-.ant-card-cover img {
+.product-image-container img {
     height: 160px;
     width: 100%;
     object-fit: contain;
     border-top-left-radius: 10px;
     border-top-right-radius: 10px;
     background-color: #fff;
+    padding: 10px; /* Thêm padding để ảnh không chạm viền */
+}
+
+/* Tag giảm giá ở góc phải phía trên */
+.discount-tag.ant-tag {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    margin: 0;
+    padding: 2px 6px;
+    font-size: 12px;
+    font-weight: bold;
+    line-height: 1;
+    border-radius: 4px;
+    z-index: 10;
 }
 
 /* Vùng thông tin sản phẩm */
@@ -28,7 +49,7 @@
 }
 
 /* Tên sản phẩm xuống 2 dòng */
-.product-info .ant-typography {
+.product-name {
     font-size: 13.5px;
     line-height: 1.4;
     display: -webkit-box;
@@ -37,10 +58,11 @@
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: normal;
+    min-height: 38px; /* Đảm bảo chiều cao cố định cho 2 dòng */
 }
 
-/* Giá */
-.product-prices {
+/* Giá gốc và thông tin cũ */
+.price-and-original {
     display: flex;
     flex-direction: column;
     align-items: flex-start;
@@ -48,45 +70,23 @@
     gap: 2px;
 }
 
+.product-original {
+    font-size: 12px;
+    color: #888 !important;
+}
+
+/* Thanh dưới cùng chứa giá bán và số lượng đã bán */
+.product-bottom-bar {
+    display: flex;
+    align-items: flex-end; /* Canh chỉnh theo chiều dọc */
+    justify-content: space-between; /* Đẩy giá và số lượng ra hai bên */
+    margin-top: 8px;
+}
+
 .product-sale-price {
     font-size: 15px;
     font-weight: 600;
     color: #e60023 !important;
-}
-
-.product-old {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-}
-
-.product-original {
-    font-size: 13px;
-    color: #888 !important;
-}
-
-.product-discount {
-    font-size: 13px;
-    color: #ff4d4f;
-    font-weight: 500;
-}
-
-.product-rating {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-top: 8px;
-}
-
-.rating-left {
-    display: flex;
-    align-items: center;
-    gap: 4px;
-}
-
-.rating-score {
-    font-size: 13px;
-    color: #333;
 }
 
 .sold-count {
