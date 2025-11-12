@@ -56,5 +56,13 @@ services:
       - db
       - app
 
+  mailhog:
+    image: mailhog/mailhog:latest
+    ports:
+      - 1025:1025
+      - 8025:8025
+    networks:
+      - the-everything-shop
+
 networks:
   the-everything-shop:
