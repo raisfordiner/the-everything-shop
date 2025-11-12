@@ -6,7 +6,7 @@ COPY package*.json ./
 
 RUN npm install
 
-# COPY ./prisma .
+COPY . .
 
 EXPOSE $APP_PORT
 
