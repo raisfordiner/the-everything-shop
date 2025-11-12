@@ -8,6 +8,7 @@ import Profile from "../components/layouts/Profile/Profile.jsx";
 import AccountInfo from "../pages/customer/AccountInfo/AccountInfo.jsx";
 import Address from "../pages/customer/Address/Address.jsx";
 import ChangePassword from "../pages/customer/ChangePassword/ChangePassword.jsx";
+import FilteredProducts from "../pages/customer/FilteredProducts/FilteredProducts.jsx";
 
 
 export const routes = [
@@ -26,6 +27,10 @@ export const routes = [
             {
                 path: '/register',
                 element: <Register />,
+            },
+            {
+                path: '/category/:categoryId',
+                element: <FilteredProducts/>
             },
             {
                 path: '/profile',
