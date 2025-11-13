@@ -1,4 +1,4 @@
-const API_DOMAIN = 'http://localhost:8000/api';
+const API_DOMAIN = import.meta.env.VITE_API_DOMAIN;
 
 const request = async (path, options = {}) => {
     const defaultOptions = {
