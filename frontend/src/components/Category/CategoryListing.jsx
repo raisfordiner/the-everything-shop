@@ -10,6 +10,7 @@ const CategoryListing = () => {
     // const path = 'https://fakestoreapi.com/products/categories'
     // const path = 'https://api.escuelajs.co/api/v1/categories'
 
+<<<<<<< HEAD
     useEffect(() => {
         const fetchCategories = async () => {
             try {
@@ -22,6 +23,20 @@ const CategoryListing = () => {
         }
         fetchCategories()
     }, [])
+=======
+    // useEffect(() => {
+    //     const fetchCategories = async () => {
+    //         try {
+    //             const categories = await get('/categories')
+    //             dispatch(setCategories(categories))
+    //         }
+    //         catch(error) {
+    //             console.error(error)
+    //         }
+    //     }
+    //     fetchCategories()
+    // }, [])
+>>>>>>> ee8b7d9 (add product detail)
 
     return (
         <>

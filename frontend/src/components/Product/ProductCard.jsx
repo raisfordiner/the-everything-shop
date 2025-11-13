@@ -49,7 +49,11 @@ const ProductCard = ({ product }) => {
                     {product.name}
                 </Text>
 
+<<<<<<< HEAD
                 // có thể thêm trong tương lai nếu có nhu cầu
+=======
+                {/* có thể thêm trong tương lai nếu có nhu cầu */}
+>>>>>>> ee8b7d9 (add product detail)
                 {/* <div className="price-and-original">
                     <Text delete type="secondary" className="product-original">
                         {originalPrice.toLocaleString()}₫

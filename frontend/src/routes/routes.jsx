@@ -8,7 +8,11 @@ import Profile from "../components/layouts/Profile/Profile.jsx";
 import AccountInfo from "../pages/customer/AccountInfo/AccountInfo.jsx";
 import Address from "../pages/customer/Address/Address.jsx";
 import ChangePassword from "../pages/customer/ChangePassword/ChangePassword.jsx";
+<<<<<<< HEAD
 import FilteredProducts from "../pages/customer/FilteredProducts/FilteredProducts.jsx";
+=======
+import ProductDetail from '../components/ProductDetail/ProductDetail.jsx';
+>>>>>>> ee8b7d9 (add product detail)
 
 
 export const routes = [
@@ -49,6 +53,10 @@ export const routes = [
                         element: <ChangePassword />,
                     }
                 ]
+            },
+            {
+                path: '/products/:productId',
+                element: <ProductDetail/>
             }
         ]
     },
