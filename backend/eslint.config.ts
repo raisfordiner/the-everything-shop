@@ -14,16 +14,16 @@ export default defineConfig([
       sourceType: "module",
       globals: globals.node,
     },
-    plugins: { "@typescript-eslint": plugin },
+    plugins: { "@typescript-eslint": plugin.rules },
     rules: {
       ...plugin.configs.recommended.rules,
       "@typescript-eslint/no-unused-vars": [
-          "warn",
-          {
-              argsIgnorePattern: "^(req|res|next|_)$",
-              varsIgnorePattern: "^_",
-              caughtErrorsIgnorePattern: "^_",
-          },
+        "warn",
+        {
+          argsIgnorePattern: "^(req|res|next|_)$",
+          varsIgnorePattern: "^_",
+          caughtErrorsIgnorePattern: "^_",
+        },
       ],
 
       "@typescript-eslint/no-explicit-any": "off",
@@ -33,4 +33,3 @@ export default defineConfig([
     extends: [prettierConfig],
   },
 ]);
-
