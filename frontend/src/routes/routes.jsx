@@ -29,6 +29,10 @@ export const routes = [
                 element: <Register />,
             },
             {
+                path: '/products/:productId',
+                element: <ProductDetail/>
+            },
+            {
                 path: '/category/:categoryId',
                 element: <FilteredProducts/>
             },
