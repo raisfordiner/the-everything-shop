@@ -1,4 +1,4 @@
-import { post } from '../utils/request';
+import {get, post} from '../utils/request';
 
 const login = (email, password) => {
     return post('/auth/login', { email, password });
@@ -12,10 +12,15 @@ const logout = () => {
     return post('/auth/logout');
 };
 
+const checkSession = () => {
+    return get('/user/info');
+};
+
 const authService = {
     login,
     register,
     logout,
+    checkSession,
 };
 
 export default authService;
