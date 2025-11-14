@@ -32,7 +32,7 @@ const Login = () => {
     try {
       const userData = await authService.login(values.email, values.password);
 
-      dispatch(setLoginSuccess(userData));
+      dispatch(setLoginSuccess(userData.data));
 
       messageApi.open({
         type: 'success',
