@@ -1,36 +1,30 @@
 import js from "@eslint/js";
 import globals from "globals";
 import prettierConfig from "eslint-config-prettier";
-import { defineConfig } from "eslint/config";
-import parser from "@typescript-eslint/parser";
-import plugin from "@typescript-eslint/eslint-plugin";
+import tseslint from "typescript-eslint";
 
-export default defineConfig([
+export default tseslint.config(
   js.configs.recommended,
+  ...tseslint.configs.recommended,
   {
     files: ["**/*.{ts,tsx,js,mjs,cjs}"],
     languageOptions: {
-      parser,
-      sourceType: "module",
       globals: globals.node,
     },
-    plugins: { "@typescript-eslint": plugin },
     rules: {
-      ...plugin.configs.recommended.rules,
       "@typescript-eslint/no-unused-vars": [
-          "warn",
-          {
-              argsIgnorePattern: "^(req|res|next|_)$",
-              varsIgnorePattern: "^_",
-              caughtErrorsIgnorePattern: "^_",
-          },
+        "warn",
+        {
+          argsIgnorePattern: "^(req|res|next|_)$",
+          varsIgnorePattern: "^_",
+          caughtErrorsIgnorePattern: "^_",
+        },
       ],
 
       "@typescript-eslint/no-explicit-any": "off",
 
       "no-undef": "warn",
     },
-    extends: [prettierConfig],
   },
-]);
-
+  prettierConfig
+);
