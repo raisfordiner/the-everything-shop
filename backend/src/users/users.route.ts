@@ -3,6 +3,7 @@ import AuthMiddleware from "auth/auth.middleware";
 import UsersController from "./users.controller";
 import { validateBody, validateQuery } from "util/validation";
 import UsersSchema from "./users.schema";
+import { adminGuard } from "middlewares/authGuard";
 
 /**
  * @swagger
@@ -209,7 +210,7 @@ import UsersSchema from "./users.schema";
 
 class UsersRoutes extends BaseRouter {
   protected routes(): RouteConfig[] {
-    const checkIfAdmin = [AuthMiddleware.authenticateUser, AuthMiddleware.requireAdmin];
+    const checkIfAdmin = [AuthMiddleware.authenticateUser, adminGuard];
 
     return [
       {
