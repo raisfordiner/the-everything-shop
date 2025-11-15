@@ -1,0 +1,22 @@
+.product-detail {
+    width: 100%;
+    display: flex;
+    gap: 40px;
+    padding: 20px;
+    background: #fff;
+    border-radius: 16px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    box-sizing: border-box;
+    align-items: flex-start;
+}
+
+.product-detail__gallery {
+    flex: 0 0 40%;
+}
+
+.product-detail__info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
