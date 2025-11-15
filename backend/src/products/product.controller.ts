@@ -149,6 +149,7 @@ export default class ProductController {
           return Send.forbidden(res, null, "Seller profile not found");
         }
 
+        // eslint-disable-next-line prefer-const
         sellerId = seller.id;
 
       const product = await ProductService.updateProduct(id, { userId, sellerId }, updateData);
