@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react"
 import { useParams } from 'react-router'
 import productService from '../../services/productService.js'
-import { Tabs, Typography } from "antd"
+import { Tabs, Typography, Row, Col, Flex } from "antd"
 import ProductGallery from "./MainSection/ProductGallery/ProductGallery.jsx"
 import ProductInfo from "./MainSection/ProductInfo/ProductInfo.jsx"
 import "./ProductDetail.css"
@@ -67,25 +67,43 @@ const ProductDetail = () => {
 
     return (
         <div className="product-detail">
-            <div className="main">
-                <ProductGallery
-                    images={selectedProductVariant?.images || productData.images}
-                    selectedImage={selectedImage}
-                    onSelectImage={setSelectedImage}
-                />
+            <Row gutter={[24, 0]}>
+                <Col span={14}>
+                    <Flex vertical gap={'16px'}>
+                        <ProductGallery
+                            images={selectedProductVariant?.images || productData.images}
+                            selectedImage={selectedImage}
+                            onSelectImage={setSelectedImage}
+                            // style={{
+                            //     width: '50%'
+                            // }}
+                        />
 
-                <ProductInfo
-                    productData={productData}
-                    selectedProductVariant={selectedProductVariant}
-                    selectedAttributes={selectedAttributes}
-                    setSelectedAttributes={setSelectedAttributes}
-                    amount={amount}
-                    setAmount={setAmount}
-                />
-            </div>
-            <div className="sub">
-                <Tabs items={tabItems} style={{padding: '0 20px'}}/>
-            </div>
+                        <div className="sub" style={{background: 'white', borderRadius: '10px'}}>
+                            <Tabs items={tabItems} style={{padding: '0 20px'}}/>
+                        </div>
+                    </Flex>
+                </Col>
+
+                <Col 
+                    span={10} 
+                    style={{
+                        background: 'white', 
+                        borderRadius: '10px',
+                        padding: '16px', 
+                        alignSelf: 'flex-start'  
+                    }}
+                >
+                    <ProductInfo
+                        productData={productData}
+                        selectedProductVariant={selectedProductVariant}
+                        selectedAttributes={selectedAttributes}
+                        setSelectedAttributes={setSelectedAttributes}
+                        amount={amount}
+                        setAmount={setAmount}
+                    />
+                </Col>
+            </Row>
         </div>
     )
 }

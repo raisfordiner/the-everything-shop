@@ -1,6 +1,7 @@
 import { Collapse, theme } from "antd"
 import { fakeDescription } from "./fakeDescription"
 import SpecificationDescriptionTemplate from "./SpecificationDescriptionTemplate/SpecificationDescriptionTemplate"
+import './SpecificationDescription.css'
 
 
 const SpecificationDescription = () => {
@@ -21,7 +22,7 @@ const SpecificationDescription = () => {
                             background: "#fff",
                             borderRadius: token.borderRadiusLG,
                             border: `1px solid ${token.colorBorderSecondary}`,
-                            padding: "4px 8px",
+                            // padding: "4px 8px",
                         }
                     });
                 })}
