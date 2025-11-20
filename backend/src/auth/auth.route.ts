@@ -330,9 +330,15 @@ class AuthRouter extends BaseRouter {
     return [
       {
         method: "post",
-        path: "/register",
-        middlewares: [validateBody(registerSchema)],
+        path: "/register", // register, then verify
+        middlewares: [validateBody(registerSchema)], 
         controller: AuthController.register,
+      },
+      {
+        method: "get",
+        path: "/verify",
+        middlewares: null,
+        controller: AuthController.verify,
       },
       {
         method: "post",
@@ -353,22 +359,16 @@ class AuthRouter extends BaseRouter {
         controller: AuthController.refreshToken,
       },
       {
-        method: "post",
-        path: "/forgot-password",
-        middlewares: [validateBody(forgotPasswordSchema)],
-        controller: AuthController.forgotPassword,
-      },
-      {
         method: "put",
         path: "/change-password",
         middlewares: [AuthMiddleware.authenticateUser, validateBody(changePasswordSchema)],
         controller: AuthController.changePassword,
       },
       {
-        method: "get",
-        path: "/verify",
-        middlewares: null,
-        controller: AuthController.verify,
+        method: "post",
+        path: "/forgot-password", // forgot, then reset
+        middlewares: [validateBody(forgotPasswordSchema)],
+        controller: AuthController.forgotPassword,
       },
       {
         method: "post",

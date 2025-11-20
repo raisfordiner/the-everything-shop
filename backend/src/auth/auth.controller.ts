@@ -110,24 +110,6 @@ export default class AuthController {
     try {
       const user = await AuthService.changePassword(userId, old_password, new_password);
 
-      await sendMail({
-        from: "no-reply@example.com",
-        to: user.email,
-        subject: "Password Changed",
-        html: `
-        <html>
-          <body>
-            <h1>Password Changed</h1>
-            <p>
-              Your password was successfully changed.
-            </p>
-            <p>
-              If you did not make this change, please contact support immediately.
-            </p>
-          </body>
-        </html>`,
-      });
-
       return Send.success(res, { id: user.id, email: user.email }, "Password changed successfully.");
     } catch (error: any) {
       logger.error({ error }, "Change password failed.");
