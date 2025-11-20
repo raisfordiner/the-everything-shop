@@ -1,5 +1,11 @@
 import AuthController from "./auth.controller";
-import { loginSchema, registerSchema, resetPasswordSchema } from "./auth.schema";
+import {
+  loginSchema,
+  registerSchema,
+  forgotPasswordSchema,
+  changePasswordSchema,
+  resetPasswordWithTokenSchema,
+} from "./auth.schema";
 import AuthMiddleware from "./auth.middleware";
 
 import { validateBody } from "util/validation";
@@ -148,9 +154,45 @@ import BaseRouter, { RouteConfig } from "util/router";
  *       500:
  *         description: Failed to refresh token
  *
- * /auth/reset-password:
+ * /auth/forgot-password:
+ *   post:
+ *     summary: Request password reset (unauthenticated)
+ *     tags: [Auth]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - email
+ *             properties:
+ *               email:
+ *                 type: string
+ *                 format: email
+ *                 example: john@example.com
+ *     responses:
+ *       200:
+ *         description: Password reset email sent successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 id:
+ *                   type: string
+ *                 email:
+ *                   type: string
+ *       400:
+ *         description: Invalid email format
+ *       404:
+ *         description: User not found
+ *       500:
+ *         description: Forgot password failed
+ *
+ * /auth/change-password:
  *   put:
- *     summary: Reset user password
+ *     summary: Change password (authenticated user)
  *     tags: [Auth]
  *     security:
  *       - cookieAuth: []
@@ -161,15 +203,10 @@ import BaseRouter, { RouteConfig } from "util/router";
  *           schema:
  *             type: object
  *             required:
- *               - email
  *               - old_password
  *               - new_password
  *               - password_confirmation
  *             properties:
- *               email:
- *                 type: string
- *                 format: email
- *                 example: john@example.com
  *               old_password:
  *                 type: string
  *                 minLength: 8
@@ -183,7 +220,7 @@ import BaseRouter, { RouteConfig } from "util/router";
  *                 example: NewPassword123!
  *     responses:
  *       200:
- *         description: Password reset successful. Verification email sent
+ *         description: Password changed successfully
  *         content:
  *           application/json:
  *             schema:
@@ -191,18 +228,16 @@ import BaseRouter, { RouteConfig } from "util/router";
  *               properties:
  *                 id:
  *                   type: string
- *                 username:
- *                   type: string
  *                 email:
  *                   type: string
  *       400:
- *         description: Invalid request or old password does not match
+ *         description: Invalid request or passwords don't match
  *       401:
- *         description: Unauthorized
+ *         description: Unauthorized or old password incorrect
  *       404:
  *         description: User not found
  *       500:
- *         description: Reset password failed
+ *         description: Change password failed
  *
  * /auth/verify:
  *   get:
@@ -241,6 +276,53 @@ import BaseRouter, { RouteConfig } from "util/router";
  *         description: User not found
  *       500:
  *         description: Email verification failed
+ *
+ * /auth/reset:
+ *   post:
+ *     summary: Reset password with token (from forgot-password email)
+ *     tags: [Auth]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - token
+ *               - new_password
+ *               - password_confirmation
+ *             properties:
+ *               token:
+ *                 type: string
+ *                 description: Password reset token from email
+ *                 example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+ *               new_password:
+ *                 type: string
+ *                 minLength: 8
+ *                 example: NewPassword123!
+ *               password_confirmation:
+ *                 type: string
+ *                 example: NewPassword123!
+ *     responses:
+ *       200:
+ *         description: Password reset successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 id:
+ *                   type: string
+ *                 email:
+ *                   type: string
+ *       400:
+ *         description: Invalid request or passwords don't match
+ *       401:
+ *         description: Token expired or invalid
+ *       404:
+ *         description: User not found
+ *       500:
+ *         description: Password reset failed
  */
 
 class AuthRouter extends BaseRouter {
@@ -261,26 +343,38 @@ class AuthRouter extends BaseRouter {
       {
         method: "post",
         path: "/logout",
-        middlewares: [AuthMiddleware.authenticateUser], // check if user is logged in
+        middlewares: [AuthMiddleware.authenticateUser],
         controller: AuthController.logout,
       },
       {
         method: "post",
         path: "/refresh-token",
-        middlewares: [AuthMiddleware.refreshTokenValidation], // checks if refresh token is valid
+        middlewares: [AuthMiddleware.refreshTokenValidation],
         controller: AuthController.refreshToken,
       },
       {
         method: "post",
-        path: "/reset-password",
-        middlewares: [AuthMiddleware.authenticateUser, validateBody(resetPasswordSchema)], // đã đăng nhập và muốn reset
-        controller: AuthController.resetPassword,
+        path: "/forgot-password",
+        middlewares: [validateBody(forgotPasswordSchema)],
+        controller: AuthController.forgotPassword,
+      },
+      {
+        method: "put",
+        path: "/change-password",
+        middlewares: [AuthMiddleware.authenticateUser, validateBody(changePasswordSchema)],
+        controller: AuthController.changePassword,
       },
       {
         method: "get",
         path: "/verify",
-        middlewares: null, // verify refresh token
+        middlewares: null,
         controller: AuthController.verify,
+      },
+      {
+        method: "post",
+        path: "/reset",
+        middlewares: [validateBody(resetPasswordWithTokenSchema)],
+        controller: AuthController.reset,
       },
     ];
   }
