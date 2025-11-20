@@ -173,20 +173,16 @@ import BaseRouter, { RouteConfig } from "util/router";
  *                 example: john@example.com
  *     responses:
  *       200:
- *         description: Password reset email sent successfully
+ *         description: If account exists, password reset email sent. Always returns same message for security.
  *         content:
  *           application/json:
  *             schema:
  *               type: object
  *               properties:
- *                 id:
- *                   type: string
  *                 email:
  *                   type: string
  *       400:
  *         description: Invalid email format
- *       404:
- *         description: User not found
  *       500:
  *         description: Forgot password failed
  *
@@ -331,7 +327,7 @@ class AuthRouter extends BaseRouter {
       {
         method: "post",
         path: "/register", // register, then verify
-        middlewares: [validateBody(registerSchema)], 
+        middlewares: [validateBody(registerSchema)],
         controller: AuthController.register,
       },
       {
