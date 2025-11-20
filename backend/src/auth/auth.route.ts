@@ -333,7 +333,7 @@ class AuthRouter extends BaseRouter {
       {
         method: "get",
         path: "/verify",
-        middlewares: null,
+        middlewares: [], // GET with query param, no body validation needed
         controller: AuthController.verify,
       },
       {
