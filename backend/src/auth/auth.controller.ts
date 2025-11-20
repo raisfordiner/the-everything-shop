@@ -1,22 +1,44 @@
 import Send from "util/response";
 import { Request, Response } from "express";
-import AuthSchema from "./auth.schema";
+import { loginSchema, registerSchema, resetPasswordSchema } from "./auth.schema";
 import { z } from "zod";
 import AuthService from "./auth.service";
 import { logger } from "util/logger";
+import { sendMail } from "util/mail";
 
 const ONE_MINUTE: number = 60 * 1000; // one minute in milliseconds
 
 export default class AuthController {
   static async register(req: Request, res: Response) {
-    const { username, email, password } = req.body as z.infer<typeof AuthSchema.register>;
+    const { username, email, password } = req.body as z.infer<typeof registerSchema>;
 
     try {
-      const newUser = await AuthService.register(username, email, password);
+      const { user, emailVerificationToken } = await AuthService.register(username, email, password);
+
+      await sendMail({
+        from: "no-reply@example.com",
+        to: email,
+        subject: "Email Verification",
+        html: `
+        <html>
+          <body>
+            <h1>Email verification needed</h1>
+            <p>
+              Click the link below to verify your email:
+            </p>
+            <a href="put_url_here/verify?token=${emailVerificationToken}">
+              Verify Email
+            </a>
+            <p>
+              If you did not request this, please ignore this email.
+            </p>
+          </body>
+        </html>`,
+      });
 
       return Send.success(
         res,
-        { id: newUser.id, username: newUser.username, email: newUser.email },
+        { id: user.id, username: user.username, email: user.email },
         "User successfully registered."
       );
     } catch (error: any) {
@@ -30,8 +52,74 @@ export default class AuthController {
     }
   }
 
+  static async resetPassword(req: Request, res: Response) {
+    const { email, old_password, new_password } = req.body as z.infer<typeof resetPasswordSchema>;
+
+    try {
+      const { user, resetPasswordToken } = await AuthService.resetPassword(email, old_password, new_password);
+
+      // res.cookie("resetPasswordToken", resetPasswordToken, {
+      //   httpOnly: true, // Ensure the cookie cannot be accessed via JavaScript (security against XSS attacks)
+      //   secure: process.env.NODE_ENV === "production", // Set to true in production for HTTPS-only cookies
+      //   maxAge: 15 * ONE_MINUTE,
+      //   sameSite: "strict", // Ensures the cookie is sent only with requests from the same site
+      // });
+
+      await sendMail({
+        from: "no-reply@example.com",
+        to: email,
+        subject: "Password Reset Verification",
+        html: `
+        <html>
+          <body>
+            <h1>Password Reset Request</h1>
+            <p>
+              Click the link below to verify your password reset request:
+            </p>
+            <a href="put_url_here/verify?token=${resetPasswordToken}">
+              Verify Password Reset
+            </a>
+            <p>
+              If you did not request this, please ignore this email.
+            </p>
+          </body>
+        </html>`,
+      });
+
+      return Send.success(
+        res,
+        { id: user.id, username: user.username, email: user.email },
+        "Reset password successfully."
+      );
+    } catch (error: any) {
+      logger.error({ error }, "Reset password failed.");
+      return Send.error(res, null, "Reset password failed.");
+    }
+  }
+
+  static async verify(req: Request, res: Response) {
+    try {
+      const { token } = req.query;
+
+      if (!token || typeof token !== "string") {
+        return Send.error(res, null, "Invalid or missing token.");
+      }
+
+      const user = await AuthService.verifyEmailToken(token);
+
+      return Send.success(
+        res,
+        { id: user.id, username: user.username, email: user.email, emailVerified: user.emailVerified },
+        "Email verified successfully."
+      );
+    } catch (error: any) {
+      logger.error({ error }, "Email verification failed.");
+      return Send.error(res, null, error.message || "Email verification failed.");
+    }
+  }
+
   static async login(req: Request, res: Response) {
-    const { email, password } = req.body as z.infer<typeof AuthSchema.login>; // request body → fields
+    const { email, password } = req.body as z.infer<typeof loginSchema>; // request body → fields
 
     try {
       const { user, accessToken, refreshToken } = await AuthService.login(email, password);

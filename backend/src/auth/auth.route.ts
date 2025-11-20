@@ -1,5 +1,5 @@
 import AuthController from "./auth.controller";
-import { loginSchema, registerSchema } from "./auth.schema";
+import { loginSchema, registerSchema, resetPasswordSchema } from "./auth.schema";
 import AuthMiddleware from "./auth.middleware";
 
 import { validateBody } from "util/validation";
@@ -147,6 +147,100 @@ import BaseRouter, { RouteConfig } from "util/router";
  *         description: Invalid or expired refresh token
  *       500:
  *         description: Failed to refresh token
+ *
+ * /auth/reset-password:
+ *   put:
+ *     summary: Reset user password
+ *     tags: [Auth]
+ *     security:
+ *       - cookieAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - email
+ *               - old_password
+ *               - new_password
+ *               - password_confirmation
+ *             properties:
+ *               email:
+ *                 type: string
+ *                 format: email
+ *                 example: john@example.com
+ *               old_password:
+ *                 type: string
+ *                 minLength: 8
+ *                 example: OldPassword123!
+ *               new_password:
+ *                 type: string
+ *                 minLength: 8
+ *                 example: NewPassword123!
+ *               password_confirmation:
+ *                 type: string
+ *                 example: NewPassword123!
+ *     responses:
+ *       200:
+ *         description: Password reset successful. Verification email sent
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 id:
+ *                   type: string
+ *                 username:
+ *                   type: string
+ *                 email:
+ *                   type: string
+ *       400:
+ *         description: Invalid request or old password does not match
+ *       401:
+ *         description: Unauthorized
+ *       404:
+ *         description: User not found
+ *       500:
+ *         description: Reset password failed
+ *
+ * /auth/verify:
+ *   get:
+ *     summary: Verify email with token (after registration or password reset)
+ *     tags: [Auth]
+ *     parameters:
+ *       - in: query
+ *         name: token
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Email verification token sent via email
+ *         example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+ *     responses:
+ *       200:
+ *         description: Email verified successfully. User can now login
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 id:
+ *                   type: string
+ *                 username:
+ *                   type: string
+ *                 email:
+ *                   type: string
+ *                 emailVerified:
+ *                   type: string
+ *                   format: date-time
+ *       400:
+ *         description: Invalid or missing token
+ *       401:
+ *         description: Token expired or invalid
+ *       404:
+ *         description: User not found
+ *       500:
+ *         description: Email verification failed
  */
 
 class AuthRouter extends BaseRouter {
@@ -175,6 +269,18 @@ class AuthRouter extends BaseRouter {
         path: "/refresh-token",
         middlewares: [AuthMiddleware.refreshTokenValidation], // checks if refresh token is valid
         controller: AuthController.refreshToken,
+      },
+      {
+        method: "post",
+        path: "/reset-password",
+        middlewares: [AuthMiddleware.authenticateUser, validateBody(resetPasswordSchema)], // đã đăng nhập và muốn reset
+        controller: AuthController.resetPassword,
+      },
+      {
+        method: "get",
+        path: "/verify",
+        middlewares: null, // verify refresh token
+        controller: AuthController.verify,
       },
     ];
   }

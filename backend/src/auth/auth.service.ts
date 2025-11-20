@@ -2,8 +2,6 @@ import { prisma } from "util/db";
 import jwt from "jsonwebtoken";
 import authConfig from "config/auth.config";
 import { comparePassword, hashPassword } from "util/hash";
-// import { z } from "zod";
-// import AuthSchema from "./auth.schema";
 
 // const ONE_MINUTE: number = 60 * 1000; // one minute in milliseconds
 
@@ -25,18 +23,53 @@ export default class AuthService {
       return createdUser;
     });
 
-    return user;
+    const emailVerificationToken = jwt.sign({ userId: user.id }, authConfig.secret, {
+      expiresIn: authConfig.secret_expires_in as any,
+    });
+
+    return { user, emailVerificationToken };
+  }
+
+  static async resetPassword(email: string, old_password: string, new_password: string) {
+    const user = await prisma.user.findUnique({ where: { email } });
+    if (!user) {
+      throw new Error("User not found.");
+    }
+
+    const isPasswordValid = await comparePassword(old_password, user.password);
+    if (!isPasswordValid) {
+      throw new Error("Old password not matching.");
+    }
+
+    const hashedPassword = await hashPassword(new_password);
+
+    await prisma.user.update({
+      where: { email },
+      data: { password: hashedPassword },
+    });
+
+    await this.logout(user.id); // logout user
+
+    const resetPasswordToken = jwt.sign({ userId: user.id }, authConfig.secret, {
+      expiresIn: authConfig.secret_expires_in as any,
+    });
+
+    return { user, resetPasswordToken };
   }
 
   static async login(email: string, password: string) {
     const user = await prisma.user.findUnique({ where: { email } });
     if (!user) {
-      throw new Error("Invalid credentials");
+      throw new Error("User not found.");
     }
 
     const isPasswordValid = await comparePassword(password, user.password);
     if (!isPasswordValid) {
-      throw new Error("Invalid credentials");
+      throw new Error("Password not matching.");
+    }
+
+    if (!user.emailVerified) {
+      throw new Error("Email not verified.");
     }
 
     const accessToken = jwt.sign({ userId: user.id, role: user.role }, authConfig.secret, {
@@ -68,5 +101,32 @@ export default class AuthService {
     });
 
     return newAccessToken;
+  }
+
+  static async verifyEmailToken(token: string) {
+    try {
+      const decoded = jwt.verify(token, authConfig.secret) as { userId: string };
+
+      const user = await prisma.user.findUnique({ where: { id: decoded.userId } });
+      if (!user) {
+        throw new Error("User not found.");
+      }
+
+      // Mark email as verified
+      const updatedUser = await prisma.user.update({
+        where: { id: decoded.userId },
+        data: { emailVerified: new Date() },
+      });
+
+      return updatedUser;
+    } catch (error: any) {
+      if (error.name === "TokenExpiredError") {
+        throw new Error("Email verification token has expired.");
+      }
+      if (error.name === "JsonWebTokenError") {
+        throw new Error("Invalid email verification token.");
+      }
+      throw error;
+    }
   }
 }
