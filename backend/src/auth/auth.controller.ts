@@ -144,24 +144,6 @@ export default class AuthController {
     try {
       const user = await AuthService.resetPasswordWithToken(token, new_password);
 
-      await sendMail({
-        from: "no-reply@example.com",
-        to: user.email,
-        subject: "Password Reset Successful",
-        html: `
-        <html>
-          <body>
-            <h1>Password Reset Successful</h1>
-            <p>
-              Your password has been successfully reset.
-            </p>
-            <p>
-              If you did not make this change, please contact support immediately.
-            </p>
-          </body>
-        </html>`,
-      });
-
       return Send.success(
         res,
         { id: user.id, email: user.email },
