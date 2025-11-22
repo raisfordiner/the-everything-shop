@@ -6,6 +6,7 @@ import "./Login.scss"
 import {setLoginSuccess} from "../../../redux/actions/authAction.js";
 import authService from "../../../services/authService.js"
 import {useDispatch} from "react-redux";
+import BreadscrumbMenu from "../../../components/BreadscrumbMenu/BreadscrumbMenu.jsx";
 
 const Login = () => {
   const [messageApi, contextHolder] = message.useMessage();
@@ -51,9 +52,18 @@ const Login = () => {
     }
   }
 
+  const breadcrumbItems = [
+    {
+      title: 'Login'
+    }
+  ];
+
   return (
     <>
       {contextHolder}
+
+      <BreadscrumbMenu items={breadcrumbItems}/>
+
       <div className={"login"}>
         <Row gutter={24} align="middle">
           <Col span={12}>
@@ -86,9 +96,9 @@ const Login = () => {
               </Form.Item>
 
               <Form.Item style={{marginBottom: '24px', marginTop: '-12px'}}>
-                <a>
+                <Link to="/forgot-password">
                   Forgot Password?
-                </a>
+                </Link>
               </Form.Item>
 
               <Form.Item style={{marginBottom: '16px'}}>

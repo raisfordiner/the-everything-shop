@@ -4,6 +4,7 @@ import {Button, Col, Form, Input, message, Row} from "antd";
 import {Link, useNavigate} from "react-router";
 import "./Register.scss"
 import authService from "../../../services/authService.js";
+import BreadscrumbMenu from "../../../components/BreadscrumbMenu/BreadscrumbMenu.jsx";
 
 const Register = () => {
   const [messageApi, contextHolder] = message.useMessage();
@@ -34,9 +35,18 @@ const Register = () => {
     }
   }
 
+  const breadcrumbItems = [
+    {
+      title: 'Register'
+    }
+  ];
+
   return (
       <>
         {contextHolder}
+
+        <BreadscrumbMenu items={breadcrumbItems}/>
+
         <div className={"register"}>
           <Row gutter={24} align="middle">
             <Col span={12}>
