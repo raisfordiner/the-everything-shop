@@ -56,7 +56,7 @@ const FilteredProducts = () => {
     const breadcrumbItems = [];
 
     if (currentCategory) {
-        breadcrumbItems.push({title: currentCategory.create.name});
+        breadcrumbItems.push({title: currentCategory.name});
     }
 
     return (

@@ -9,7 +9,7 @@
 
 .category {
     width: 120px;
-    height: 150px;
+    height: 120px;
     display: flex;
     flex-direction: column;
 }
@@ -29,5 +29,5 @@
     word-break: break-word; /* Ngắt từ khi quá dài */
     line-height: 1.2;
     font-size: 14px;
-    margin-top: 4px;
+    margin-top: 12px;
 }

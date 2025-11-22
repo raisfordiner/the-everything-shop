@@ -30,29 +30,29 @@
     gap: 5px;
 }
 
-.header .header__lower {
+.header .header__middle {
     display: flex;
     align-items: center;
     padding: 22px 120px 32px 120px;
     background-color: #fff;
 }
 
-.header .header__lower .logo {
+.header .header__middle .logo {
     font-size: 24px;
     font-weight: bold;
     color: #008ecc;
     text-decoration: none;
 }
 
-.header .header__lower .ant-input-search-button {
+.header .header__middle .ant-input-search-button {
     background-color: #008ecc !important;
     border-color: #008ecc !important;
 }
-.header .header__lower .ant-input-search-button:hover {
+.header .header__middle .ant-input-search-button:hover {
     background-color: #0073b3 !important;
 }
 
-.header .header__lower .lower__right {
+.header .header__middle .middle__right {
     display: flex;
     justify-content: flex-end;
     align-items: center;
@@ -86,4 +86,13 @@
 
 .icon {
     color: #008ecc;
+}
+
+.header .header__lower {
+    display: flex;
+    align-items: center;
+    padding: 8px 120px;
+    background-color: #fff;
+    border-top: 1px solid #e8e8e8;
+    border-bottom: 1px solid #e8e8e8;
 }
