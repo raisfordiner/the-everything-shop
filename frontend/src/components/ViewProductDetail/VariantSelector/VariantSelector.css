@@ -1,0 +1,40 @@
+.info__variants {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+}
+
+.variant-group {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 8px;
+}
+
+.variant-options {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    gap: 8px;
+}
+
+.variant-option {
+    padding: 6px 12px;
+    border-radius: 6px;
+    border: 1px solid #d9d9d9;
+    cursor: pointer;
+    background: #fafafa;
+    transition: all 0.2s ease;
+}
+
+.variant-option:hover {
+    border-color: #1677ff;
+    color: #1677ff;
+}
+
+.variant-option--active {
+    border-color: #1677ff;
+    background-color: #e6f0ff;
+    color: #1677ff;
+}

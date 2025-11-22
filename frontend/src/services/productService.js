@@ -4,8 +4,8 @@ const getAllProducts = () => {
     return get('/products');
 };
 
-const getProductById = (productId) => {
-    return get(`/products/${productId}`);
+const getProductById = async (productId) => {
+    return await get(`/products/${productId}`);
 };
 
 const getProductsByCategoryId = (categoryId) => {

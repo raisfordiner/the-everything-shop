@@ -1,69 +1,69 @@
 import BaseRouter, { RouteConfig } from "util/router";
 import AuthMiddleware from "auth/auth.middleware";
-import UsersController from "./users.controller";
+import EventsController from "./events.controller";
 import { validateBody, validateQuery } from "util/validation";
-import UsersSchema from "./users.schema";
-import { adminGuard } from "middlewares/authGuard";
+import EventsSchema from "./events.schema";
+import { adminOrSellerGuard, authGuard } from "middlewares/authGuard";
 
 /**
  * @swagger
  * tags:
- *   name: Users
- *   description: User management endpoints (Admin only)
+ *   name: Events
+ *   description: Clearance event management endpoints (Admin only)
  *
- * /users:
+ * /events:
  *   get:
- *     summary: Get all users or search users (Admin only)
- *     tags: [Users]
+ *     summary: Get all events or search events (Admin only)
+ *     tags: [Events]
  *     security:
  *       - bearerAuth: []
  *     parameters:
  *       - in: query
- *         name: q
+ *         name: promotionId
  *         required: false
  *         schema:
  *           type: string
- *         description: Search query for username or email (case-insensitive)
+ *         description: Filter by promotion ID
  *       - in: query
- *         name: role
+ *         name: clearanceLevel
  *         required: false
  *         schema:
  *           type: string
- *           enum: [ADMIN, SELLER, CUSTOMER]
- *         description: Filter by user role
+ *           enum: [HIGH, MEDIUM, LOW]
+ *         description: Filter by clearance level
  *     responses:
  *       200:
- *         description: List of users
+ *         description: List of events
  *         content:
  *           application/json:
  *             schema:
  *               type: object
  *               properties:
- *                 users:
+ *                 events:
  *                   type: array
  *                   items:
  *                     type: object
  *                     properties:
  *                       id:
  *                         type: string
- *                       username:
+ *                       promotionId:
  *                         type: string
- *                       email:
+ *                       clearanceLevel:
  *                         type: string
- *                       role:
- *                         type: string
- *                         enum: [ADMIN, SELLER, CUSTOMER]
+ *                         enum: [HIGH, MEDIUM, LOW]
+ *                       promotion:
+ *                         type: object
  *       401:
  *         description: Unauthorized
  *       403:
  *         description: Forbidden - Admin access required
  *       404:
- *         description: Users not found
+ *         description: Events not found
  *       500:
  *         description: Internal server error
  *   post:
- *     summary: Create new user (Admin only)
- *     tags: [Users]
+ *     summary: Create new event (Admin only)
+ *     tags: [Events]
  *     security:
  *       - bearerAuth: []
  *     requestBody:
@@ -73,79 +73,30 @@ import { adminGuard } from "middlewares/authGuard";
  *           schema:
  *             type: object
  *             required:
- *               - username
- *               - email
- *               - password
- *               - role
+ *               - promotionId
+ *               - clearanceLevel
  *             properties:
- *               username:
+ *               promotionId:
  *                 type: string
- *                 minLength: 6
- *                 maxLength: 20
- *               email:
+ *               clearanceLevel:
  *                 type: string
- *                 format: email
- *               password:
- *                 type: string
- *                 format: password
- *                 minLength: 8
- *               role:
- *                 type: string
- *                 enum: [ADMIN, SELLER, CUSTOMER]
+ *                 enum: [HIGH, MEDIUM, LOW]
  *     responses:
  *       200:
- *         description: User created successfully
- *       401:
- *         description: Unauthorized
- *       403:
- *         description: Forbidden - Admin access required
- *       500:
- *         description: Internal server error
- *
- * /users/{id}:
- *   get:
- *     summary: Get user by ID (Admin only)
- *     tags: [Users]
- *     security:
- *       - bearerAuth: []
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         schema:
- *           type: string
- *         description: User ID
- *     responses:
- *       200:
- *         description: User details
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 user:
- *                   type: object
- *                   properties:
- *                     id:
- *                       type: string
- *                     username:
- *                       type: string
- *                     email:
- *                       type: string
- *                     role:
- *                       type: string
- *                       enum: [ADMIN, SELLER, CUSTOMER]
+ *         description: Event created successfully
  *       401:
  *         description: Unauthorized
  *       403:
  *         description: Forbidden - Admin access required
  *       404:
- *         description: User not found
+ *         description: Promotion not found
  *       500:
  *         description: Internal server error
- *   put:
- *     summary: Update user (Admin only)
- *     tags: [Users]
+ *
+ * /events/{id}:
+ *   get:
+ *     summary: Get event by ID (Admin only)
+ *     tags: [Events]
  *     security:
  *       - bearerAuth: []
  *     parameters:
@@ -154,7 +105,47 @@ import { adminGuard } from "middlewares/authGuard";
  *         required: true
  *         schema:
  *           type: string
- *         description: User ID
+ *         description: Event ID
+ *     responses:
+ *       200:
+ *         description: Event details
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 event:
+ *                   type: object
+ *                   properties:
+ *                     id:
+ *                       type: string
+ *                     promotionId:
+ *                       type: string
+ *                     clearanceLevel:
+ *                       type: string
+ *                       enum: [HIGH, MEDIUM, LOW]
+ *                     promotion:
+ *                       type: object
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Forbidden - Admin access required
+ *       404:
+ *         description: Event not found
+ *       500:
+ *         description: Internal server error
+ *   put:
+ *     summary: Update event (Admin only)
+ *     tags: [Events]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Event ID
  *     requestBody:
  *       required: true
  *       content:
@@ -162,32 +153,23 @@ import { adminGuard } from "middlewares/authGuard";
  *           schema:
  *             type: object
  *             properties:
- *               username:
+ *               clearanceLevel:
  *                 type: string
- *                 minLength: 6
- *                 maxLength: 20
- *               email:
- *                 type: string
- *                 format: email
- *               password:
- *                 type: string
- *                 format: password
- *                 minLength: 8
- *               role:
- *                 type: string
- *                 enum: [ADMIN, SELLER, CUSTOMER]
+ *                 enum: [HIGH, MEDIUM, LOW]
  *     responses:
  *       200:
- *         description: User updated successfully
+ *         description: Event updated successfully
  *       401:
  *         description: Unauthorized
  *       403:
  *         description: Forbidden - Admin access required
+ *       404:
+ *         description: Event not found
  *       500:
  *         description: Internal server error
  *   delete:
- *     summary: Delete user (Admin only)
- *     tags: [Users]
+ *     summary: Delete event (Admin only)
+ *     tags: [Events]
  *     security:
  *       - bearerAuth: []
  *     parameters:
@@ -196,10 +178,10 @@ import { adminGuard } from "middlewares/authGuard";
  *         required: true
  *         schema:
  *           type: string
- *         description: User ID
+ *         description: Event ID
  *     responses:
  *       200:
- *         description: User deleted successfully
+ *         description: Event deleted successfully
  *       401:
  *         description: Unauthorized
  *       403:
@@ -208,43 +190,43 @@ import { adminGuard } from "middlewares/authGuard";
  *         description: Internal server error
  */
 
-class UsersRoutes extends BaseRouter {
+class EventsRoutes extends BaseRouter {
   protected routes(): RouteConfig[] {
-    const checkIfAdmin = [AuthMiddleware.authenticateUser, adminGuard];
+    const checkIfAdminSeller = [authGuard, adminOrSellerGuard];
 
     return [
       {
         method: "get",
         path: "/",
-        middlewares: [...checkIfAdmin, validateQuery(UsersSchema.search)],
-        controller: UsersController.getUsers,
+        middlewares: [...checkIfAdminSeller, validateQuery(EventsSchema.search)],
+        controller: EventsController.getEvents,
       },
       {
         method: "get",
         path: "/:id",
-        middlewares: [...checkIfAdmin],
-        controller: UsersController.getUsers,
+        middlewares: [...checkIfAdminSeller],
+        controller: EventsController.getEvents,
       },
       {
         method: "post",
         path: "/",
-        middlewares: [...checkIfAdmin, validateBody(UsersSchema.create)],
-        controller: UsersController.createUser,
+        middlewares: [...checkIfAdminSeller, validateBody(EventsSchema.create)],
+        controller: EventsController.createEvent,
       },
       {
         method: "put",
         path: "/:id",
-        middlewares: [...checkIfAdmin, validateBody(UsersSchema.update)],
-        controller: UsersController.updateUser,
+        middlewares: [...checkIfAdminSeller, validateBody(EventsSchema.update)],
+        controller: EventsController.updateEvent,
       },
       {
         method: "delete",
         path: "/:id",
-        middlewares: checkIfAdmin,
-        controller: UsersController.deleteUser,
+        middlewares: checkIfAdminSeller,
+        controller: EventsController.deleteEvent,
       },
     ];
   }
 }
 
-export default new UsersRoutes().router;
+export default new EventsRoutes().router;

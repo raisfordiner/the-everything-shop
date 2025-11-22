@@ -1,20 +1,20 @@
 import BaseRouter, { RouteConfig } from "util/router";
-import AuthMiddleware from "auth/auth.middleware";
-import UsersController from "./users.controller";
+import CouponsController from "./coupons.controller";
 import { validateBody, validateQuery } from "util/validation";
-import UsersSchema from "./users.schema";
-import { adminGuard } from "middlewares/authGuard";
+import CouponsSchema from "./coupons.schema";
+import { adminOrSellerGuard, authGuard } from "middlewares/authGuard";
+import { check } from "zod";
 
 /**
  * @swagger
  * tags:
- *   name: Users
- *   description: User management endpoints (Admin only)
+ *   name: Coupons
+ *   description: Coupon management endpoints (Admin only)
  *
- * /users:
+ * /coupons:
  *   get:
- *     summary: Get all users or search users (Admin only)
- *     tags: [Users]
+ *     summary: Get all coupons or search coupons (Admin only)
+ *     tags: [Coupons]
  *     security:
  *       - bearerAuth: []
  *     parameters:
@@ -23,47 +23,49 @@ import { adminGuard } from "middlewares/authGuard";
  *         required: false
  *         schema:
  *           type: string
- *         description: Search query for username or email (case-insensitive)
+ *         description: Search query for coupon code (case-insensitive)
  *       - in: query
- *         name: role
+ *         name: promotionId
  *         required: false
  *         schema:
  *           type: string
- *           enum: [ADMIN, SELLER, CUSTOMER]
- *         description: Filter by user role
+ *         description: Filter by promotion ID
  *     responses:
  *       200:
- *         description: List of users
+ *         description: List of coupons
  *         content:
  *           application/json:
  *             schema:
  *               type: object
  *               properties:
- *                 users:
+ *                 coupons:
  *                   type: array
  *                   items:
  *                     type: object
  *                     properties:
  *                       id:
  *                         type: string
- *                       username:
+ *                       promotionId:
  *                         type: string
- *                       email:
+ *                       code:
  *                         type: string
- *                       role:
- *                         type: string
- *                         enum: [ADMIN, SELLER, CUSTOMER]
+ *                       discountPercentage:
+ *                         type: number
+ *                       maxUsage:
+ *                         type: integer
+ *                       usageCount:
+ *                         type: integer
+ *                       promotion:
+ *                         type: object
  *       401:
  *         description: Unauthorized
  *       403:
  *         description: Forbidden - Admin access required
- *       404:
- *         description: Users not found
  *       500:
  *         description: Internal server error
  *   post:
- *     summary: Create new user (Admin only)
- *     tags: [Users]
+ *     summary: Create new coupon (Admin only)
+ *     tags: [Coupons]
  *     security:
  *       - bearerAuth: []
  *     requestBody:
@@ -73,28 +75,22 @@ import { adminGuard } from "middlewares/authGuard";
  *           schema:
  *             type: object
  *             required:
- *               - username
- *               - email
- *               - password
- *               - role
+ *               - promotionId
+ *               - code
+ *               - discountPercentage
+ *               - maxUsage
  *             properties:
- *               username:
+ *               promotionId:
  *                 type: string
- *                 minLength: 6
- *                 maxLength: 20
- *               email:
+ *               code:
  *                 type: string
- *                 format: email
- *               password:
- *                 type: string
- *                 format: password
- *                 minLength: 8
- *               role:
- *                 type: string
- *                 enum: [ADMIN, SELLER, CUSTOMER]
+ *               discountPercentage:
+ *                 type: number
+ *               maxUsage:
+ *                 type: integer
  *     responses:
  *       200:
- *         description: User created successfully
+ *         description: Coupon created successfully
  *       401:
  *         description: Unauthorized
  *       403:
@@ -102,10 +98,10 @@ import { adminGuard } from "middlewares/authGuard";
  *       500:
  *         description: Internal server error
  *
- * /users/{id}:
+ * /coupons/{id}:
  *   get:
- *     summary: Get user by ID (Admin only)
- *     tags: [Users]
+ *     summary: Get coupon by ID (Admin only)
+ *     tags: [Coupons]
  *     security:
  *       - bearerAuth: []
  *     parameters:
@@ -114,38 +110,43 @@ import { adminGuard } from "middlewares/authGuard";
  *         required: true
  *         schema:
  *           type: string
- *         description: User ID
+ *         description: Coupon ID
  *     responses:
  *       200:
- *         description: User details
+ *         description: Coupon details
  *         content:
  *           application/json:
  *             schema:
  *               type: object
  *               properties:
- *                 user:
+ *                 coupon:
  *                   type: object
  *                   properties:
  *                     id:
  *                       type: string
- *                     username:
+ *                     promotionId:
  *                       type: string
- *                     email:
+ *                     code:
  *                       type: string
- *                     role:
- *                       type: string
- *                       enum: [ADMIN, SELLER, CUSTOMER]
+ *                     discountPercentage:
+ *                       type: number
+ *                     maxUsage:
+ *                       type: integer
+ *                     usageCount:
+ *                       type: integer
+ *                     promotion:
+ *                       type: object
  *       401:
  *         description: Unauthorized
  *       403:
  *         description: Forbidden - Admin access required
  *       404:
- *         description: User not found
+ *         description: Coupon not found
  *       500:
  *         description: Internal server error
  *   put:
- *     summary: Update user (Admin only)
- *     tags: [Users]
+ *     summary: Update coupon (Admin only)
+ *     tags: [Coupons]
  *     security:
  *       - bearerAuth: []
  *     parameters:
@@ -154,7 +155,7 @@ import { adminGuard } from "middlewares/authGuard";
  *         required: true
  *         schema:
  *           type: string
- *         description: User ID
+ *         description: Coupon ID
  *     requestBody:
  *       required: true
  *       content:
@@ -162,32 +163,28 @@ import { adminGuard } from "middlewares/authGuard";
  *           schema:
  *             type: object
  *             properties:
- *               username:
+ *               promotionId:
  *                 type: string
- *                 minLength: 6
- *                 maxLength: 20
- *               email:
+ *               code:
  *                 type: string
- *                 format: email
- *               password:
- *                 type: string
- *                 format: password
- *                 minLength: 8
- *               role:
- *                 type: string
- *                 enum: [ADMIN, SELLER, CUSTOMER]
+ *               discountPercentage:
+ *                 type: number
+ *               maxUsage:
+ *                 type: integer
  *     responses:
  *       200:
- *         description: User updated successfully
+ *         description: Coupon updated successfully
  *       401:
  *         description: Unauthorized
  *       403:
  *         description: Forbidden - Admin access required
+ *       404:
+ *         description: Coupon not found
  *       500:
  *         description: Internal server error
  *   delete:
- *     summary: Delete user (Admin only)
- *     tags: [Users]
+ *     summary: Delete coupon (Admin only)
+ *     tags: [Coupons]
  *     security:
  *       - bearerAuth: []
  *     parameters:
@@ -196,55 +193,57 @@ import { adminGuard } from "middlewares/authGuard";
  *         required: true
  *         schema:
  *           type: string
- *         description: User ID
+ *         description: Coupon ID
  *     responses:
  *       200:
- *         description: User deleted successfully
+ *         description: Coupon deleted successfully
  *       401:
  *         description: Unauthorized
  *       403:
  *         description: Forbidden - Admin access required
+ *       404:
+ *         description: Coupon not found
  *       500:
  *         description: Internal server error
  */
 
-class UsersRoutes extends BaseRouter {
+class CouponsRouter extends BaseRouter {
   protected routes(): RouteConfig[] {
-    const checkIfAdmin = [AuthMiddleware.authenticateUser, adminGuard];
+    const checkIfAdminSeller = [authGuard, adminOrSellerGuard];
 
     return [
       {
-        method: "get",
         path: "/",
-        middlewares: [...checkIfAdmin, validateQuery(UsersSchema.search)],
-        controller: UsersController.getUsers,
-      },
-      {
         method: "get",
-        path: "/:id",
-        middlewares: [...checkIfAdmin],
-        controller: UsersController.getUsers,
+        middlewares: [...checkIfAdminSeller, validateQuery(CouponsSchema.search)],
+        controller: CouponsController.getCoupons,
       },
       {
+        path: "/:id",
+        method: "get",
+        middlewares: checkIfAdminSeller,
+        controller: CouponsController.getCoupons,
+      },
+      {
+        path: "/",
         method: "post",
-        path: "/",
-        middlewares: [...checkIfAdmin, validateBody(UsersSchema.create)],
-        controller: UsersController.createUser,
+        middlewares: [...checkIfAdminSeller, validateBody(CouponsSchema.create)],
+        controller: CouponsController.createCoupon,
       },
       {
+        path: "/:id",
         method: "put",
-        path: "/:id",
-        middlewares: [...checkIfAdmin, validateBody(UsersSchema.update)],
-        controller: UsersController.updateUser,
+        middlewares: [...checkIfAdminSeller, validateBody(CouponsSchema.update)],
+        controller: CouponsController.updateCoupon,
       },
       {
-        method: "delete",
         path: "/:id",
-        middlewares: checkIfAdmin,
-        controller: UsersController.deleteUser,
+        method: "delete",
+        middlewares: checkIfAdminSeller,
+        controller: CouponsController.deleteCoupon,
       },
     ];
   }
 }
 
-export default new UsersRoutes().router;
+export default new CouponsRouter().router;
