@@ -127,6 +127,96 @@ import CartSchema from "./cart.schema";
  *         description: Unauthorized
  *       500:
  *         description: Internal server error
+ *
+ * /carts/{cartId}/items:
+ *   post:
+ *     summary: Add item to cart
+ *     tags: [Carts]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: cartId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Cart ID
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - productVariantId
+ *               - quantity
+ *             properties:
+ *               productVariantId:
+ *                 type: string
+ *               quantity:
+ *                 type: number
+ *                 minimum: 1
+ *     responses:
+ *       200:
+ *         description: Item added to cart successfully
+ *       401:
+ *         description: Unauthorized
+ *       500:
+ *         description: Internal server error
+ *
+ * /carts/{cartId}/items/{itemId}:
+ *   get:
+ *     summary: Get cart item
+ *     tags: [Carts]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: cartId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Cart ID
+ *       - in: path
+ *         name: itemId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Cart Item ID
+ *     responses:
+ *       200:
+ *         description: Cart item details
+ *       401:
+ *         description: Unauthorized
+ *       404:
+ *         description: Cart item not found
+ *       500:
+ *         description: Internal server error
+ *   delete:
+ *     summary: Remove item from cart
+ *     tags: [Carts]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: cartId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Cart ID
+ *       - in: path
+ *         name: itemId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Cart Item ID
+ *     responses:
+ *       200:
+ *         description: Item removed from cart successfully
+ *       401:
+ *         description: Unauthorized
+ *       500:
+ *         description: Internal server error
  */
 
 class CartRoutes extends BaseRouter {
@@ -157,6 +247,24 @@ class CartRoutes extends BaseRouter {
         path: "/:id",
         middlewares: checkIfAuth,
         controller: CartController.deleteCart,
+      },
+      {
+        method: "post",
+        path: "/:cartId/items",
+        middlewares: [...checkIfAuth, validateBody(CartSchema.addItem)],
+        controller: CartController.addCartItem,
+      },
+      {
+        method: "get",
+        path: "/:cartId/items/:itemId",
+        middlewares: checkIfAuth,
+        controller: CartController.getCartItem,
+      },
+      {
+        method: "delete",
+        path: "/:cartId/items/:itemId",
+        middlewares: checkIfAuth,
+        controller: CartController.deleteCartItem,
       },
     ];
   }

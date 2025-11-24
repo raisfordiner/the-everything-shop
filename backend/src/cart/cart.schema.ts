@@ -8,6 +8,14 @@ const search = z.object({
   customerID: z.string().optional(),
 });
 
-const CartSchema = { create, search };
+const addItem = z.object({
+  productVariantId: z.string("Product Variant ID is required"),
+  quantity: z
+    .number("Quantity is required")
+    .int("Quantity must be integer")
+    .positive("Quantity must be greater than 0"),
+});
+
+const CartSchema = { create, search, addItem };
 
 export default CartSchema;

@@ -49,4 +49,54 @@ export default class CartController {
       return Send.error(res, {}, "Internal server error");
     }
   }
+
+  static async addCartItem(req: Request, res: Response) {
+    try {
+      const { cartId } = req.params;
+      const { productVariantId, quantity } = req.body;
+      const { id: customerId } = (req as any).user;
+
+      const cartItem = await CartService.addCartItem({
+        cartId,
+        customerId,
+        productVariantId,
+        quantity,
+      });
+
+      return Send.success(res, { cartItem }, "Item added to cart successfully");
+    } catch (error: any) {
+      logger.error({ error }, "Error adding item to cart");
+      return Send.error(res, {}, "Internal server error");
+    }
+  }
+
+  static async getCartItem(req: Request, res: Response) {
+    try {
+      const { itemId } = req.params;
+
+      const cartItem = await CartService.getCartItem(itemId);
+
+      if (!cartItem) {
+        return Send.notFound(res, {}, "Cart item not found");
+      }
+
+      return Send.success(res, { cartItem });
+    } catch (error) {
+      logger.error({ error }, "Error fetching cart item");
+      return Send.error(res, {}, "Internal server error");
+    }
+  }
+
+  static async deleteCartItem(req: Request, res: Response) {
+    try {
+      const { itemId } = req.params;
+
+      await CartService.deleteCartItem(itemId);
+
+      return Send.success(res, {}, "Item removed from cart successfully");
+    } catch (error) {
+      logger.error({ error }, "Error removing item from cart");
+      return Send.error(res, {}, "Internal server error");
+    }
+  }
 }

@@ -64,4 +64,59 @@ export default class CartService {
       where: { id },
     });
   }
+
+  static async addCartItem(data: { cartId: string; customerId: string; productVariantId: string; quantity: number }) {
+    const customer = await prisma.customer.findUnique({
+      where: { id: data.customerId },
+    });
+
+    if (!customer) {
+      throw new Error("Customer not found");
+    }
+
+    const productVariant = await prisma.productVariant.findUnique({
+      where: { id: data.productVariantId },
+    });
+
+    if (!productVariant) {
+      throw new Error("Product variant not found");
+    }
+
+    const cartItem = await prisma.cartItem.create({
+      data: {
+        cartId: data.cartId,
+        customerId: data.customerId,
+        productVariantId: data.productVariantId,
+        quantity: data.quantity,
+      },
+      include: {
+        productVariant: {
+          include: {
+            product: true,
+          },
+        },
+      },
+    });
+
+    return cartItem;
+  }
+
+  static async getCartItem(cartItemId: string) {
+    return await prisma.cartItem.findUnique({
+      where: { id: cartItemId },
+      include: {
+        productVariant: {
+          include: {
+            product: true,
+          },
+        },
+      },
+    });
+  }
+
+  static async deleteCartItem(cartItemId: string) {
+    return await prisma.cartItem.delete({
+      where: { id: cartItemId },
+    });
+  }
 }
