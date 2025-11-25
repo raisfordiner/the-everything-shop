@@ -87,6 +87,24 @@ export default class CartController {
     }
   }
 
+  static async updateCartItem(req: Request, res: Response) {
+    try {
+      const { itemId } = req.params;
+      const { quantity } = req.body;
+
+      const cartItem = await CartService.updateCartItem(itemId, quantity);
+
+      if (!cartItem) {
+        return Send.notFound(res, {}, "Cart item not found");
+      }
+
+      return Send.success(res, { cartItem }, "Cart item updated successfully");
+    } catch (error) {
+      logger.error({ error }, "Error updating cart item");
+      return Send.error(res, {}, "Internal server error");
+    }
+  }
+
   static async deleteCartItem(req: Request, res: Response) {
     try {
       const { itemId } = req.params;

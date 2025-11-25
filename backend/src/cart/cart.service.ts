@@ -114,6 +114,20 @@ export default class CartService {
     });
   }
 
+  static async updateCartItem(cartItemId: string, quantity: number) {
+    return await prisma.cartItem.update({
+      where: { id: cartItemId },
+      data: { quantity },
+      include: {
+        productVariant: {
+          include: {
+            product: true,
+          },
+        },
+      },
+    });
+  }
+
   static async deleteCartItem(cartItemId: string) {
     return await prisma.cartItem.delete({
       where: { id: cartItemId },

@@ -16,6 +16,13 @@ const addItem = z.object({
     .positive("Quantity must be greater than 0"),
 });
 
-const CartSchema = { create, search, addItem };
+const updateItem = z.object({
+  quantity: z
+    .number("Quantity is required")
+    .int("Quantity must be integer")
+    .positive("Quantity must be greater than 0"),
+});
+
+const CartSchema = { create, search, addItem, updateItem };
 
 export default CartSchema;

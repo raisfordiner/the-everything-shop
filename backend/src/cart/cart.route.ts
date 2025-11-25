@@ -192,6 +192,45 @@ import CartSchema from "./cart.schema";
  *         description: Cart item not found
  *       500:
  *         description: Internal server error
+ *   put:
+ *     summary: Update cart item quantity
+ *     tags: [Carts]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: cartId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Cart ID
+ *       - in: path
+ *         name: itemId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Cart Item ID
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - quantity
+ *             properties:
+ *               quantity:
+ *                 type: number
+ *                 minimum: 1
+ *     responses:
+ *       200:
+ *         description: Cart item updated successfully
+ *       401:
+ *         description: Unauthorized
+ *       404:
+ *         description: Cart item not found
+ *       500:
+ *         description: Internal server error
  *   delete:
  *     summary: Remove item from cart
  *     tags: [Carts]
@@ -259,6 +298,12 @@ class CartRoutes extends BaseRouter {
         path: "/:cartId/items/:itemId",
         middlewares: checkIfAuth,
         controller: CartController.getCartItem,
+      },
+      {
+        method: "put",
+        path: "/:cartId/items/:itemId",
+        middlewares: [...checkIfAuth, validateBody(CartSchema.updateItem)],
+        controller: CartController.updateCartItem,
       },
       {
         method: "delete",
