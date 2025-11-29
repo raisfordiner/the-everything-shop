@@ -12,6 +12,12 @@ import FilteredProducts from "../pages/customer/FilteredProducts/FilteredProduct
 import ProductDetail from "../components/ProductDetail/ProductDetail.jsx";
 import Confirmation from "../pages/customer/Confirmation/Confirmation.jsx";
 import ForgotPassword from "../pages/customer/ForgotPassword/ForgotPassword.jsx";
+import Customers from "../pages/admin/Customers/Customers.jsx";
+import EditCustomer from "../pages/admin/Customers/EditCustomer.jsx";
+import AddCustomer from "../pages/admin/Customers/AddCustomer.jsx";
+import Coupons from "../pages/admin/Coupons/Coupons.jsx";
+import EditCoupon from "../pages/admin/Coupons/EditCoupon.jsx";
+import AddCoupon from "../pages/admin/Coupons/AddCoupon.jsx";
 
 export const routes = [
     {
@@ -73,6 +79,30 @@ export const routes = [
             {
                 path: "dashboard",
                 element: <DashBoard />
+            },
+            {
+                path: "customers",
+                element: <Customers />,
+            },
+            {
+                path: "customers/edit-customer/:id",
+                element: <EditCustomer/>
+            },
+            {
+                path: "customers/add-customer",
+                element: <AddCustomer/>
+            },
+            {
+                path: "coupons",
+                element: <Coupons />,
+            },
+            {
+                path: "coupons/edit-coupon/:id",
+                element: <EditCoupon />
+            },
+            {
+                path: "coupons/add-coupon",
+                element: <AddCoupon />
             }
         ]
     }
