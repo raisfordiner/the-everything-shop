@@ -65,13 +65,14 @@ export default class CartService {
     });
   }
 
-  static async addCartItem(data: { cartId: string; customerId: string; productVariantId: string; quantity: number }) {
-    const customer = await prisma.customer.findUnique({
-      where: { id: data.customerId },
+  static async addCartItem(data: { cartId: string; productVariantId: string; quantity: number }) {
+    const cart = await prisma.cart.findUnique({
+      where: { id: data.cartId },
     });
+    console.log("Got this")
 
-    if (!customer) {
-      throw new Error("Customer not found");
+    if (!cart) {
+        throw new Error("Cart not found");
     }
 
     const productVariant = await prisma.productVariant.findUnique({
@@ -85,7 +86,6 @@ export default class CartService {
     const cartItem = await prisma.cartItem.create({
       data: {
         cartId: data.cartId,
-        customerId: data.customerId,
         productVariantId: data.productVariantId,
         quantity: data.quantity,
       },

@@ -101,7 +101,6 @@ model Customer {
   reviews   Review[]
   addresses Address[]
   orders    Order[]
-  cartItems CartItem[]
   createdAt DateTime   @default(now())
   updatedAt DateTime   @updatedAt
 }
@@ -309,8 +308,6 @@ model Cart {
 
 model CartItem {
   id               String         @id @default(cuid())
-  customerId       String
-  customer         Customer       @relation(fields: [customerId], references: [id], onDelete: Cascade, onUpdate: Cascade)
   cartId           String
   cart             Cart           @relation(fields: [cartId], references: [id], onDelete: Cascade, onUpdate: Cascade)
   productVariantId String

@@ -54,11 +54,9 @@ export default class CartController {
     try {
       const { cartId } = req.params;
       const { productVariantId, quantity } = req.body;
-      const { id: customerId } = (req as any).user;
 
       const cartItem = await CartService.addCartItem({
         cartId,
-        customerId,
         productVariantId,
         quantity,
       });
