@@ -69,7 +69,6 @@ export default class CartService {
     const cart = await prisma.cart.findUnique({
       where: { id: data.cartId },
     });
-    console.log("Got this")
 
     if (!cart) {
         throw new Error("Cart not found");
