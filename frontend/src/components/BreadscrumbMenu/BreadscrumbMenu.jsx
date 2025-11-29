@@ -25,7 +25,7 @@ const BreadscrumbMenu = ({items = []}) => {
 
     return (
         <>
-            <Card style={{ padding: '0', background: '#fff', borderRadius: '8px' }}>
+            <Card style={{ padding: '0', background: '#fff', borderRadius: '8px', boxShadow: "0 2px 6px rgba(0,0,0,0.1)" }}>
                 <Breadcrumb items={allItems} />
             </Card>
         </>
