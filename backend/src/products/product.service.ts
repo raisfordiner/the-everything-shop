@@ -173,7 +173,7 @@ export default class ProductService {
   }
 
   /**
-   * Update a product (Seller or Admin)
+   * Update a product (Sellers)
    */
   static async updateProduct(
     productId: string,
