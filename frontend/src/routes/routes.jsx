@@ -12,6 +12,10 @@ import FilteredProducts from "../pages/customer/FilteredProducts/FilteredProduct
 import ProductDetail from "../components/ProductDetail/ProductDetail.jsx";
 import Confirmation from "../pages/customer/Confirmation/Confirmation.jsx";
 import ForgotPassword from "../pages/customer/ForgotPassword/ForgotPassword.jsx";
+import Category from '../pages/admin/Category/Category.jsx';
+import AddCategory from '../pages/admin/Category/AddCategory.jsx';
+import EditCategory from '../pages/admin/Category/EditCategory.jsx';
+import Order from '../pages/admin/Order/Order.jsx';
 
 export const routes = [
     {
@@ -73,6 +77,22 @@ export const routes = [
             {
                 path: "dashboard",
                 element: <DashBoard />
+            },
+            {
+                path: "categories",
+                element: <Category />
+            },
+            {
+                path: "categories/add-category",
+                element: <AddCategory />
+            },
+            {
+                path: "categories/edit-category/:id",
+                element: <EditCategory/>
+            },
+            {
+                path: "orders",
+                element: <Order/>
             }
         ]
     }

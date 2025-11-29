@@ -39,7 +39,7 @@ export const post = (path, data) => {
 
 export const del = (path) => {
     return request(path, { method: 'DELETE' });
-};
+};  
 
 export const patch = (path, data) => {
     return request(path, {
