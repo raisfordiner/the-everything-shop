@@ -9,6 +9,8 @@ interface EnvConfig {
   AWS_ACCESS_KEY_ID: string;
   AWS_SECRET_ACCESS_KEY: string;
   AWS_S3_BUCKET_NAME: string;
+  AWS_S3_ENDPOINT: string;
+  AWS_S3_FORCE_PATH_STYLE: string;
 }
 
 export default class UploadService {
@@ -22,6 +24,8 @@ export default class UploadService {
       AWS_ACCESS_KEY_ID: process.env.AWS_ACCESS_KEY_ID || '',
       AWS_SECRET_ACCESS_KEY: process.env.AWS_SECRET_ACCESS_KEY || '',
       AWS_S3_BUCKET_NAME: process.env.AWS_S3_BUCKET_NAME || '',
+      AWS_S3_ENDPOINT: process.env.AWS_S3_ENDPOINT || '',
+      AWS_S3_FORCE_PATH_STYLE: process.env.AWS_S3_FORCE_PATH_STYLE || '',
     };
 
     this.validateConfig();
@@ -32,6 +36,8 @@ export default class UploadService {
         accessKeyId: this.config.AWS_ACCESS_KEY_ID,
         secretAccessKey: this.config.AWS_SECRET_ACCESS_KEY,
       },
+      endpoint: process.env.AWS_S3_ENDPOINT,
+      forcePathStyle: process.env.AWS_S3_FORCE_PATH_STYLE === "true",
     });
   }
 

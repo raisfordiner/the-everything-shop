@@ -48,12 +48,47 @@ const upload = multer({
  *                   properties:
  *                     url:
  *                       type: string
- *                       example: "https://bucket.s3.region.amazonaws.com/filename.jpg"
+ *                       example: "https://localhost:9000/filename.jpg"
  *                     filename:
  *                       type: string
  *                       example: "image.jpg"
  *       400:
  *         description: Invalid file format or missing file
+ *       500:
+ *         description: Internal server error
+ *
+ *   delete:
+ *     summary: Delete a file from S3
+ *     tags: [Upload]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               fileUrl:
+ *                 type: string
+ *                 example: "https://localhost:9000/filename.jpg"
+ *                 description: The S3 URL of the file to delete
+ *             required:
+ *               - fileUrl
+ *     responses:
+ *       200:
+ *         description: File deleted successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 ok:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: "File deleted successfully"
+ *       400:
+ *         description: Missing or invalid file URL
  *       500:
  *         description: Internal server error
  *
@@ -97,48 +132,12 @@ const upload = multer({
  *                     properties:
  *                       url:
  *                         type: string
- *                         example: "https://bucket.s3.region.amazonaws.com/filename.jpg"
+ *                         example: "https://localhost:9000/filename.jpg"
  *                       filename:
  *                         type: string
  *                         example: "image.jpg"
  *       400:
  *         description: Invalid file format or missing files
- *       500:
- *         description: Internal server error
- *
- * /upload:
- *   delete:
- *     summary: Delete a file from S3
- *     tags: [Upload]
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               fileUrl:
- *                 type: string
- *                 example: "https://bucket.s3.region.amazonaws.com/filename.jpg"
- *                 description: The S3 URL of the file to delete
- *             required:
- *               - fileUrl
- *     responses:
- *       200:
- *         description: File deleted successfully
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 ok:
- *                   type: boolean
- *                   example: true
- *                 message:
- *                   type: string
- *                   example: "File deleted successfully"
- *       400:
- *         description: Missing or invalid file URL
  *       500:
  *         description: Internal server error
  */
