@@ -3,6 +3,7 @@ import { get } from '../../utils/request'
 import { setCategories } from '../../redux/actions/categoryAction'
 import CategoryList from './CategoryList'
 import { useEffect } from 'react'
+import categoryService from "../../services/categoryService.js";
 
 const CategoryListing = () => {
     const dispatch = useDispatch();
@@ -13,8 +14,8 @@ const CategoryListing = () => {
     useEffect(() => {
         const fetchCategories = async () => {
             try {
-                const categories = await get('/categories')
-                dispatch(setCategories(categories))
+                const categories = await categoryService.getAllCategoriesSimple();
+                dispatch(setCategories(categories.data))
             }
             catch(error) {
                 console.error(error)
@@ -26,7 +27,6 @@ const CategoryListing = () => {
     return (
         <>
             <CategoryList/>
-            tạm thời chưa có gì ở đây
         </>
     )
 }

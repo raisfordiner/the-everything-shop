@@ -14,7 +14,7 @@ const CategoryList = () => {
                 {categories.map(cat => {
                     const {id, image, name} = cat
                     return (
-                        <Link key={id} block type="default" to={`category/${id}`}>
+                        <Link key={id} block={"true"} type="default" to={`category/${id}`}>
                             <Button className="category" type="text">
                                 <div className="category__image">
                                     <img src={image}/>
