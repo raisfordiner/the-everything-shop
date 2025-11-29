@@ -24,6 +24,7 @@ import productVariantRoute from "productVariants/productVariants.route";
 import promotionRoute from "promotions/promotions.route";
 import couponsRoute from "coupons/coupons.route";
 import eventsRoute from "events/events.route";
+import cartsRoute from "cart/cart.route";
 
 export default class App {
   private app: Express;
@@ -69,6 +70,7 @@ export default class App {
     this.app.use("/api/users", usersRoute); // /api/user/*
     this.app.use("/api/coupons", couponsRoute); // /api/coupons/*
     this.app.use("/api/events", eventsRoute); // /api/events/*
+    this.app.use("/api/carts", cartsRoute);
 
     this.app.use("/api", healthRoute); // /api/healthcheck
 
