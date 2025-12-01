@@ -13,6 +13,10 @@ import CustomerProductDetail from "../components/ProductDetail/ProductDetail.jsx
 import SellerProductDetail from "../pages/seller/ProductDetail/ProductDetail.jsx";
 import Confirmation from "../pages/customer/Confirmation/Confirmation.jsx";
 import ForgotPassword from "../pages/customer/ForgotPassword/ForgotPassword.jsx";
+import Category from '../pages/admin/Category/Category.jsx';
+import AddCategory from '../pages/admin/Category/AddCategory.jsx';
+import EditCategory from '../pages/admin/Category/EditCategory.jsx';
+import Order from '../pages/admin/Order/Order.jsx';
 import Customers from "../pages/admin/Customers/Customers.jsx";
 import EditCustomer from "../pages/admin/Customers/EditCustomer.jsx";
 import AddCustomer from "../pages/admin/Customers/AddCustomer.jsx";
@@ -82,6 +86,20 @@ export const routes = [
                 element: <DashBoard />
             },
             {
+                path: "categories",
+                element: <Category />
+            },
+            {
+                path: "categories/add-category",
+                element: <AddCategory />
+            },
+            {
+                path: "categories/edit-category/:id",
+                element: <EditCategory/>
+            },
+            {
+                path: "orders",
+                element: <Order/>
                 path: "customers",
                 element: <Customers />,
             },
