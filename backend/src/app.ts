@@ -17,6 +17,15 @@ import userRoute from "user/user.route";
 import healthRoute from "health/health.route";
 
 import { logger } from "util/logger";
+import productRoute from "products/product.route";
+import usersRoute from "users/users.route";
+import categoryRoute from "categories/categories.route";
+import productVariantRoute from "productVariants/productVariants.route";
+import promotionRoute from "promotions/promotions.route";
+import couponsRoute from "coupons/coupons.route";
+import eventsRoute from "events/events.route";
+import uploadRoute from "upload/upload.route";
+import cartsRoute from "cart/cart.route";
 
 export default class App {
   private app: Express;
@@ -32,6 +41,7 @@ export default class App {
     this.app.set("trust proxy", 1);
 
     this.app.use(express.json());
+    this.app.use(express.urlencoded({ extended: true }));
     this.app.use(cookieParser());
 
     this.app.use(
@@ -40,7 +50,7 @@ export default class App {
           "http://localhost:3000", // frontend url
           "https://mywebsite.com", // production url optional
         ],
-        methods: ["GET", "POST", "DELETE"],
+        methods: ["GET", "POST", "DELETE", "PATCH", "PUT"],
         credentials: true,
       })
     );
@@ -55,6 +65,16 @@ export default class App {
   private initRoutes() {
     this.app.use("/api/auth", authRoute); // /api/auth/*
     this.app.use("/api/user", userRoute); // /api/user/*
+    this.app.use("/api/products", productRoute); // /api/products/*
+    this.app.use("/api/product-variants", productVariantRoute); // /api/product-variants/*
+    this.app.use("/api/categories", categoryRoute); // /api/categories/*
+    this.app.use("/api/promotions", promotionRoute); // /api/promotions/*
+    this.app.use("/api/users", usersRoute); // /api/user/*
+    this.app.use("/api/coupons", couponsRoute); // /api/coupons/*
+    this.app.use("/api/events", eventsRoute); // /api/events/*
+    this.app.use("/api/upload", uploadRoute); // /api/upload/*
+    this.app.use("/api/carts", cartsRoute);
+
     this.app.use("/api", healthRoute); // /api/healthcheck
 
     this.app.get("/error", (req, res) => {

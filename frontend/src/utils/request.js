@@ -1,45 +1,56 @@
-const API_DOMAIN = '';
+const API_DOMAIN = import.meta.env.VITE_API_DOMAIN;
 
-export const get = async (path) => {
-    const response = await fetch(API_DOMAIN + path);
-    const data = await response.json();
-
-    return data;
-}
-
-export const post = async (path, options) => {
-    const response = await fetch(API_DOMAIN + path, {
-        method: "POST",
+const request = async (path, options = {}) => {
+    const defaultOptions = {
+        credentials: 'include',
+        ...options,
         headers: {
-            Accept: "application/json",
-            "Content-Type": "application/json"
+            Accept: 'application/json',
+            'Content-Type': 'application/json',
+            ...options.headers,
         },
-        body: JSON.stringify(options)
-    })
-    const data = await response.json();
+    };
 
-    return data;
-}
+    const response = await fetch(API_DOMAIN + path, defaultOptions);
 
-export const del = async (path) => {
-    const response = await fetch(API_DOMAIN + path, {
-        method: "DELETE"
+    if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Errors has occurred');
+    }
+
+    try {
+        const data = await response.json();
+        return data;
+    } catch (e) {
+        return null;
+    }
+};
+
+export const get = (path) => {
+    return request(path, { method: 'GET' });
+};
+
+export const post = (path, data) => {
+    return request(path, {
+        method: 'POST',
+        body: JSON.stringify(data),
     });
-    const data = await response.json();
+};
 
-    return data;
-}
+export const del = (path) => {
+    return request(path, { method: 'DELETE' });
+};  
 
-export const patch = async (path, options) => {
-    const response = await fetch(API_DOMAIN + path, {
-        method: "PATCH",
-        headers: {
-            Accept: "application/json",
-            "Content-Type": "application/json"
-        },
-        body: JSON.stringify(options)
+export const patch = (path, data) => {
+    return request(path, {
+        method: 'PATCH',
+        body: JSON.stringify(data),
     });
-    const data = await response.json();
+};
 
-    return data;
-}
+export const put = (path, data) => {
+    return request(path, {
+        method: 'PUT',
+        body: JSON.stringify(data),
+    });
+};

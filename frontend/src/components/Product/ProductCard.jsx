@@ -6,46 +6,63 @@ import "./ProductCard.css";
 const { Text } = Typography;
 
 const ProductCard = ({ product }) => {
+    // Giả định thêm: product.originalPrice và product.sold
+    // Giả định giá gốc: 250, số lượng đã bán: 1540
+    const originalPrice = product.originalPrice || 250; 
+    const soldCount = product.sold || 1540; // Giả định số lượng đã bán
+
     const discountPercent = Math.round(
-        ((product.originalPrice - product.salePrice) / product.originalPrice) * 100
+        ((originalPrice - product.price) / originalPrice) * 100
     );
+
+    const formatSoldCount = (count) => {
+        if (count < 1000) {
+            return `Đã bán ${count}`;
+        } else {
+            const k = Math.floor(count / 1000);
+            return `Đã bán ${k}k+`;
+        }
+    };
 
     return (
         <Card
             hoverable
             cover={
-                <img
-                alt={product.name}
-                src={product.image}
-                style={{ height: 200, objectFit: "contain" }}
-                />
+                <div className="product-image-container">
+                    <img
+                        alt={product.name}
+                        src={product.images && product.images.length > 0 ? product.images[0] : ''} // Lấy ảnh đầu tiên
+                        style={{ height: 200, objectFit: "contain" }}
+                    />
+
+                    {discountPercent > 0 && (
+                        <Tag color="red" className="discount-tag">
+                            -{discountPercent}%
+                        </Tag>
+                    )}
+                </div>
             }
+            className="product-card"
         >
             <div className="product-info">
-                <Text strong ellipsis={{ tooltip: product.name }}>
+                <Text strong ellipsis={{ tooltip: product.name }} className="product-name">
                     {product.name}
                 </Text>
 
-                <div className="product-prices">
+                // có thể thêm trong tương lai nếu có nhu cầu
+                {/* <div className="price-and-original">
+                    <Text delete type="secondary" className="product-original">
+                        {originalPrice.toLocaleString()}₫
+                    </Text>
+                </div> */}
+
+                <div className="product-bottom-bar">
                     <Text className="product-sale-price" type="danger" strong>
-                        {product.salePrice.toLocaleString()}₫
+                        {product.price.toLocaleString()}₫
                     </Text>
 
-                    <div className="product-old">
-                        <Text delete type="secondary" className="product-original">
-                            {product.originalPrice.toLocaleString()}₫
-                        </Text>
-                        <Text className="product-discount">-{discountPercent}%</Text>
-                    </div>
-                </div>
-
-                <div className="product-rating">
-                    <div className="rating-left">
-                        <StarFilled style={{ color: "#faad14" }} />
-                        <Text className="rating-score">{product.rating.toFixed(1)}</Text>
-                    </div>
                     <Text type="secondary" className="sold-count">
-                        Đã bán {product.sold.toLocaleString()}
+                        {formatSoldCount(soldCount)}
                     </Text>
                 </div>
             </div>

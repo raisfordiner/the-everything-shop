@@ -10,14 +10,18 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@tinymce/tinymce-react": "^6.3.0",
     "antd": "^5.27.6",
+    "grapesjs": "^0.22.14",
+    "grapesjs-preset-webpage": "^1.0.3",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
     "react-redux": "^9.2.0",
     "react-router": "^7.9.4",
     "react-router-dom": "^7.9.4",
     "redux": "^5.0.1",
-    "sass": "^1.93.2"
+    "sass": "^1.93.2",
+    "tinymce": "^8.2.2"
   },
   "devDependencies": {
     "@eslint/js": "^9.36.0",

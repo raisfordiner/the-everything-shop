@@ -1,43 +1,39 @@
 import React from 'react'
 import {Button, Col, Form, Input, Row} from "antd";
+import {MailOutlined, SafetyCertificateOutlined} from "@ant-design/icons";
+import "./ChangePassword.scss"
 
 const ChangePassword = () => {
     return (
         <>
-            <Form layout="vertical" name={"account_form"} className="account__form">
-                <h2 style={{fontSize: "32px", color: '#008ECC'}}>Change Password</h2>
+            <div className="change-password">
+                <h2 className="change-password__title">Change Password</h2>
 
-                <Form.Item
-                    label="Current Password"
-                    name="current_password"
-                    rules={[{ required: true, message: 'Please input your current password!' }]}
-                >
-                    <Input.Password size="large"/>
-                </Form.Item>
+                <div className="change-password__card">
+                    <SafetyCertificateOutlined className="change-password__icon"/>
 
-                <Form.Item
-                    label="New Password"
-                    name="new_password"
-                    rules={[{ required: true, message: 'Please input your new password!' }]}
-                >
-                    <Input.Password size="large"/>
-                </Form.Item>
+                    <h2 className="change-password__card-title">Security Verification Required</h2>
 
-                <Form.Item
-                    label="Confirm Password"
-                    name="confirm_password"
-                    rules={[{ required: true, message: 'Please input your confirm password!' }]}
-                >
-                    <Input.Password size="large" />
-                </Form.Item>
+                    <p className="change-password__text">
+                        For your account’s protection, we need to verify your identity before allowing a password
+                        change.
+                    </p>
 
-                <Form.Item style={{marginTop: '32px'}}>
-                    <Button type="primary" htmlType="submit" size="large"
-                            style={{padding: '22px 42px', color: "white", backgroundColor: "#008ECC"}}>
-                        SAVE
+                    <p className="change-password__text change-password__text--mb-large">
+                        Please click the button below. We will send a <strong>secure link</strong> to your registered
+                        email address to help you reset your password.
+                    </p>
+
+                    <Button
+                        type="primary"
+                        size="large"
+                        icon={<MailOutlined/>}
+                        className="change-password__btn"
+                    >
+                        SEND RESET LINK
                     </Button>
-                </Form.Item>
-            </Form>
+                </div>
+            </div>
         </>
     )
 }

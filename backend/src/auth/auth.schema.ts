@@ -37,6 +37,38 @@ const login = z.object({
   password: z.string().min(1, "Password is required"),
 });
 
-const AuthSchema = { login, register };
+const forgot_password = z.object({
+  email: z.email("Invalid email format"),
+});
 
-export default AuthSchema;
+const change_password = z
+  .object({
+    old_password: passwordSchema,
+    new_password: passwordSchema,
+    password_confirmation: z.string().min(1, "Password confirmation is required"),
+  })
+  .refine((data) => data.new_password === data.password_confirmation, {
+    path: ["password_confirmation"],
+    message: "Passwords do not match",
+  });
+
+const reset_password_with_token = z
+  .object({
+    token: z.string().min(1, "Token is required"),
+    new_password: passwordSchema,
+    password_confirmation: z.string().min(1, "Password confirmation is required"),
+  })
+  .refine((data) => data.new_password === data.password_confirmation, {
+    path: ["password_confirmation"],
+    message: "Passwords do not match",
+  });
+
+export {
+  login as loginSchema,
+  register as registerSchema,
+  passwordSchema,
+  usernameSchema,
+  forgot_password as forgotPasswordSchema,
+  change_password as changePasswordSchema,
+  reset_password_with_token as resetPasswordWithTokenSchema,
+};

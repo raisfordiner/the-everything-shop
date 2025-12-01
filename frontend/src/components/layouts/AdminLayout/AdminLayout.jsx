@@ -13,13 +13,11 @@ const AdminLayout = () => {
             <AdminHeader/>
             <Layout>
                 <AdminSidebar/>
-                <Content className="content">
-                    Content
+                <Content className="content" style={{ padding: '30px' }}>
                     <Outlet/>
                 </Content>
             </Layout>
         </Layout>
-      <Outlet />
     </>
   )
 }
