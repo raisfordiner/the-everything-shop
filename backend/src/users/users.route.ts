@@ -243,6 +243,12 @@ class UsersRoutes extends BaseRouter {
         middlewares: checkIfAdmin,
         controller: UsersController.deleteUser,
       },
+      {
+        method: "get",
+        path: "/:id/reviews",
+        middlewares: [],
+        controller: UsersController.getUserReview,
+      },
     ];
   }
 }
