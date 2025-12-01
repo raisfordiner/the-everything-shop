@@ -228,20 +228,19 @@ import { adminGuard, authGuard } from "middlewares/authGuard";
 
 class ReviewsRoutes extends BaseRouter {
   protected routes(): RouteConfig[] {
-    const checkIfAdmin = [authGuard, adminGuard];
     const checkIfUser = [authGuard];
 
     return [
       {
         method: "get",
         path: "/",
-        middlewares: [...checkIfUser, validateQuery(ReviewsSchema.search)],
+        middlewares: [validateQuery(ReviewsSchema.search)],
         controller: ReviewsController.getReviews,
       },
       {
         method: "get",
         path: "/:id",
-        middlewares: [...checkIfAdmin],
+        middlewares: [],
         controller: ReviewsController.getReviews,
       },
       {
@@ -253,13 +252,13 @@ class ReviewsRoutes extends BaseRouter {
       {
         method: "put",
         path: "/:id",
-        middlewares: [...checkIfAdmin, validateBody(ReviewsSchema.update)],
+        middlewares: [...checkIfUser, validateBody(ReviewsSchema.update)],
         controller: ReviewsController.updateReview,
       },
       {
         method: "delete",
         path: "/:id",
-        middlewares: checkIfAdmin,
+        middlewares: checkIfUser,
         controller: ReviewsController.deleteReview,
       },
     ];
