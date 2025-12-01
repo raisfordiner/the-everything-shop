@@ -47,3 +47,10 @@ export const patch = (path, data) => {
         body: JSON.stringify(data),
     });
 };
+
+export const put = (path, data) => {
+    return request(path, {
+        method: 'PUT',
+        body: JSON.stringify(data),
+    });
+};
