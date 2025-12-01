@@ -324,7 +324,6 @@ async function main() {
 
   await prisma.cartItem.create({
     data: {
-      customerId: customer1.id,
       cartId: cart1.id,
       productVariantId: variant1.id,
       quantity: 2,
@@ -333,7 +332,6 @@ async function main() {
 
   await prisma.cartItem.create({
     data: {
-      customerId: customer2.id,
       cartId: cart2.id,
       productVariantId: variant3.id,
       quantity: 1,
