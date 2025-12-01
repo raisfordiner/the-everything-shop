@@ -8,15 +8,17 @@ const { Header, Footer, Sider, Content } = Layout;
 
 const AdminLayout = () => {
   return (
-    <Layout>
-      <AdminHeader/>
-      <Layout>
-        <AdminSidebar/>
-        <Content className="content">
-          <Outlet/>
-        </Content>
-      </Layout>
-    </Layout>
+    <>
+        <Layout>
+            <AdminHeader/>
+            <Layout>
+                <AdminSidebar/>
+                <Content className="content" style={{ padding: '30px' }}>
+                    <Outlet/>
+                </Content>
+            </Layout>
+        </Layout>
+    </>
   )
 }
 
