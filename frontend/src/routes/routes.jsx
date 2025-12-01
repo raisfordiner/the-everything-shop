@@ -9,7 +9,8 @@ import AccountInfo from "../pages/customer/AccountInfo/AccountInfo.jsx";
 import Address from "../pages/customer/Address/Address.jsx";
 import ChangePassword from "../pages/customer/ChangePassword/ChangePassword.jsx";
 import FilteredProducts from "../pages/customer/FilteredProducts/FilteredProducts.jsx";
-import ProductDetail from "../components/ProductDetail/ProductDetail.jsx";
+import CustomerProductDetail from "../components/ProductDetail/ProductDetail.jsx";
+import SellerProductDetail from "../pages/seller/ProductDetail/ProductDetail.jsx";
 import Confirmation from "../pages/customer/Confirmation/Confirmation.jsx";
 import ForgotPassword from "../pages/customer/ForgotPassword/ForgotPassword.jsx";
 
@@ -32,7 +33,7 @@ export const routes = [
             },
             {
                 path: '/products/:productId',
-                element: <ProductDetail/>
+                element: <CustomerProductDetail/>
             },
             {
                 path: '/category/:categoryId',
@@ -73,6 +74,20 @@ export const routes = [
             {
                 path: "dashboard",
                 element: <DashBoard />
+            }
+        ]
+    },
+    {
+        path: '/seller',
+        element: <AdminLayout />,
+        children: [
+            {
+                path: "products/new",
+                element: <SellerProductDetail />
+            },
+            {
+                path: "products/:id",
+                element: <SellerProductDetail />
             }
         ]
     }

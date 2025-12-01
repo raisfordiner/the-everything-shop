@@ -8,19 +8,15 @@ const { Header, Footer, Sider, Content } = Layout;
 
 const AdminLayout = () => {
   return (
-    <>
-        <Layout>
-            <AdminHeader/>
-            <Layout>
-                <AdminSidebar/>
-                <Content className="content">
-                    Content
-                    <Outlet/>
-                </Content>
-            </Layout>
-        </Layout>
-      <Outlet />
-    </>
+    <Layout>
+      <AdminHeader/>
+      <Layout>
+        <AdminSidebar/>
+        <Content className="content">
+          <Outlet/>
+        </Content>
+      </Layout>
+    </Layout>
   )
 }
 
