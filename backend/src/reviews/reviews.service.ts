@@ -48,8 +48,6 @@ export default class ReviewsService {
       throw new Error("Review already exists for this order item");
     }
 
-    console.log("got this 54");
-
     const orderItem = await prisma.orderItem.findUnique({
       where: { id: data.orderItemId },
       include: { order: true },
