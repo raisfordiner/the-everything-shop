@@ -1,11 +1,7 @@
 import { Request, Response } from "express";
 import Send from "util/response";
 import ProductService from "./product.service";
-import ProductSchema, {
-  CreateProductRequest,
-  UpdateProductRequest,
-  GetAllProductsQuery,
-} from "./product.schema";
+import ProductSchema, { CreateProductRequest, UpdateProductRequest, GetAllProductsQuery } from "./product.schema";
 import { logger } from "util/logger";
 import { prisma } from "util/db";
 import jwt from "jsonwebtoken";
@@ -141,22 +137,22 @@ export default class ProductController {
 
       // Get seller profile for the user (only needed if user is a seller)
       let sellerId: string | undefined;
-        const seller = await prisma.seller.findUnique({
-          where: { userId },
-        });
+      const seller = await prisma.seller.findUnique({
+        where: { userId },
+      });
 
-        if (!seller) {
-          return Send.forbidden(res, null, "Seller profile not found");
-        }
+      if (!seller) {
+        return Send.forbidden(res, null, "Seller profile not found");
+      }
 
-        // eslint-disable-next-line prefer-const
-        sellerId = seller.id;
+      // eslint-disable-next-line prefer-const
+      sellerId = seller.id;
 
       const product = await ProductService.updateProduct(id, { userId, sellerId }, updateData);
 
       return Send.success(res, product, "Product updated successfully");
     } catch (error: any) {
-      logger.error( error.message , "Failed to update product");
+      logger.error(error.message, "Failed to update product");
 
       if (error.message === "Product not found") {
         return Send.notFound(res, null, "Product not found");
@@ -258,6 +254,19 @@ export default class ProductController {
     } catch (error) {
       logger.error({ error }, "Failed to fetch category products");
       return Send.error(res, null, "Failed to fetch category products");
+    }
+  }
+
+  static async getProductReview(req: Request, res: Response) {
+    try {
+      const { id } = req.params;
+
+      const result = await ProductService.getProductReview(id);
+
+      return Send.success(res, result, "Reviews fetched successfully");
+    } catch (error) {
+      logger.error({ error }, "Failed to fetch reviews");
+      return Send.error(res, null, "Failed to fetch Reviews");
     }
   }
 }

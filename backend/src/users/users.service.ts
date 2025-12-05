@@ -113,4 +113,55 @@ export default class UsersService {
       where: { id },
     });
   }
+
+  static async getReview(userId: string) {
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      include: {
+        customer: true,
+      },
+    });
+
+    if (!user) {
+      throw new Error("User not found");
+    }
+
+    if (!user.customer) {
+      throw new Error("User is not a customer");
+    }
+
+    const reviews = await prisma.review.findMany({
+      where: {
+        customerId: user.customer.id,
+      },
+      include: {
+        orderItem: {
+          include: {
+            productVariant: {
+              include: {
+                product: {
+                  select: {
+                    id: true,
+                    name: true,
+                    images: true,
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
+    });
+
+    return {
+      userId: user.id,
+      username: user.username,
+      customerId: user.customer.id,
+      totalReviews: reviews.length,
+      reviews,
+    };
+  }
 }

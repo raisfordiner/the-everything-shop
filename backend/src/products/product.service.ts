@@ -10,8 +10,8 @@ export default class ProductService {
     take: number = 10,
     categoryId?: string,
     searchTerm?: string
-  ) : Promise<{
-    products: Product[]
+  ): Promise<{
+    products: Product[];
     pagination: {
       total: number;
       skip: number;
@@ -73,9 +73,9 @@ export default class ProductService {
   /**
    * Get a single product by ID
    */
-  static async getProductById(productId: string) : Promise<Product> {
+  static async getProductById(productId: string): Promise<Product> {
     const product = await prisma.product.findFirst({
-      where: { 
+      where: {
         id: productId,
         is_deleted: false,
       },
@@ -122,7 +122,7 @@ export default class ProductService {
     images: string[] = [],
     variantTypes?: any[],
     variantOptions?: Record<string, any>
-  ) : Promise<Product> {
+  ): Promise<Product> {
     // Verify category exists
     const category = await prisma.category.findUnique({
       where: { id: categoryId },
@@ -187,10 +187,10 @@ export default class ProductService {
       variantTypes?: any[];
       variantOptions?: Record<string, any>;
     }
-  ) : Promise<Product> {
+  ): Promise<Product> {
     // Verify product exists
     const product = await prisma.product.findFirst({
-      where: { 
+      where: {
         id: productId,
         is_deleted: false,
       },
@@ -259,9 +259,12 @@ export default class ProductService {
   /**
    * Get products by seller ID
    */
-  static async getProductsBySeller(sellerId: string, skip: number = 0, take: number = 10) 
-  : Promise<{
-    products: Product[]
+  static async getProductsBySeller(
+    sellerId: string,
+    skip: number = 0,
+    take: number = 10
+  ): Promise<{
+    products: Product[];
     pagination: {
       total: number;
       skip: number;
@@ -271,7 +274,7 @@ export default class ProductService {
   }> {
     const [products, total] = await Promise.all([
       prisma.product.findMany({
-        where: { 
+        where: {
           createdBy: sellerId,
           is_deleted: false,
         },
@@ -300,8 +303,11 @@ export default class ProductService {
   /**
    * Get products by category
    */
-  static async getProductsByCategory(categoryId: string, skip: number = 0, take: number = 10)
-  : Promise<{
+  static async getProductsByCategory(
+    categoryId: string,
+    skip: number = 0,
+    take: number = 10
+  ): Promise<{
     products: Product[];
     pagination: {
       total: number;
@@ -312,7 +318,7 @@ export default class ProductService {
   }> {
     const [products, total] = await Promise.all([
       prisma.product.findMany({
-        where: { 
+        where: {
           categoryId,
           is_deleted: false,
         },
@@ -345,6 +351,55 @@ export default class ProductService {
         take,
         pages: Math.ceil(total / take),
       },
+    };
+  }
+
+  /**
+   * Get reviews for a product
+   */
+  static async getProductReview(productId: string) {
+    const product = await prisma.product.findUnique({
+      where: { id: productId },
+      include: {
+        productVariants: {
+          include: {
+            orderItems: {
+              include: {
+                review: {
+                  include: {
+                    customer: {
+                      select: {
+                        id: true,
+                        user: {
+                          select: {
+                            username: true,
+                          },
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    });
+
+    if (!product) {
+      throw new Error("Product not found");
+    }
+
+    const reviews = product.productVariants
+      .flatMap((variant) => variant.orderItems)
+      .map((orderItem) => orderItem.review)
+      .filter((review) => review !== null);
+
+    return {
+      productId: product.id,
+      productName: product.name,
+      totalReviews: reviews.length,
+      reviews,
     };
   }
 }

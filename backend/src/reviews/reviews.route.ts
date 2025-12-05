@@ -1,20 +1,20 @@
 import BaseRouter, { RouteConfig } from "util/router";
 import AuthMiddleware from "auth/auth.middleware";
-import UsersController from "./users.controller";
+import ReviewsController from "./reviews.controller";
 import { validateBody, validateQuery } from "util/validation";
-import UsersSchema from "./users.schema";
-import { adminGuard } from "middlewares/authGuard";
+import ReviewsSchema from "./reviews.schema";
+import { adminGuard, authGuard } from "middlewares/authGuard";
 
 /**
  * @swagger
  * tags:
- *   name: Users
- *   description: User management endpoints (Admin only)
+ *   name: Reviews
+ *   description: Review management endpoints (Admin only)
  *
- * /users:
+ * /reviews:
  *   get:
- *     summary: Get all users or search users (Admin only)
- *     tags: [Users]
+ *     summary: Get all reviews or search reviews (Admin only)
+ *     tags: [Reviews]
  *     security:
  *       - bearerAuth: []
  *     parameters:
@@ -23,47 +23,62 @@ import { adminGuard } from "middlewares/authGuard";
  *         required: false
  *         schema:
  *           type: string
- *         description: Search query for username or email (case-insensitive)
+ *         description: Search query for comment (case-insensitive)
  *       - in: query
- *         name: role
+ *         name: customerId
  *         required: false
  *         schema:
  *           type: string
- *           enum: [ADMIN, SELLER, CUSTOMER]
- *         description: Filter by user role
+ *         description: Filter by customer ID
+ *       - in: query
+ *         name: rating
+ *         required: false
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *           maximum: 5
+ *         description: Filter by rating
  *     responses:
  *       200:
- *         description: List of users
+ *         description: List of reviews
  *         content:
  *           application/json:
  *             schema:
  *               type: object
  *               properties:
- *                 users:
+ *                 reviews:
  *                   type: array
  *                   items:
  *                     type: object
  *                     properties:
  *                       id:
  *                         type: string
- *                       username:
+ *                       rating:
+ *                         type: integer
+ *                       comment:
  *                         type: string
- *                       email:
+ *                       images:
+ *                         type: array
+ *                         items:
+ *                           type: string
+ *                       reviewDate:
  *                         type: string
- *                       role:
+ *                         format: date-time
+ *                       orderItemId:
  *                         type: string
- *                         enum: [ADMIN, SELLER, CUSTOMER]
+ *                       customerId:
+ *                         type: string
  *       401:
  *         description: Unauthorized
  *       403:
  *         description: Forbidden - Admin access required
  *       404:
- *         description: Users not found
+ *         description: Reviews not found
  *       500:
  *         description: Internal server error
  *   post:
- *     summary: Create new user (Admin only)
- *     tags: [Users]
+ *     summary: Create new review (Admin only)
+ *     tags: [Reviews]
  *     security:
  *       - bearerAuth: []
  *     requestBody:
@@ -73,28 +88,26 @@ import { adminGuard } from "middlewares/authGuard";
  *           schema:
  *             type: object
  *             required:
- *               - username
- *               - email
- *               - password
- *               - role
+ *               - rating
+ *               - orderItemId
+ *
  *             properties:
- *               username:
+ *               rating:
+ *                 type: integer
+ *                 minimum: 1
+ *                 maximum: 5
+ *               comment:
  *                 type: string
- *                 minLength: 6
- *                 maxLength: 20
- *               email:
+ *               images:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *               orderItemId:
  *                 type: string
- *                 format: email
- *               password:
- *                 type: string
- *                 format: password
- *                 minLength: 8
- *               role:
- *                 type: string
- *                 enum: [ADMIN, SELLER, CUSTOMER]
+
  *     responses:
  *       200:
- *         description: User created successfully
+ *         description: Review created successfully
  *       401:
  *         description: Unauthorized
  *       403:
@@ -102,10 +115,10 @@ import { adminGuard } from "middlewares/authGuard";
  *       500:
  *         description: Internal server error
  *
- * /users/{id}:
+ * /reviews/{id}:
  *   get:
- *     summary: Get user by ID (Admin only)
- *     tags: [Users]
+ *     summary: Get review by ID (Admin only)
+ *     tags: [Reviews]
  *     security:
  *       - bearerAuth: []
  *     parameters:
@@ -114,38 +127,46 @@ import { adminGuard } from "middlewares/authGuard";
  *         required: true
  *         schema:
  *           type: string
- *         description: User ID
+ *         description: Review ID
  *     responses:
  *       200:
- *         description: User details
+ *         description: Review details
  *         content:
  *           application/json:
  *             schema:
  *               type: object
  *               properties:
- *                 user:
+ *                 review:
  *                   type: object
  *                   properties:
  *                     id:
  *                       type: string
- *                     username:
+ *                     rating:
+ *                       type: integer
+ *                     comment:
  *                       type: string
- *                     email:
+ *                     images:
+ *                       type: array
+ *                       items:
+ *                         type: string
+ *                     reviewDate:
  *                       type: string
- *                     role:
+ *                       format: date-time
+ *                     orderItemId:
  *                       type: string
- *                       enum: [ADMIN, SELLER, CUSTOMER]
+ *                     customerId:
+ *                       type: string
  *       401:
  *         description: Unauthorized
  *       403:
  *         description: Forbidden - Admin access required
  *       404:
- *         description: User not found
+ *         description: Review not found
  *       500:
  *         description: Internal server error
  *   put:
- *     summary: Update user (Admin only)
- *     tags: [Users]
+ *     summary: Update review (Admin only)
+ *     tags: [Reviews]
  *     security:
  *       - bearerAuth: []
  *     parameters:
@@ -154,7 +175,7 @@ import { adminGuard } from "middlewares/authGuard";
  *         required: true
  *         schema:
  *           type: string
- *         description: User ID
+ *         description: Review ID
  *     requestBody:
  *       required: true
  *       content:
@@ -162,23 +183,19 @@ import { adminGuard } from "middlewares/authGuard";
  *           schema:
  *             type: object
  *             properties:
- *               username:
+ *               rating:
+ *                 type: integer
+ *                 minimum: 1
+ *                 maximum: 5
+ *               comment:
  *                 type: string
- *                 minLength: 6
- *                 maxLength: 20
- *               email:
- *                 type: string
- *                 format: email
- *               password:
- *                 type: string
- *                 format: password
- *                 minLength: 8
- *               role:
- *                 type: string
- *                 enum: [ADMIN, SELLER, CUSTOMER]
+ *               images:
+ *                 type: array
+ *                 items:
+ *                   type: string
  *     responses:
  *       200:
- *         description: User updated successfully
+ *         description: Review updated successfully
  *       401:
  *         description: Unauthorized
  *       403:
@@ -186,8 +203,8 @@ import { adminGuard } from "middlewares/authGuard";
  *       500:
  *         description: Internal server error
  *   delete:
- *     summary: Delete user (Admin only)
- *     tags: [Users]
+ *     summary: Delete review (Admin only)
+ *     tags: [Reviews]
  *     security:
  *       - bearerAuth: []
  *     parameters:
@@ -196,10 +213,10 @@ import { adminGuard } from "middlewares/authGuard";
  *         required: true
  *         schema:
  *           type: string
- *         description: User ID
+ *         description: Review ID
  *     responses:
  *       200:
- *         description: User deleted successfully
+ *         description: Review deleted successfully
  *       401:
  *         description: Unauthorized
  *       403:
@@ -208,49 +225,43 @@ import { adminGuard } from "middlewares/authGuard";
  *         description: Internal server error
  */
 
-class UsersRoutes extends BaseRouter {
+class ReviewsRoutes extends BaseRouter {
   protected routes(): RouteConfig[] {
-    const checkIfAdmin = [AuthMiddleware.authenticateUser, adminGuard];
+    const checkIfUser = [authGuard];
 
     return [
       {
         method: "get",
         path: "/",
-        middlewares: [...checkIfAdmin, validateQuery(UsersSchema.search)],
-        controller: UsersController.getUsers,
+        middlewares: [validateQuery(ReviewsSchema.search)],
+        controller: ReviewsController.getReviews,
       },
       {
         method: "get",
         path: "/:id",
-        middlewares: [...checkIfAdmin],
-        controller: UsersController.getUsers,
+        middlewares: [],
+        controller: ReviewsController.getReviews,
       },
       {
         method: "post",
         path: "/",
-        middlewares: [...checkIfAdmin, validateBody(UsersSchema.create)],
-        controller: UsersController.createUser,
+        middlewares: [...checkIfUser, validateBody(ReviewsSchema.create)],
+        controller: ReviewsController.createReview,
       },
       {
         method: "put",
         path: "/:id",
-        middlewares: [...checkIfAdmin, validateBody(UsersSchema.update)],
-        controller: UsersController.updateUser,
+        middlewares: [...checkIfUser, validateBody(ReviewsSchema.update)],
+        controller: ReviewsController.updateReview,
       },
       {
         method: "delete",
         path: "/:id",
-        middlewares: checkIfAdmin,
-        controller: UsersController.deleteUser,
-      },
-      {
-        method: "get",
-        path: "/:id/reviews",
-        middlewares: [],
-        controller: UsersController.getUserReview,
+        middlewares: checkIfUser,
+        controller: ReviewsController.deleteReview,
       },
     ];
   }
 }
 
-export default new UsersRoutes().router;
+export default new ReviewsRoutes().router;

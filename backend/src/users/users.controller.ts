@@ -72,4 +72,17 @@ export default class UsersController {
       return Send.error(res, {}, "Internal server error");
     }
   }
+
+  static async getUserReview(req: Request, res: Response) {
+    try {
+      const { id } = req.params;
+
+      const response = await UsersService.getReview(id);
+
+      return Send.success(res, response);
+    } catch (error) {
+      logger.error({ error }, "Error fetching users");
+      return Send.error(res, {}, "Internal server error");
+    }
+  }
 }

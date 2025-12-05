@@ -305,6 +305,12 @@ class ProductRouter extends BaseRouter {
         middlewares: [adminOrSellerGuard],
         controller: ProductController.deleteProduct,
       },
+      {
+        method: "delete",
+        path: "/:id/reviews",
+        middlewares: [adminOrSellerGuard],
+        controller: ProductController.getProductReview,
+      },
     ];
   }
 }
