@@ -5,7 +5,6 @@ const create = z.object({
   comment: z.string().optional(),
   images: z.array(z.string()).optional(),
   orderItemId: z.string(),
-  customerId: z.string(),
 });
 
 const update = z.object({

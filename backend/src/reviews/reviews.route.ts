@@ -90,7 +90,7 @@ import { adminGuard, authGuard } from "middlewares/authGuard";
  *             required:
  *               - rating
  *               - orderItemId
- *               - customerId
+ *
  *             properties:
  *               rating:
  *                 type: integer
@@ -104,8 +104,7 @@ import { adminGuard, authGuard } from "middlewares/authGuard";
  *                   type: string
  *               orderItemId:
  *                 type: string
- *               customerId:
- *                 type: string
+
  *     responses:
  *       200:
  *         description: Review created successfully

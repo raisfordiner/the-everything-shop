@@ -39,7 +39,6 @@ export default class ReviewsService {
     comment?: string;
     images?: string[];
     orderItemId: string;
-    customerId: string;
   }) {
     const existingReview = await prisma.review.findUnique({
       where: { orderItemId: data.orderItemId },
@@ -49,13 +48,27 @@ export default class ReviewsService {
       throw new Error("Review already exists for this order item");
     }
 
+    console.log("got this 54");
+
+    const orderItem = await prisma.orderItem.findUnique({
+      where: { id: data.orderItemId },
+      include: { order: true },
+    });
+
+    if (!orderItem) {
+      throw new Error("Order item not found");
+    }
+
+    const customerId = orderItem.order.customerId;
+
+
     return await prisma.review.create({
       data: {
         rating: data.rating,
         comment: data.comment,
         images: data.images || [],
         orderItemId: data.orderItemId,
-        customerId: data.customerId,
+        customerId,
       },
       select: {
         id: true,

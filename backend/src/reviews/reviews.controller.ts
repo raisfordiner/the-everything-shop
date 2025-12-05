@@ -31,14 +31,13 @@ export default class ReviewsController {
 
   static async createReview(req: Request, res: Response) {
     try {
-      const { rating, comment, images, orderItemId, customerId } = req.body;
+      const { rating, comment, images, orderItemId } = req.body;
 
       const review = await ReviewsService.create({
         rating,
         comment,
         images,
         orderItemId,
-        customerId,
       });
 
       return Send.success(res, { review }, "Review created successfully");
