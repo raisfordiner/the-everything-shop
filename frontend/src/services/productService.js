@@ -24,6 +24,14 @@ const deleteProduct = (productId) => {
     return del(`/products/${productId}`);
 };
 
+const getSellerProducts = () => {
+    return get('/products/seller/me');
+};
+
+const getSellerProductsBySellerId = (sellerId) => {
+    return get(`/products/seller/${sellerId}`);
+};
+
 const productService = {
     getAllProducts,
     getProductById,
@@ -31,6 +39,8 @@ const productService = {
     createProduct,
     updateProduct,
     deleteProduct,
+    getSellerProducts,
+    getSellerProductsBySellerId,
 };
 
 export default productService;

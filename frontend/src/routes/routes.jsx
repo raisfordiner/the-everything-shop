@@ -23,6 +23,8 @@ import AddCustomer from "../pages/admin/Customers/AddCustomer.jsx";
 import Coupons from "../pages/admin/Coupons/Coupons.jsx";
 import EditCoupon from "../pages/admin/Coupons/EditCoupon.jsx";
 import AddCoupon from "../pages/admin/Coupons/AddCoupon.jsx";
+import SellerLayout from "../components/layouts/SellerLayout/SellerLayout.jsx";
+import SellerProducts from "../pages/seller/Product/Product.jsx";
 
 export const routes = [
     {
@@ -103,7 +105,7 @@ export const routes = [
             },
             {
                 path: "customers",
-                element: <Customers />,
+                element: <Customers/>
             },
             {
                 path: "customers/edit-customer/:id",
@@ -129,8 +131,12 @@ export const routes = [
     },
     {
         path: '/seller',
-        element: <AdminLayout />,
+        element: <SellerLayout />,
         children: [
+            {
+                path: "products",
+                element: <SellerProducts />
+            },
             {
                 path: "products/new",
                 element: <SellerProductDetail />

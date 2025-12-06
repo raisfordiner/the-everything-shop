@@ -17,7 +17,7 @@ import {
   Image,
 } from 'antd';
 import { UploadOutlined, SaveOutlined, DeleteOutlined } from '@ant-design/icons';
-import DescriptionEditor from '../../../components/common/DescriptionEditor/DescriptionEditor';
+import DescriptionEditor from '../../../components/DescriptionEditor/DescriptionEditor';
 import productService from '../../../services/productService';
 import categoryService from '../../../services/categoryService';
 import './ProductDetail.css';
@@ -350,7 +350,7 @@ export default function ProductDetail() {
           </Form.Item>
 
           <Form.Item
-            label="Price (₫)"
+            label="Price (Γé½)"
             name="price"
             rules={[
               { required: true, message: 'Price is required' },
@@ -568,24 +568,12 @@ export default function ProductDetail() {
           onFinish={handleSubmit}
           autoComplete="off"
         >
-          <div className="product-form-layout">
-            <div className="product-form-left">
-              <Collapse
-                items={[collapseItems[0], collapseItems[1]]}
-                activeKey={activeKeys}
-                onChange={setActiveKeys}
-                className="product-collapse"
-              />
-            </div>
-            <div className="product-form-right">
-              <Collapse
-                items={[collapseItems[2], collapseItems[3]]}
-                activeKey={activeKeys}
-                onChange={setActiveKeys}
-                className="product-collapse"
-              />
-            </div>
-          </div>
+          <Collapse
+            items={collapseItems}
+            activeKey={activeKeys}
+            onChange={setActiveKeys}
+            className="product-collapse"
+          />
 
           <Divider />
 

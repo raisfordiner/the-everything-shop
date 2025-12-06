@@ -1,0 +1,67 @@
+.seller-header {
+    width: 100%;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    background-color: #fff;
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+}
+
+.seller-header .seller-header__main {
+    display: flex;
+    align-items: center;
+    padding: 22px 120px;
+    background-color: #fff;
+}
+
+.seller-header .seller-header__main .logo {
+    font-size: 24px;
+    font-weight: bold;
+    color: #008ecc;
+    text-decoration: none;
+}
+
+.seller-header .seller-header__main .ant-input-search-button {
+    background-color: #008ecc !important;
+    border-color: #008ecc !important;
+}
+
+.seller-header .seller-header__main .ant-input-search-button:hover {
+    background-color: #0073b3 !important;
+}
+
+.seller-header .seller-header__main .main__right {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 20px;
+}
+
+.seller-header .header-action-item,
+.seller-header .user-menu-trigger {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 15px;
+    color: #333;
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+
+.seller-header .header-action-item:hover,
+.seller-header .user-menu-trigger:hover {
+    color: #008ecc;
+}
+
+.seller-header .header-action-item .icon,
+.seller-header .user-menu-trigger .icon {
+    font-size: 18px;
+}
+
+.seller-header .user-menu-trigger {
+    cursor: pointer;
+}
+
+.seller-header .icon {
+    color: #008ecc;
+}
