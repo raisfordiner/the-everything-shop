@@ -100,6 +100,8 @@ export const routes = [
             {
                 path: "orders",
                 element: <Order/>
+            },
+            {
                 path: "customers",
                 element: <Customers />,
             },
