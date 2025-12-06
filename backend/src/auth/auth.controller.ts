@@ -32,7 +32,7 @@ export default class AuthController {
             <p>
               Click the link below to verify your email:
             </p>
-            <a href="put_url_here/verify?token=${emailVerificationToken}">
+            <a href="${process.env.FE_URL}/auth/verify?token=${emailVerificationToken}">
               Verify Email
             </a>
             <p>

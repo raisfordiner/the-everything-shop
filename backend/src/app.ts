@@ -48,8 +48,7 @@ export default class App {
     this.app.use(
       cors({
         origin: [
-          "http://localhost:3000", // frontend url
-          "https://mywebsite.com", // production url optional
+          process.env.FE_URL,
         ],
         methods: ["GET", "POST", "DELETE", "PATCH", "PUT"],
         credentials: true,
