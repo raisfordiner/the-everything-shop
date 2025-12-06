@@ -32,7 +32,7 @@ export default class AuthController {
             <p>
               Click the link below to verify your email:
             </p>
-            <a href="put_url_here/verify?token=${emailVerificationToken}">
+            <a href="${process.env.FE_URL}/auth/verify?token=${emailVerificationToken}">
               Verify Email
             </a>
             <p>
@@ -125,12 +125,26 @@ export default class AuthController {
         return Send.error(res, null, "Invalid or missing token.");
       }
 
-      const user = await AuthService.verifyEmailToken(token);
+      const { user, accessToken, refreshToken } = await AuthService.verifyEmailToken(token);
+
+      res.cookie("accessToken", accessToken, {
+        // httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        maxAge: 15 * ONE_MINUTE,
+        sameSite: "strict",
+      });
+
+      res.cookie("refreshToken", refreshToken, {
+        // httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        maxAge: 24 * 60 * ONE_MINUTE,
+        sameSite: "strict",
+      });
 
       return Send.success(
         res,
         { id: user.id, username: user.username, email: user.email, emailVerified: user.emailVerified },
-        "Email verified successfully."
+        "Email verified successfully. You have been logged in."
       );
     } catch (error: any) {
       logger.error({ error }, "Email verification failed.");

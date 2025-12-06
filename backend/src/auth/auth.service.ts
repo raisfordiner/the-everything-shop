@@ -132,7 +132,17 @@ export default class AuthService {
         data: { emailVerified: new Date() },
       });
 
-      return updatedUser;
+      const accessToken = jwt.sign({ userId: updatedUser.id, role: updatedUser.role }, authConfig.secret, {
+        expiresIn: authConfig.secret_expires_in as any,
+      });
+
+      const refreshToken = jwt.sign({ userId: updatedUser.id, role: updatedUser.role }, authConfig.refresh_secret, {
+        expiresIn: authConfig.refresh_secret_expires_in as any,
+      });
+
+      await prisma.user.update({ where: { id: updatedUser.id }, data: { refreshToken } });
+
+      return { user: updatedUser, accessToken, refreshToken };
     } catch (error: any) {
       if (error.name === "TokenExpiredError") {
         throw new Error("Email verification token has expired.");

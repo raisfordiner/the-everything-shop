@@ -1,4 +1,4 @@
-import {get, post} from '../utils/request';
+import { get, post } from '../utils/request';
 
 const login = (email, password) => {
     return post('/auth/login', { email, password });
@@ -16,11 +16,16 @@ const checkSession = () => {
     return get('/user/info');
 };
 
+const verify = (token) => {
+    return get(`/auth/verify?token=${token}`);
+};
+
 const authService = {
     login,
     register,
     logout,
     checkSession,
+    verify,
 };
 
 export default authService;
