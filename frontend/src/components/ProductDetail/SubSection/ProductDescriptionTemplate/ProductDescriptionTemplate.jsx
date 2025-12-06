@@ -2,7 +2,7 @@ import { useParams } from 'react-router-dom';
 import { Collapse, Spin, Empty } from 'antd';
 import { useEffect, useState } from 'react';
 import productService from '../../../../services/productService';
-import DescriptionRenderer from '../../../../components/DescriptionRenderer/DescriptionRenderer';
+import DescriptionRenderer from '../../../common/DescriptionRenderer/DescriptionRenderer';
 import './ProductDescriptionTemplate.css';
 
 const ProductDescriptionTemplate = () => {

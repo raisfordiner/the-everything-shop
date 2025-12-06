@@ -19,8 +19,34 @@ export default class UserController {
           id: true,
           username: true,
           email: true,
+          role: true,
           createdAt: true,
           updatedAt: true,
+          customer: {
+            select: {
+              id: true,
+              image: true,
+              addresses: true,
+              createdAt: true,
+              updatedAt: true,
+            }
+          },
+          seller: {
+            select: {
+              id: true,
+              email: true,
+              image: true,
+              createdAt: true,
+              updatedAt: true,
+            }
+          },
+          admin: {
+            select: {
+              id: true,
+              createdAt: true,
+              updatedAt: true,
+            }
+          }
         },
       });
 
