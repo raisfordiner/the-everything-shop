@@ -77,7 +77,7 @@ services:
     networks:
       - tes-dev
     volumes:
-      - ./.data:/data
+      - s3_data:/data
     ports:
       - "9000:9000"
       - "9001:9001"
@@ -95,6 +95,9 @@ services:
       /usr/bin/mc mb tess3/tes &&
       exit 0
       "
+
+volumes:
+  s3_data:
 
 networks:
   tes-dev:
