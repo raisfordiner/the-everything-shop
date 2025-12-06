@@ -4,6 +4,7 @@ import Home from '../pages/customer/Home/Home.jsx';
 import DashBoard from '../pages/admin/DashBoard/DashBoard.jsx';
 import Login from "../pages/public/Login/Login.jsx";
 import Register from "../pages/customer/Register/Register.jsx";
+import VerifyEmail from "../pages/public/VerifyEmail/VerifyEmail.jsx";
 import Profile from "../components/layouts/Profile/Profile.jsx";
 import AccountInfo from "../pages/customer/AccountInfo/AccountInfo.jsx";
 import Address from "../pages/customer/Address/Address.jsx";
@@ -44,12 +45,16 @@ export const routes = [
                 element: <Register />,
             },
             {
+                path: '/auth/verify',
+                element: <VerifyEmail />,
+            },
+            {
                 path: '/products/:productId',
-                element: <CustomerProductDetail/>
+                element: <CustomerProductDetail />
             },
             {
                 path: '/category/:categoryId',
-                element: <FilteredProducts/>
+                element: <FilteredProducts />
             },
             {
                 path: '/confirmation',
@@ -65,7 +70,7 @@ export const routes = [
                 children: [
                     {
                         index: true,
-                        element: <AccountInfo/>
+                        element: <AccountInfo />
                     },
                     {
                         path: 'my-address',
@@ -97,23 +102,23 @@ export const routes = [
             },
             {
                 path: "categories/edit-category/:id",
-                element: <EditCategory/>
+                element: <EditCategory />
             },
             {
                 path: "orders",
-                element: <Order/>,
+                element: <Order />,
             },
             {
                 path: "customers",
-                element: <Customers/>
+                element: <Customers />
             },
             {
                 path: "customers/edit-customer/:id",
-                element: <EditCustomer/>
+                element: <EditCustomer />
             },
             {
                 path: "customers/add-customer",
-                element: <AddCustomer/>
+                element: <AddCustomer />
             },
             {
                 path: "coupons",
