@@ -1,14 +1,14 @@
 import './Header.css'
 import { SearchOutlined, UserOutlined, ShoppingCartOutlined, DownOutlined, TruckOutlined, DropboxOutlined, LogoutOutlined, MenuOutlined } from '@ant-design/icons'
-import {Input, Flex, Button, Divider, Grid, Row, Col, message, Menu, Avatar, Dropdown} from 'antd'
+import { Input, Flex, Button, Divider, Grid, Row, Col, message, Menu, Avatar, Dropdown } from 'antd'
 import { Link } from 'react-router-dom'
-import {useNavigate} from "react-router";
-import {useDispatch, useSelector} from "react-redux";
+import { useNavigate } from "react-router";
+import { useDispatch, useSelector } from "react-redux";
 import authService from "../../services/authService.js";
-import {setLogout} from "../../redux/actions/authAction.js";
-import {useEffect} from "react";
+import { setLogout } from "../../redux/actions/authAction.js";
+import { useEffect } from "react";
 import categoryService from "../../services/categoryService.js";
-import {setCategories} from "../../redux/actions/categoryAction.js";
+import { setCategories } from "../../redux/actions/categoryAction.js";
 const { Search } = Input;
 
 const Header = () => {
@@ -16,7 +16,7 @@ const Header = () => {
     const dispatch = useDispatch();
     const [messageApi, contextHolder] = message.useMessage();
 
-    const {isAuthenticated, user} = useSelector((state) => state.authReducer);
+    const { isAuthenticated, user } = useSelector((state) => state.authReducer);
 
     const categories = useSelector((state) => state.allCategories.categories);
 
@@ -26,7 +26,7 @@ const Header = () => {
                 const categories = await categoryService.getAllCategoriesSimple();
                 dispatch(setCategories(categories.data))
             }
-            catch(error) {
+            catch (error) {
                 console.error(error)
             }
         }
@@ -76,6 +76,7 @@ const Header = () => {
 
     return (
         <div className='header'>
+            {contextHolder}
             <div className="header__upper">
                 <div className="upper__left">
                     <span>Welcome to my everything-shop!</span>
@@ -86,11 +87,11 @@ const Header = () => {
                         Deliver 000000
                     </span>
                     <span>
-                        <TruckOutlined className='icon'/>
+                        <TruckOutlined className='icon' />
                         Track your order
                     </span>
                     <span>
-                        <DropboxOutlined className='icon'/>
+                        <DropboxOutlined className='icon' />
                         All offers
                     </span>
                 </div>
@@ -113,7 +114,7 @@ const Header = () => {
                                     <span>Cart</span>
                                 </Link>
 
-                                <Divider type="vertical" style={{height: "20px", borderLeft: "1px solid #d9d9d9", margin: "0", alignSelf: "center"}} />
+                                <Divider type="vertical" style={{ height: "20px", borderLeft: "1px solid #d9d9d9", margin: "0", alignSelf: "center" }} />
 
                                 <Dropdown menu={userMenu} placement="bottomLeft" arrow>
                                     <a onClick={(e) => e.preventDefault()} className="user-menu-trigger">
@@ -135,7 +136,7 @@ const Header = () => {
             </Row>
             <Row className="header__lower">
                 <Dropdown menu={categoryMenu} trigger={['hover']} placement={"bottomLeft"} arrow>
-                    <Button icon={<MenuOutlined />} style={{border: "none", padding: "0", boxShadow: "none"}}>
+                    <Button icon={<MenuOutlined />} style={{ border: "none", padding: "0", boxShadow: "none" }}>
                         All Categories
                     </Button>
                 </Dropdown>

@@ -5,7 +5,7 @@ import { NextFunction, Request, Response } from "express";
 import jwt from "jsonwebtoken";
 
 export interface DecodedToken {
-  userId: number;
+  userId: string;
 }
 
 export default class AuthMiddleware {
@@ -18,7 +18,7 @@ export default class AuthMiddleware {
     try {
       const decodedToken = jwt.verify(token, authConfig.secret) as DecodedToken;
 
-      (req as any).userId = decodedToken.userId;
+      (req as any).user = { userId: decodedToken.userId };
 
       next();
     } catch (error) {
@@ -35,9 +35,9 @@ export default class AuthMiddleware {
     }
 
     try {
-      const decodedToken = jwt.verify(refreshToken, authConfig.refresh_secret) as { userId: number };
+      const decodedToken = jwt.verify(refreshToken, authConfig.refresh_secret) as { userId: string };
 
-      (req as any).userId = decodedToken.userId;
+      (req as any).user = { userId: decodedToken.userId };
 
       next();
     } catch (error) {
