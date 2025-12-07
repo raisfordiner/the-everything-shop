@@ -11,6 +11,7 @@ interface EnvConfig {
   AWS_S3_BUCKET_NAME: string;
   AWS_S3_ENDPOINT: string;
   AWS_S3_FORCE_PATH_STYLE: string;
+  AWS_S3_PUBLIC_URL: string;
 }
 
 export default class UploadService {
@@ -26,6 +27,7 @@ export default class UploadService {
       AWS_S3_BUCKET_NAME: process.env.AWS_S3_BUCKET_NAME || '',
       AWS_S3_ENDPOINT: process.env.AWS_S3_ENDPOINT || '',
       AWS_S3_FORCE_PATH_STYLE: process.env.AWS_S3_FORCE_PATH_STYLE || '',
+      AWS_S3_PUBLIC_URL: process.env.AWS_S3_PUBLIC_URL || '',
     };
 
     this.validateConfig();
@@ -80,7 +82,8 @@ export default class UploadService {
       );
 
       // Construct file URL
-      const fileUrl = `https://${bucketName}.s3.${region}.amazonaws.com/${uniqueFileName}`;
+      // const fileUrl = `https://${bucketName}.s3.${region}.amazonaws.com/${uniqueFileName}`;
+      const fileUrl = `${this.config.AWS_S3_PUBLIC_URL}/${this.config.AWS_S3_BUCKET_NAME}/${uniqueFileName}`;
       logger.info(`File uploaded successfully: ${fileUrl}`);
       
       return fileUrl;
