@@ -189,7 +189,7 @@ export default class AuthController {
         sameSite: "strict",
       });
 
-      return Send.success(res, { id: user.id, username: user.username, email: user.email });
+      return Send.success(res, { id: user.id, username: user.username, email: user.email, role: user.role });
     } catch (error: any) {
       logger.error({ error }, "Login Failed");
       return Send.error(res, null, error.message || "Login failed.");
