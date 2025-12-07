@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react'
+import { useNavigate } from 'react-router'
 import CategoryListing from '../../../components/Category/CategoryListing'
 import ProductSection from '../../../components/Product/ProductSection'
 import { setProducts } from '../../../redux/actions/productAction.js'
@@ -11,6 +12,16 @@ const Home = () => {
   const [error, setError] = useState(null)
 
   const allProducts = useSelector(state => state.allProducts.products)
+  const user = useSelector(state => state.authReducer.user)
+  const navigate = useNavigate()
+
+  useEffect(() => {
+    if (user?.role === 'ADMIN') {
+      navigate('/admin/dashboard')
+    } else if (user?.role === 'SELLER') {
+      navigate('/seller/products')
+    }
+  }, [user, navigate])
 
   useEffect(() => {
     const getProducts = async () => {
@@ -20,20 +31,20 @@ const Home = () => {
 
         dispatch(setProducts(data.data.products))
         setError(null)
-      } catch(error) {
-          console.error("Lỗi khi tải sản phẩm:", error);
-          setError("Không thể tải dữ liệu sản phẩm.");
+      } catch (error) {
+        console.error("Lỗi khi tải sản phẩm:", error);
+        setError("Không thể tải dữ liệu sản phẩm.");
       } finally {
         setIsLoading(false)
       }
     }
     getProducts()
-  },[])
+  }, [])
 
 
   return (
     <div>
-      <CategoryListing/>
+      <CategoryListing />
       <ProductSection
         title='test'
         products={allProducts}
