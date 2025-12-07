@@ -1,14 +1,29 @@
-import React from 'react'
-import {Button, Col, Form, Input, Row} from "antd";
-import LoginImage from "../../../assets/LoginImage.png"
-import "./ForgotPassword.scss"
-import BreadscrumbMenu from "../../../components/BreadscrumbMenu/BreadscrumbMenu.jsx";
-import {Link} from "react-router";
+ import React, { useState } from 'react'
+ import {Button, Col, Form, Input, Row, message} from "antd";
+ import LoginImage from "../../../assets/LoginImage.png"
+ import "./ForgotPassword.scss"
+ import BreadscrumbMenu from "../../../components/BreadscrumbMenu/BreadscrumbMenu.jsx";
+ import {Link, useNavigate} from "react-router";
+ import authService from "../../../services/authService";
 
-const ForgotPassword = () => {
-    const onFinish = () => {
+ const ForgotPassword = () => {
+     const [loading, setLoading] = useState(false);
+     const [messageApi, contextHolder] = message.useMessage();
+     const navigate = useNavigate();
 
-    }
+     const onFinish = async (values) => {
+         setLoading(true);
+         try {
+             await authService.forgotPassword(values.email);
+             messageApi.success("If an account exists with this email, a password reset link has been sent.", 3, () => {
+                 navigate('/login');
+             });
+         } catch (error) {
+             messageApi.error(error.response?.data?.message || "Failed to send reset link. Please try again.");
+         } finally {
+             setLoading(false);
+         }
+     }
 
     const breadcrumbItems = [
         {
@@ -21,6 +36,7 @@ const ForgotPassword = () => {
 
     return (
         <>
+            {contextHolder}
             <BreadscrumbMenu items={breadcrumbItems}/>
 
             <div className="forgot-password">
@@ -57,6 +73,7 @@ const ForgotPassword = () => {
                                     htmlType="submit"
                                     size="large"
                                     className="btn-submit"
+                                    loading={loading}
                                 >
                                     SEND RESET LINK
                                 </Button>
