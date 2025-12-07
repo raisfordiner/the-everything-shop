@@ -4,6 +4,7 @@ import { useSearchParams, useNavigate, Link } from 'react-router';
 import authService from '../../../services/authService';
 import LoginImage from "../../../assets/LoginImage.png";
 import "./ResetPassword.scss";
+import BreadscrumbMenu from "../../../components/BreadscrumbMenu/BreadscrumbMenu.jsx";
 
 const ResetPassword = () => {
     const [searchParams] = useSearchParams();
@@ -45,6 +46,7 @@ const ResetPassword = () => {
     return (
         <>
             {contextHolder}
+            <BreadscrumbMenu items={[{ title: 'Reset Password' }]} />
             <div className="reset-password-page">
                 <Row gutter={24} align="middle">
                     <Col span={12}>
