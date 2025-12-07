@@ -4,7 +4,6 @@ import {
   loginSchema,
   registerSchema,
   forgotPasswordSchema,
-  changePasswordSchema,
   resetPasswordWithTokenSchema,
 } from "./auth.schema";
 import { z } from "zod";
@@ -13,6 +12,23 @@ import { logger } from "util/logger";
 import { sendMail } from "util/mail";
 
 const ONE_MINUTE: number = 60 * 1000; // one minute in milliseconds
+const COOKIE_OPTIONS = {
+  httpOnly: true,
+  secure: process.env.NODE_ENV === "production",
+  sameSite: "strict" as const,
+};
+
+const setAuthCookies = (res: Response, accessToken: string, refreshToken: string) => {
+  res.cookie("accessToken", accessToken, {
+    ...COOKIE_OPTIONS,
+    maxAge: 15 * ONE_MINUTE,
+  });
+
+  res.cookie("refreshToken", refreshToken, {
+    ...COOKIE_OPTIONS,
+    maxAge: 24 * 60 * ONE_MINUTE,
+  });
+};
 
 export default class AuthController {
   static async register(req: Request, res: Response) {
@@ -77,7 +93,7 @@ export default class AuthController {
               <p>
                 Click the link below to reset your password:
               </p>
-              <a href="put_url_here/reset?token=${resetPasswordToken}">
+              <a href="${process.env.FE_URL}/reset-password?token=${resetPasswordToken}">
                 Reset Password
               </a>
               <p>
@@ -99,23 +115,7 @@ export default class AuthController {
     }
   }
 
-  static async changePassword(req: Request, res: Response) {
-    const { old_password, new_password } = req.body as z.infer<typeof changePasswordSchema>;
-    const userId = (req as any).user?.userId;
 
-    if (!userId) {
-      return Send.error(res, null, "Unauthorized.");
-    }
-
-    try {
-      const user = await AuthService.changePassword(userId, old_password, new_password);
-
-      return Send.success(res, { id: user.id, email: user.email }, "Password changed successfully.");
-    } catch (error: any) {
-      logger.error({ error }, "Change password failed.");
-      return Send.error(res, null, error.message || "Change password failed.");
-    }
-  }
 
   static async verify(req: Request, res: Response) {
     try {
@@ -127,19 +127,7 @@ export default class AuthController {
 
       const { user, accessToken, refreshToken } = await AuthService.verifyEmailToken(token);
 
-      res.cookie("accessToken", accessToken, {
-        // httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
-        maxAge: 15 * ONE_MINUTE,
-        sameSite: "strict",
-      });
-
-      res.cookie("refreshToken", refreshToken, {
-        // httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
-        maxAge: 24 * 60 * ONE_MINUTE,
-        sameSite: "strict",
-      });
+      setAuthCookies(res, accessToken, refreshToken);
 
       return Send.success(
         res,
@@ -175,19 +163,7 @@ export default class AuthController {
     try {
       const { user, accessToken, refreshToken } = await AuthService.login(email, password);
 
-      res.cookie("accessToken", accessToken, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
-        maxAge: 15 * ONE_MINUTE,
-        sameSite: "strict",
-      });
-
-      res.cookie("refreshToken", refreshToken, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
-        maxAge: 24 * 60 * ONE_MINUTE,
-        sameSite: "strict",
-      });
+      setAuthCookies(res, accessToken, refreshToken);
 
       return Send.success(res, { id: user.id, username: user.username, email: user.email });
     } catch (error: any) {
@@ -227,10 +203,8 @@ export default class AuthController {
       const newAccessToken = await AuthService.refreshToken(userId, refreshToken);
 
       res.cookie("accessToken", newAccessToken, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
+        ...COOKIE_OPTIONS,
         maxAge: 15 * ONE_MINUTE,
-        sameSite: "strict",
       });
 
       return Send.success(res, {
