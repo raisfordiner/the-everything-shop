@@ -26,6 +26,8 @@ import EditCoupon from "../pages/admin/Coupons/EditCoupon.jsx";
 import AddCoupon from "../pages/admin/Coupons/AddCoupon.jsx";
 import SellerLayout from "../components/layouts/SellerLayout/SellerLayout.jsx";
 import SellerProducts from "../pages/seller/Product/Product.jsx";
+import ProtectedRoute from "./ProtectedRoute.jsx";
+import AccessRestricted from "../pages/public/AccessRestricted/AccessRestricted.jsx";
 
 export const routes = [
     {
@@ -57,6 +59,10 @@ export const routes = [
                 element: <FilteredProducts />
             },
             {
+                path: '/access-restricted',
+                element: <AccessRestricted />,
+            },
+            {
                 path: '/confirmation',
                 element: <Confirmation />,
             },
@@ -86,7 +92,11 @@ export const routes = [
     },
     {
         path: '/admin',
-        element: <AdminLayout />,
+        element: (
+            <ProtectedRoute allowedRoles={['ADMIN']}>
+                <AdminLayout />
+            </ProtectedRoute>
+        ),
         children: [
             {
                 path: "dashboard",
@@ -136,7 +146,11 @@ export const routes = [
     },
     {
         path: '/seller',
-        element: <SellerLayout />,
+        element: (
+            <ProtectedRoute allowedRoles={['SELLER']}>
+                <SellerLayout />
+            </ProtectedRoute>
+        ),
         children: [
             {
                 path: "products",

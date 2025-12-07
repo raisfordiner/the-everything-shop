@@ -11,7 +11,7 @@ import { logger } from "util/logger";
 export default class UserController {
   static async getUser(req: Request, res: Response) {
     try {
-      const userId = (req as any).userId;
+      const userId = (req as any).user?.userId;
 
       const user = await prisma.user.findUnique({
         where: { id: userId },
