@@ -69,6 +69,6 @@ export {
   passwordSchema,
   usernameSchema,
   forgot_password as forgotPasswordSchema,
-  change_password as changePasswordSchema,
+
   reset_password_with_token as resetPasswordWithTokenSchema,
 };

@@ -3,7 +3,6 @@ import {
   loginSchema,
   registerSchema,
   forgotPasswordSchema,
-  changePasswordSchema,
   resetPasswordWithTokenSchema,
 } from "./auth.schema";
 import AuthMiddleware from "./auth.middleware";
@@ -354,12 +353,7 @@ class AuthRouter extends BaseRouter {
         middlewares: [AuthMiddleware.refreshTokenValidation],
         controller: AuthController.refreshToken,
       },
-      {
-        method: "put",
-        path: "/change-password",
-        middlewares: [AuthMiddleware.authenticateUser, validateBody(changePasswordSchema)],
-        controller: AuthController.changePassword,
-      },
+
       {
         method: "post",
         path: "/forgot-password", // forgot, then reset

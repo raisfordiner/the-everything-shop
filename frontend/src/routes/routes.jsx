@@ -14,6 +14,7 @@ import CustomerProductDetail from "../components/ProductDetail/ProductDetail.jsx
 import SellerProductDetail from "../pages/seller/ProductDetail/ProductDetail.jsx";
 import Confirmation from "../pages/customer/Confirmation/Confirmation.jsx";
 import ForgotPassword from "../pages/customer/ForgotPassword/ForgotPassword.jsx";
+import ResetPassword from "../pages/public/ResetPassword/ResetPassword.jsx";
 import Category from '../pages/admin/Category/Category.jsx';
 import AddCategory from '../pages/admin/Category/AddCategory.jsx';
 import EditCategory from '../pages/admin/Category/EditCategory.jsx';
@@ -63,6 +64,10 @@ export const routes = [
             {
                 path: '/forgot-password',
                 element: <ForgotPassword />,
+            },
+            {
+                path: '/reset-password',
+                element: <ResetPassword />,
             },
             {
                 path: '/profile',

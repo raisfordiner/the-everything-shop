@@ -20,12 +20,22 @@ const verify = (token) => {
     return get(`/auth/verify?token=${token}`);
 };
 
+const forgotPassword = (email) => {
+    return post('/auth/forgot-password', { email });
+};
+
+const resetPassword = (token, new_password, password_confirmation) => {
+    return post('/auth/reset', { token, new_password, password_confirmation });
+};
+
 const authService = {
     login,
     register,
     logout,
     checkSession,
     verify,
+    forgotPassword,
+    resetPassword,
 };
 
 export default authService;
