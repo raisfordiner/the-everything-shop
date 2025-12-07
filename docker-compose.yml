@@ -1,0 +1,151 @@
+services:
+  traefik:
+    image: traefik:v2.10
+    command:
+      - "--api.insecure=true"
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--entrypoints.web.address=:80"
+    ports:
+      - "80:80"
+      - "8080:8080"
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+    networks:
+      - tes-net
+
+  db:
+    image: postgres:15-alpine
+    restart: unless-stopped
+    env_file: ./backend/.env
+    environment:
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_DB: ${POSTGRES_DB}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - tes-net
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 2s
+      retries: 20
+
+  app:
+    build: 
+      context: ./backend
+      dockerfile: Dockerfile
+    image: the-everything-shop-backend
+    restart: unless-stopped
+    env_file: ./backend/.env
+    environment:
+      - POSTGRES_HOST=db
+    volumes:
+      - ./backend/src:/app/src
+      - ./backend/prisma:/app/prisma
+      - ./backend/.env:/app/.env
+      - ./backend/tsconfig.json:/app/tsconfig.json
+    depends_on:
+      db:
+        condition: service_healthy
+      s3:
+        condition: service_started
+    networks:
+      - tes-net
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.backend.rule=Host(`${DOMAIN_NAME:-localhost}`) && PathPrefix(`/api`)"
+      - "traefik.http.services.backend.loadbalancer.server.port=${APP_PORT:-8000}"
+
+  frontend:
+    build: 
+      context: ./frontend
+      dockerfile: Dockerfile
+    image: the-everything-shop-frontend
+    restart: unless-stopped
+    env_file: ./frontend/.env
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    networks:
+      - tes-net
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.frontend.rule=Host(`${DOMAIN_NAME:-localhost}`)"
+      - "traefik.http.services.frontend.loadbalancer.server.port=3000"
+
+  mailhog:
+    image: mailhog/mailhog:latest
+    networks:
+      - tes-net
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.mailhog.rule=Host(`mail.${DOMAIN_NAME:-localhost}`)"
+      - "traefik.http.services.mailhog.loadbalancer.server.port=8025"
+
+  s3:
+    image: minio/minio
+    command: server /data --console-address ":9001"
+    environment:
+      - MINIO_ROOT_USER=admin
+      - MINIO_ROOT_PASSWORD=adminpass
+    networks:
+      - tes-net
+    volumes:
+      - s3_data:/data
+    labels:
+      - "traefik.enable=true"
+      # Console (9001)
+      - "traefik.http.routers.minio-console.rule=Host(`admin.storage.${DOMAIN_NAME:-localhost}`)"
+      - "traefik.http.routers.minio-console.service=minio-console"
+      - "traefik.http.services.minio-console.loadbalancer.server.port=9001"
+      # API (9000)
+      - "traefik.http.routers.minio-api.rule=Host(`obj.storage.${DOMAIN_NAME:-localhost}`)"
+      - "traefik.http.routers.minio-api.service=minio-api"
+      - "traefik.http.services.minio-api.loadbalancer.server.port=9000"
+
+  mc:
+    image: minio/mc
+    depends_on:
+      - s3
+    networks:
+      - tes-net
+    entrypoint: >
+      sh -c "
+      until (/usr/bin/mc alias set tess3 http://s3:9000 admin adminpass --insecure); do
+      echo 'Waiting for S3...';
+      sleep 2;
+      done &&
+      echo 'Creating bucket if not exists...' &&
+      /usr/bin/mc mb --ignore-existing tess3/tes &&
+      echo 'Enable anonymous download...' &&
+      /usr/bin/mc anonymous set download tess3/tes &&
+      echo 'Done.' &&
+      exit 0
+      "
+
+  prisma-studio:
+    image: node:alpine
+    working_dir: /usr/src/app
+    volumes:
+      - ./backend:/usr/src/app
+    command: npx prisma studio --port 5555 --browser none
+    env_file:
+      - ./backend/.env
+    networks:
+      - tes-net
+    depends_on:
+      - db
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.prisma.rule=Host(`db.${DOMAIN_NAME:-localhost}`)" # Added this just in case, though not requested
+      - "traefik.http.services.prisma.loadbalancer.server.port=5555"
+
+volumes:
+  postgres_data:
+  s3_data:
+
+networks:
+  tes-net:
+    name: tes-net
