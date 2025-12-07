@@ -65,8 +65,6 @@ services:
     networks:
       - tes-dev
 
----
-services:
   s3:
     image: minio/minio
     container_name: s3
@@ -81,6 +79,7 @@ services:
     ports:
       - "9000:9000"
       - "9001:9001"
+
   mc:
     image: minio/mc
     container_name: mc
@@ -90,9 +89,15 @@ services:
       - tes-dev
     entrypoint: >
       sh -c "
-      sleep 3 &&
-      /usr/bin/mc alias set tess3 http://s3:9000 admin adminpass &&
-      /usr/bin/mc mb tess3/tes &&
+      until (/usr/bin/mc alias set tess3 http://s3:9000 admin adminpass --insecure); do
+      echo 'Waiting for S3...';
+      sleep 2;
+      done &&
+      echo 'Creating bucket if not exists...' &&
+      /usr/bin/mc mb --ignore-existing tess3/tes &&
+      echo 'Enable anonymous download...' &&
+      /usr/bin/mc anonymous set download tess3/tes &&
+      echo 'Done.' &&
       exit 0
       "
 
