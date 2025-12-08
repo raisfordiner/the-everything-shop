@@ -226,7 +226,6 @@ model Order {
   id           String        @id @default(cuid())
   customerId   String
   customer     Customer      @relation(fields: [customerId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-  phoneNumber  String
   addressId    String
   address      Address       @relation(fields: [addressId], references: [id], onDelete: Cascade, onUpdate: Cascade)
   orderDate    DateTime      @default(now())
