@@ -72,6 +72,13 @@ services:
       - "traefik.http.routers.backend.entrypoints=websecure"
       - "traefik.http.routers.backend.tls.certresolver=myresolver"
       - "traefik.http.services.backend.loadbalancer.server.port=${APP_PORT:-8000}"
+      # Swagger
+      - "traefik.http.routers.swagger.rule=Host(`swagger.${DOMAIN_NAME:-localhost}`)"
+      - "traefik.http.routers.swagger.entrypoints=websecure"
+      - "traefik.http.routers.swagger.tls.certresolver=myresolver"
+      - "traefik.http.routers.swagger.service=backend"
+      - "traefik.http.middlewares.swagger-prefix.addprefix.prefix=/docs"
+      - "traefik.http.routers.swagger.middlewares=swagger-prefix"
 
   frontend:
     build: 
