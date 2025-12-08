@@ -26,7 +26,8 @@ import couponsRoute from "coupons/coupons.route";
 import eventsRoute from "events/events.route";
 import uploadRoute from "upload/upload.route";
 import cartsRoute from "cart/cart.route";
-import reviewsRoute from "reviews/reviews.route"
+import reviewsRoute from "reviews/reviews.route";
+import addressRoute from "addresses/address.route";
 
 export default class App {
   private app: Express;
@@ -47,9 +48,7 @@ export default class App {
 
     this.app.use(
       cors({
-        origin: [
-          process.env.FE_URL,
-        ],
+        origin: [process.env.FE_URL],
         methods: ["GET", "POST", "DELETE", "PATCH", "PUT"],
         credentials: true,
       })
@@ -75,6 +74,7 @@ export default class App {
     this.app.use("/api/upload", uploadRoute); // /api/upload/*
     this.app.use("/api/carts", cartsRoute);
     this.app.use("/api/reviews", reviewsRoute);
+    this.app.use("/api/addresses", addressRoute);
 
     this.app.use("/api", healthRoute); // /api/healthcheck
 
