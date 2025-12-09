@@ -8,6 +8,7 @@ import VerifyEmail from "../pages/public/VerifyEmail/VerifyEmail.jsx";
 import Profile from "../components/layouts/Profile/Profile.jsx";
 import AccountInfo from "../pages/customer/AccountInfo/AccountInfo.jsx";
 import Address from "../pages/customer/Address/Address.jsx";
+import AddressEdit from "../pages/customer/Address/AddressEdit.jsx";
 import ChangePassword from "../pages/customer/ChangePassword/ChangePassword.jsx";
 import FilteredProducts from "../pages/customer/FilteredProducts/FilteredProducts.jsx";
 import CustomerProductDetail from "../components/ProductDetail/ProductDetail.jsx";
@@ -86,6 +87,14 @@ export const routes = [
                     {
                         path: 'my-address',
                         element: <Address />,
+                    },
+                    {
+                        path: 'my-address/new',
+                        element: <AddressEdit />,
+                    },
+                    {
+                        path: 'my-address/edit/:id',
+                        element: <AddressEdit />,
                     },
                     {
                         path: 'change-password',
