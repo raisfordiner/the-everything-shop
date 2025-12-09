@@ -125,9 +125,21 @@ export default class UserController {
         return Send.notFound(res, {}, "Customer not found");
       }
 
-      // Upload new image
+      // Initialize UploadService
       const UploadService = require("upload/upload.service").default;
       const uploadService = new UploadService();
+
+      // Delete old image if exists
+      if (customer.image) {
+        try {
+          await uploadService.delete(customer.image);
+        } catch (error) {
+          logger.error({ error }, "Failed to delete old profile picture");
+          // Continue with upload even if delete fails
+        }
+      }
+
+      // Upload new image
       const file = (req as any).file;
       const imageUrl = await uploadService.upload(file.originalname, file.buffer);
 
