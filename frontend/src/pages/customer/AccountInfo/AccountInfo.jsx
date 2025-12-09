@@ -1,147 +1,129 @@
-import React, {useState} from 'react'
-import {Button, Col, DatePicker, Form, Input, Modal, Radio, Row} from "antd";
+import React, { useState, useEffect } from 'react';
+import { Form, Input, Button, message, Skeleton } from 'antd';
+import userService from '../../../services/userService';
 
 const AccountInfo = () => {
-    const [isVerifyModalOpen, setIsVerifyModalOpen] = useState(false);
+    const [form] = Form.useForm();
+    const [loading, setLoading] = useState(true);
+    const [editing, setEditing] = useState({ username: false, email: false });
 
-    const showVerifyModal = () => {
-        setIsVerifyModalOpen(true);
+    const [initialValues, setInitialValues] = useState({});
+
+    useEffect(() => {
+        fetchUserInfo();
+    }, []);
+
+    const fetchUserInfo = async () => {
+        setLoading(true);
+        try {
+            const res = await userService.getUserInfo();
+            if (res && res.data && res.data.user) {
+                const { username, email } = res.data.user;
+                const data = { username, email };
+                setInitialValues(data);
+                form.setFieldsValue(data);
+            }
+        } catch (error) {
+            console.error(error);
+            message.error("Failed to fetch user info");
+        } finally {
+            setLoading(false);
+        }
     };
 
-    const handleVerifyCancel = () => {
-        setIsVerifyModalOpen(false);
+    const handleEdit = (field) => {
+        setEditing(prev => ({ ...prev, [field]: true }));
     };
 
-    const onVerifyFinish = (values) => {
-        console.log("Verification Code:", values.code);
-        setIsVerifyModalOpen(false);
+    const handleSubmit = async (field) => {
+        try {
+            const value = form.getFieldValue(field);
+            if (!value) {
+                message.error(`${field} cannot be empty`);
+                return;
+            }
+
+            await userService.updateUserInfo({ [field]: value });
+            message.success(`${field} updated successfully`);
+            setEditing(prev => ({ ...prev, [field]: false }));
+            setInitialValues(prev => ({ ...prev, [field]: value }));
+
+            // Reload page to reflect changes
+            window.location.reload();
+        } catch (error) {
+            console.error(error);
+            message.error(`Failed to update ${field}`);
+        }
     };
+
+    const renderSuffixButton = (field) => {
+        if (editing[field]) {
+            return (
+                <Button
+                    type="primary"
+                    size="small"
+                    onClick={() => handleSubmit(field)}
+                >
+                    Submit
+                </Button>
+            );
+        }
+        return (
+            <Button
+                type="link"
+                size="small"
+                onClick={(e) => {
+                    e.preventDefault();
+                    handleEdit(field);
+                }}
+            >
+                Edit
+            </Button>
+        );
+    };
+
+    if (loading) {
+        return <Skeleton active />;
+    }
 
     return (
-        <>
-            <Form layout="vertical" name={"account_form"} className="account__form">
-                <h2 style={{fontSize: "32px", color: '#008ECC'}}>Account Info</h2>
-
-                <Form.Item name="gender" label="">
-                    Gender:
-                    <Radio.Group style={{marginLeft: '16px'}}>
-                        <Radio value="female">Female</Radio>
-                        <Radio value="male">Male</Radio>
-                    </Radio.Group>
+        <div className="account__info">
+            <h2 style={{ fontSize: "32px", color: '#008ECC', marginBottom: '24px' }}>Account Info</h2>
+            <Form
+                form={form}
+                layout="vertical"
+                name="account_form"
+                initialValues={initialValues}
+            >
+                <Form.Item
+                    label="Username"
+                    name="username"
+                    rules={[{ required: true, message: 'Please input your username!' }]}
+                >
+                    <Input
+                        size="large"
+                        disabled={!editing.username}
+                        suffix={renderSuffixButton('username')}
+                    />
                 </Form.Item>
-
-                <Row gutter={24}>
-                    <Col span={12}>
-                        <Form.Item
-                            label="First Name"
-                            name="firstName"
-                            rules={[{ required: true, message: 'Please input your first name!' }]}
-                        >
-                            <Input size="large" />
-                        </Form.Item>
-                    </Col>
-                    <Col span={12}>
-                        <Form.Item
-                            label="Last Name"
-                            name="lastName"
-                            rules={[{ required: true, message: 'Please input your last name!' }]}
-                        >
-                            <Input size="large" />
-                        </Form.Item>
-                    </Col>
-                </Row>
 
                 <Form.Item
                     label="Email Address"
                     name="email"
-                    rules={[{ required: true, message: 'Please input your email!' }]}
+                    rules={[
+                        { required: true, message: 'Please input your email!' },
+                        { type: 'email', message: 'Please enter a valid email!' }
+                    ]}
                 >
-                    <Input size="large"
-                           suffix= {(
-                               <a
-                                   style={{color: '#008ECC', fontWeight: 500, cursor: 'pointer', fontSize: '13px'}}
-                                   onClick={showVerifyModal}
-                               >
-                                   Verify Now
-                               </a>
-                           )}/>
-                </Form.Item>
-
-                <Row gutter={24}>
-                    <Col span={12}>
-                        <Form.Item
-                            label="Phone Number (Optional)"
-                            name="phone"
-                        >
-                            <Input size="large" />
-                        </Form.Item>
-                    </Col>
-                    <Col span={12}>
-                        <Form.Item
-                            label="Date of Birth"
-                            name="dob"
-                        >
-                            <DatePicker
-                                size="large"
-                                style={{ width: '100%' }}
-                                format="DD/MM/YYYY"
-                                placeholder="Select date"
-                            />
-                        </Form.Item>
-                    </Col>
-                </Row>
-
-                <Form.Item style={{marginTop: '12px'}}>
-                <Button type="primary" htmlType="submit" size="large"
-                            style={{padding: '22px 42px', color: "white", backgroundColor: "#008ECC"}}>
-                        SAVE
-                    </Button>
+                    <Input
+                        size="large"
+                        disabled={!editing.email}
+                        suffix={renderSuffixButton('email')}
+                    />
                 </Form.Item>
             </Form>
-
-            <Modal
-                title={<div style={{ color: '#008ECC', fontSize: '20px', textAlign: 'center' }}>Email Verification</div>}
-                open={isVerifyModalOpen}
-                onCancel={handleVerifyCancel}
-                footer={null}
-                centered
-                width={400}
-            >
-                <div style={{ textAlign: 'center', marginBottom: '24px', color: '#666' }}>
-                    Please enter the 6-digit code sent to your email to verify your account.
-                </div>
-
-                <Form onFinish={onVerifyFinish} layout="vertical">
-                    <Form.Item
-                        name="code"
-                        rules={[
-                            { required: true, message: 'Please input confirmation code!' },
-                            { len: 6, message: 'Code must be exactly 6 digits!' }
-                        ]}
-                        style={{ display: 'flex', justifyContent: 'center' }}
-                    >
-                        <Input.OTP length={6} size="large" />
-                    </Form.Item>
-
-                    <Form.Item>
-                        <Button
-                            type="primary"
-                            htmlType="submit"
-                            block
-                            size="large"
-                            style={{ backgroundColor: "#008ECC", marginTop: '10px' }}
-                        >
-                            CONFIRM CODE
-                        </Button>
-                    </Form.Item>
-
-                    <div style={{ textAlign: 'center' }}>
-                        <Button type="link" style={{ color: '#999' }}>Resend Code</Button>
-                    </div>
-                </Form>
-            </Modal>
-        </>
-    )
-}
+        </div>
+    );
+};
 
 export default AccountInfo;

@@ -11,6 +11,12 @@ class UserRoutes extends BaseRouter {
         middlewares: [AuthMiddleware.authenticateUser],
         controller: UserController.getUser,
       },
+      {
+        method: "put",
+        path: "/info",
+        middlewares: [AuthMiddleware.authenticateUser],
+        controller: UserController.updateUser,
+      },
     ];
   }
 }
