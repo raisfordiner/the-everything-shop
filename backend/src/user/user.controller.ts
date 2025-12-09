@@ -60,4 +60,34 @@ export default class UserController {
       return Send.error(res, {}, "Internal server error");
     }
   }
+
+  static async updateUser(req: Request, res: Response) {
+    try {
+      const userId = (req as any).user?.userId;
+      const { username, email } = req.body;
+
+      if (!username && !email) {
+        return Send.error(res, {}, "Username or email is required");
+      }
+
+      const updateData: any = {};
+      if (username) updateData.username = username;
+      if (email) updateData.email = email;
+
+      const user = await prisma.user.update({
+        where: { id: userId },
+        data: updateData,
+        select: {
+          id: true,
+          username: true,
+          email: true,
+        }
+      });
+
+      return Send.success(res, { user }, "User updated successfully");
+    } catch (error) {
+      logger.error({ error }, "Error updating user info");
+      return Send.error(res, {}, "Internal server error");
+    }
+  }
 }

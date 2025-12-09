@@ -1,4 +1,4 @@
-import {del, get, post, put} from "../utils/request.js";
+import { del, get, post, put } from "../utils/request.js";
 
 const getAllUsers = () => {
     return get("/users");
@@ -26,6 +26,8 @@ const userService = {
     deleteUser,
     updateUser,
     createUser,
+    updateUserInfo: (data) => put('/user/info', data),
+    getUserInfo: () => get('/user/info'),
 }
 
 export default userService;
