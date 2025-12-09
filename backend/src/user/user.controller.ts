@@ -2,6 +2,7 @@ import Send from "util/response";
 import { prisma } from "util/db";
 import { Request, Response } from "express";
 import { logger } from "util/logger";
+import UploadService from "upload/upload.service";
 
 /**
  * Get the user information based on the authenticated user.
@@ -125,8 +126,6 @@ export default class UserController {
         return Send.notFound(res, {}, "Customer not found");
       }
 
-      // Initialize UploadService
-      const UploadService = require("upload/upload.service").default;
       const uploadService = new UploadService();
 
       // Delete old image if exists
@@ -135,7 +134,6 @@ export default class UserController {
           await uploadService.delete(customer.image);
         } catch (error) {
           logger.error({ error }, "Failed to delete old profile picture");
-          // Continue with upload even if delete fails
         }
       }
 
