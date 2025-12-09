@@ -1,49 +1,62 @@
 import { prisma } from "util/db";
 
 export default class AddressService {
-  static async find(
-    id?: string,
-    customerId?: string,
-    phoneNumber?: string,
-    address?: string,
-    street?: string,
-    ward?: string,
-    district?: string,
-    province?: string
-  ) {
-    const include = {
-      customer: {
-        select: {
-          id: true,
-          userId: true,
-          user: {
-            select: {
-              username: true,
-              email: true,
+  static async getById(id: string) {
+    return await prisma.address.findUnique({
+      where: { id },
+      include: {
+        customer: {
+          select: {
+            id: true,
+            userId: true,
+            user: {
+              select: {
+                username: true,
+                email: true,
+              },
             },
           },
         },
       },
-    };
+    });
+  }
 
-    if (id) {
-      return await prisma.address.findUnique({
-        where: { id },
-        include: include,
-      });
-    }
-
+  static async getAll(filters: {
+    customerId?: string;
+    phoneNumber?: string;
+    address?: string;
+    street?: string;
+    ward?: string;
+    district?: string;
+    province?: string;
+  }) {
     return await prisma.address.findMany({
       where: {
-        customerId: customerId || undefined,
-        phoneNumber: phoneNumber || undefined,
-        address: address || undefined,
-        street: street || undefined,
-        ward: ward || undefined,
-        district: district || undefined,
-        province: province || undefined,
+        customerId: filters.customerId,
+        phoneNumber: filters.phoneNumber ? { contains: filters.phoneNumber } : undefined,
+        address: filters.address ? { contains: filters.address } : undefined,
+        street: filters.street ? { contains: filters.street } : undefined,
+        ward: filters.ward ? { contains: filters.ward } : undefined,
+        district: filters.district ? { contains: filters.district } : undefined,
+        province: filters.province ? { contains: filters.province } : undefined,
       },
-      include: include,
+      include: {
+        customer: {
+          select: {
+            id: true,
+            userId: true,
+            user: {
+              select: {
+                username: true,
+                email: true,
+              },
+            },
+          },
+        },
+      },
+      orderBy: {
+        createdAt: 'desc'
+      }
     });
   }
 

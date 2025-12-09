@@ -1,57 +1,89 @@
-import React from 'react';
-import {Button, Col, Form, Input, Row} from "antd";
+import React, { useEffect, useState } from 'react';
+import { Button, Card, Col, Row, Skeleton, message, Empty } from 'antd';
+import { PlusOutlined, EditOutlined, HomeOutlined } from '@ant-design/icons';
+import { useNavigate } from 'react-router-dom';
+import addressService from '../../../services/addressService';
 
 const Address = () => {
+    const [addresses, setAddresses] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const navigate = useNavigate();
+
+    useEffect(() => {
+        fetchAddresses();
+    }, []);
+
+    const fetchAddresses = async () => {
+        setLoading(true);
+        try {
+            const res = await addressService.getAddresses();
+            if (res && res.data && res.data.addresses) {
+                setAddresses(res.data.addresses);
+            }
+        } catch (error) {
+            console.error(error);
+            message.error("Failed to fetch addresses");
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    if (loading) {
+        return <Skeleton active />;
+    }
+
     return (
-        <>
-            <Form layout="vertical" name={"address_form"} className="address__form">
-                <h2 style={{fontSize: "32px", color: '#008ECC'}}>My Address</h2>
+        <div className="address-page">
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
+                <h2 style={{ fontSize: "32px", color: '#008ECC', margin: 0 }}>My Address</h2>
+                <Button
+                    type="primary"
+                    icon={<PlusOutlined />}
+                    size="large"
+                    onClick={() => navigate('/profile/my-address/new')}
+                    style={{ backgroundColor: "#008ECC" }}
+                >
+                    New Address
+                </Button>
+            </div>
 
-                <Row gutter={24}>
-                    <Col span={12}>
-                        <Form.Item
-                            label="City"
-                            name="city"
-                            rules={[{ required: true, message: 'Please input your city!' }]}
-                        >
-                            <Input size="large" />
-                        </Form.Item>
-                    </Col>
-                    <Col span={12}>
-                        <Form.Item
-                            label="District"
-                            name="district"
-                            rules={[{ required: true, message: 'Please input your district!' }]}
-                        >
-                            <Input size="large" />
-                        </Form.Item>
-                    </Col>
+            {addresses.length === 0 ? (
+                <Empty description="No addresses found" />
+            ) : (
+                <Row gutter={[16, 16]}>
+                    {addresses.map(addr => (
+                        <Col span={24} key={addr.id}>
+                            <Card
+                                hoverable
+                                actions={[
+                                    <Button
+                                        type="link"
+                                        icon={<EditOutlined />}
+                                        onClick={() => navigate(`/profile/my-address/edit/${addr.id}`)}
+                                    >
+                                        Edit
+                                    </Button>
+                                ]}
+                            >
+                                <Card.Meta
+                                    avatar={<HomeOutlined style={{ fontSize: '24px', color: '#008ECC' }} />}
+                                    title={addr.street || addr.address}
+                                    description={
+                                        <div>
+                                            <p style={{ margin: 0 }}><strong>Address:</strong> {addr.address}</p>
+                                            <p style={{ margin: 0 }}><strong>Street:</strong> {addr.street}</p>
+                                            <p style={{ margin: 0 }}>{`${addr.ward}, ${addr.district}, ${addr.province}`}</p>
+                                            <p style={{ margin: '8px 0 0 0' }}><strong>Phone:</strong> {addr.phoneNumber}</p>
+                                        </div>
+                                    }
+                                />
+                            </Card>
+                        </Col>
+                    ))}
                 </Row>
-
-                <Form.Item
-                    label="Street Address"
-                    name="streetAddress"
-                    rules={[{ required: true, message: 'Please input your address!' }]}
-                >
-                    <Input size="large"/>
-                </Form.Item>
-
-                <Form.Item
-                    label="Note (Optional)"
-                    name="note"
-                >
-                    <Input size="large" />
-                </Form.Item>
-
-                <Form.Item style={{marginTop: '32px'}}>
-                    <Button type="primary" htmlType="submit" size="large"
-                            style={{padding: '22px 42px', color: "white", backgroundColor: "#008ECC"}}>
-                        SAVE
-                    </Button>
-                </Form.Item>
-            </Form>
-        </>
-    )
-}
+            )}
+        </div>
+    );
+};
 
 export default Address;
