@@ -6,7 +6,6 @@ const request = async (path, options = {}) => {
         ...options,
         headers: {
             Accept: 'application/json',
-            'Content-Type': 'application/json',
             ...options.headers,
         },
     };
@@ -31,26 +30,32 @@ export const get = (path) => {
 };
 
 export const post = (path, data) => {
+    const isFormData = data instanceof FormData;
     return request(path, {
         method: 'POST',
-        body: JSON.stringify(data),
+        body: isFormData ? data : JSON.stringify(data),
+        headers: isFormData ? {} : { 'Content-Type': 'application/json' },
     });
 };
 
 export const del = (path) => {
     return request(path, { method: 'DELETE' });
-};  
+};
 
 export const patch = (path, data) => {
+    const isFormData = data instanceof FormData;
     return request(path, {
         method: 'PATCH',
-        body: JSON.stringify(data),
+        body: isFormData ? data : JSON.stringify(data),
+        headers: isFormData ? {} : { 'Content-Type': 'application/json' },
     });
 };
 
 export const put = (path, data) => {
+    const isFormData = data instanceof FormData;
     return request(path, {
         method: 'PUT',
-        body: JSON.stringify(data),
+        body: isFormData ? data : JSON.stringify(data),
+        headers: isFormData ? {} : { 'Content-Type': 'application/json' },
     });
 };
