@@ -18,7 +18,7 @@ const Profile = () => {
         {
             key: "account-info",
             label: (
-                <Link to="">
+                <Link to="/profile">
                     <div className={"profile__menu-item"}>
                         <div className="profile__menu-item-left">
                             <UserOutlined />
@@ -33,19 +33,21 @@ const Profile = () => {
         {
             key: "my-order",
             label: (
-                <div className={"profile__menu-item"}>
-                    <div className="profile__menu-item-left">
-                        <ShoppingOutlined />
-                        <span>My order</span>
+                <Link to="/profile/my-order">
+                    <div className={"profile__menu-item"}>
+                        <div className="profile__menu-item-left">
+                            <ShoppingOutlined />
+                            <span>My order</span>
+                        </div>
+                        <RightOutlined className="profile__menu-item-right" />
                     </div>
-                    <RightOutlined className="profile__menu-item-right" />
-                </div>
+                </Link>
             ),
         },
         {
             key: "my-address",
             label: (
-                <Link to="my-address">
+                <Link to="/profile/my-address">
                     <div className={"profile__menu-item"}>
                         <div className="profile__menu-item-left">
                             <HomeOutlined />
@@ -59,7 +61,7 @@ const Profile = () => {
         {
             key: "change-password",
             label: (
-                <Link to="change-password">
+                <Link to="/profile/change-password">
                     <div className={"profile__menu-item"}>
                         <div className="profile__menu-item-left">
                             <LockOutlined />

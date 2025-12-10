@@ -1,7 +1,11 @@
 import { get } from '../utils/request';
 
-const getAllOrders = () => {
-    return get('/orders');
+const getAllOrders = (status) => {
+    let url = '/orders';
+    if (status) {
+        url += `?status=${status}`;
+    }
+    return get(url);
 };
 
 const getOrderById = async (orderId) => {

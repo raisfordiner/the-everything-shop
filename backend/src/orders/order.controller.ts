@@ -8,13 +8,14 @@ export default class OrderController {
 
     const userRole = (req as any).user?.role;
     const customerId = req.query.customerId as string | undefined;
+    const status = req.query.status as string | undefined;
     const userCustomerId = (req as any).user?.customer?.id;
 
     try {
       // If not admin, only show own orders
       const filterCustomerId = userRole === "ADMIN" ? customerId : userCustomerId;
 
-      const result = await OrderService.find(id, filterCustomerId);
+      const result = await OrderService.find(id, filterCustomerId, status);
 
       if (!result) {
         return Send.notFound(res, null, id ? "Order not found" : "Orders not found");
