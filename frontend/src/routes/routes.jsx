@@ -9,6 +9,7 @@ import Profile from "../components/layouts/Profile/Profile.jsx";
 import AccountInfo from "../pages/customer/AccountInfo/AccountInfo.jsx";
 import Address from "../pages/customer/Address/Address.jsx";
 import AddressEdit from "../pages/customer/Address/AddressEdit.jsx";
+import MyOrder from "../pages/customer/MyOrder/MyOrder.jsx";
 import ChangePassword from "../pages/customer/ChangePassword/ChangePassword.jsx";
 import FilteredProducts from "../pages/customer/FilteredProducts/FilteredProducts.jsx";
 import CustomerProductDetail from "../components/ProductDetail/ProductDetail.jsx";
@@ -87,6 +88,10 @@ export const routes = [
                     {
                         path: 'my-address',
                         element: <Address />,
+                    },
+                    {
+                        path: 'my-order',
+                        element: <MyOrder />,
                     },
                     {
                         path: 'my-address/new',
