@@ -110,6 +110,7 @@ export const routes = [
             <ProtectedRoute allowedRoles={['ADMIN']}>
                 <AdminLayout />
             </ProtectedRoute>
+            // <AdminLayout /> 
         ),
         children: [
             {
