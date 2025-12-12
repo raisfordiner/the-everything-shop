@@ -76,13 +76,6 @@ const Coupons = () => {
             render: (limit) => limit ? `${limit} times` : 'Unlimited',
         },
         {
-            title: 'Expiration Date',
-            dataIndex: 'expiresAt',
-            key: 'expiresAt',
-            render: (date) => date ? dayjs(date).format('DD/MM/YYYY') : 'Never',
-            sorter: (a, b) => new Date(a.expiresAt) - new Date(b.expiresAt),
-        },
-        {
             title: 'Status',
             key: 'status',
             render: (_, record) => {
