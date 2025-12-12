@@ -30,6 +30,9 @@ import SellerLayout from "../components/layouts/SellerLayout/SellerLayout.jsx";
 import SellerProducts from "../pages/seller/Product/Product.jsx";
 import ProtectedRoute from "./ProtectedRoute.jsx";
 import AccessRestricted from "../pages/public/AccessRestricted/AccessRestricted.jsx";
+import Staffs from "../pages/admin/Staffs/Staffs.jsx";
+import EditStaff from "../pages/admin/Staffs/EditStaff.jsx";
+import AddStaff from "../pages/admin/Staffs/AddStaff.jsx";
 
 export const routes = [
     {
@@ -131,6 +134,18 @@ export const routes = [
             {
                 path: "orders",
                 element: <Order />,
+            },
+            {
+                path: "staffs",
+                element: <Staffs />
+            },
+            {
+                path: "staffs/edit-staff/:id",
+                element: <EditStaff />
+            },
+            {
+                path: "staffs/add-staff",
+                element: <AddStaff />
             },
             {
                 path: "customers",
