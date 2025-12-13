@@ -27,11 +27,6 @@ const EditCustomer = () => {
                     email: data.email,
                     role: data.role,
                     status: data.status || true,
-                    firstName: data.firstName || '',
-                    lastName: data.lastName || '',
-                    phone: data.phone || '',
-                    gender: data.gender || 'other',
-                    dob: data.dob ? dayjs(data.dob) : null,
                 });
             }
             catch (error) {
@@ -144,7 +139,7 @@ const EditCustomer = () => {
                                         </Form.Item>
                                     </Col>
                                 </Row>
-                                
+
                                 <Divider/>
 
                                 <Form.Item style={{marginBottom: 0, textAlign: 'right'}}>

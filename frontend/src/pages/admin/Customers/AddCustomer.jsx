@@ -18,7 +18,6 @@ const AddCustomer = () => {
                 username: values.username,
                 email: values.email,
                 password: values.password,
-                password_confirmation: values.confirmPassword,
                 role: values.role,
             };
 
