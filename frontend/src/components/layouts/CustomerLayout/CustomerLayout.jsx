@@ -13,7 +13,7 @@ const CustomerLayout = () => {
           <header>
               <Header/>
           </header>
-          <LayoutContent style={{ padding: '80px 120px' }}>
+          <LayoutContent style={{ padding: '24px', minHeight: 'calc(100vh - 128px)' }}>
               <Outlet />
           </LayoutContent>
           <footer>

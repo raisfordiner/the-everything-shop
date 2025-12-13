@@ -1,14 +1,14 @@
 import React from "react";
 import { Row, Col } from "antd";
 import ProductCard from "./ProductCard";
-import { Link } from "react-router"; // Lưu ý: 'react-router-dom' thường được sử dụng cho web
+import { Link } from "react-router"; // Note: 'react-router-dom' is commonly used for web
 
 const ProductGrid = ({ products }) => {
     return (
         <Row gutter={[16, 16]}>
             {products.slice(0, 8).map((p) => (
                 <Col 
-                    key={p.id} // Đặt key ở đây là tốt nhất
+                    key={p.id} // Setting key here is best practice
                     xs={12}
                     sm={8}
                     md={6}

@@ -32,10 +32,22 @@ const ProductDetail = () => {
                 const data = await productService.getProductById(productId)
                 setProductData(data.data)
 
-                const defaultVariant = data.productVariants?.[0] || null
+                const defaultVariant = data.data?.productVariants?.[0] || null
+                console.log("Default variant:", defaultVariant)
+                console.log("Default variant attributes:", defaultVariant?.variantAttributes)
+                
+                if (defaultVariant?.variantAttributes) {
+                    // Normalize the attributes to lowercase keys
+                    const normalizedAttributes = {}
+                    Object.entries(defaultVariant.variantAttributes).forEach(([key, value]) => {
+                        normalizedAttributes[key.toLowerCase()] = value
+                    })
+                    console.log("Normalized attributes:", normalizedAttributes)
+                    setSelectedAttributes(normalizedAttributes)
+                }
+                
                 setSelectedProductVariant(defaultVariant)
-                setSelectedImage(defaultVariant?.images?.[0] || data.images?.[0] || null)
-                setSelectedAttributes(defaultVariant?.variantAttributes || {})
+                setSelectedImage(defaultVariant?.images?.[0] || data.data?.images?.[0] || null)
             } catch (error) {
                 console.error("Lỗi khi tải dữ liệu sản phẩm:", error)
                 setProductData(null)

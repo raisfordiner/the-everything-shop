@@ -1,20 +1,33 @@
-import React from 'react'
+import React, { useState } from 'react'
 import {Outlet} from "react-router-dom";
 import {Layout} from "antd";
-import AdminHeader from '../../headers/AdminHeader/AdminHeader'
 import SellerSidebar from '../../sidebars/SellerSidebar/SellerSidebar';
 import SellerHeader from '../../headers/SellerHeader/SellerHeader';
-const {Footer, Sider, Content } = Layout;
+const { Content } = Layout;
 
 
-const AdminLayout = () => {
+const SellerLayout = () => {
+  const [collapsed, setCollapsed] = useState(false);
+
+  const handleCollapse = (isCollapsed) => {
+    setCollapsed(isCollapsed);
+  };
+
   return (
     <>
-        <Layout>
+        <Layout style={{ minHeight: '100vh' }}>
             <SellerHeader/>
             <Layout>
-                <SellerSidebar/>
-                <Content className="content" style={{ padding: '30px', marginLeft: '230px' }}>
+                <SellerSidebar onCollapse={handleCollapse}/>
+                <Content 
+                    className="content" 
+                    style={{ 
+                        marginLeft: collapsed ? '70px' : '230px',
+                        minHeight: 'calc(100vh - 64px)',
+                        transition: 'margin-left 0.2s',
+                        padding: '0 24px'
+                    }}
+                >
                     <Outlet/>
                 </Content>
             </Layout>
@@ -23,4 +36,4 @@ const AdminLayout = () => {
   )
 }
 
-export default AdminLayout
+export default SellerLayout

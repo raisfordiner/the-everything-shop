@@ -23,6 +23,14 @@ const updateItem = z.object({
     .positive("Quantity must be greater than 0"),
 });
 
-const CartSchema = { create, search, addItem, updateItem };
+const checkout = z.object({
+  cartItemIds: z
+    .array(z.string())
+    .min(1, "At least one cart item is required"),
+  addressId: z.string(),
+  paymentMethod: z.enum(["COD", "VNPAY"]),
+});
+
+const CartSchema = { create, search, addItem, updateItem, checkout };
 
 export default CartSchema;

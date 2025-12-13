@@ -30,6 +30,10 @@ import SellerLayout from "../components/layouts/SellerLayout/SellerLayout.jsx";
 import SellerProducts from "../pages/seller/Product/Product.jsx";
 import ProtectedRoute from "./ProtectedRoute.jsx";
 import AccessRestricted from "../pages/public/AccessRestricted/AccessRestricted.jsx";
+import Cart from '../pages/customer/Cart/Cart.jsx';
+import Orders from '../pages/customer/Orders/Orders.jsx';
+import OrderDetail from '../pages/customer/Orders/OrderDetail.jsx';
+import SellerOrders from '../pages/seller/Orders/SellerOrders.jsx';
 
 export const routes = [
     {
@@ -77,6 +81,10 @@ export const routes = [
                 element: <ResetPassword />,
             },
             {
+                path: '/cart',
+                element: <Cart/>,
+            },
+            {
                 path: '/profile',
                 element: <Profile />,
                 children: [
@@ -101,6 +109,14 @@ export const routes = [
                         element: <ChangePassword />,
                     }
                 ]
+            },
+            {
+                path: '/orders',
+                element: <Orders />,
+            },
+            {
+                path: '/orders/:orderId',
+                element: <OrderDetail />,
             }
         ]
     },
@@ -177,6 +193,10 @@ export const routes = [
             {
                 path: "products/:id",
                 element: <SellerProductDetail />
+            },
+            {
+                path: "orders",
+                element: <SellerOrders />,
             }
         ]
     }

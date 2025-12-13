@@ -33,7 +33,7 @@ const Home = () => {
         setError(null)
       } catch (error) {
         console.error("Lỗi khi tải sản phẩm:", error);
-        setError("Không thể tải dữ liệu sản phẩm.");
+        setError("Unable to load product data.");
       } finally {
         setIsLoading(false)
       }
@@ -50,11 +50,11 @@ const Home = () => {
         products={allProducts}
       />
       <ProductSection
-        title='đề xuất đây nên là sản phẩm bán chạy trong tuần/tháng'
+        title='Suggested: this should be best-selling products of the week/month'
         products={allProducts}
       />
       <ProductSection
-        title='đề xuất đây nên là sản phẩm gợi ý cho người dùng'
+        title='Suggested: this should be recommended products for the user'
         products={allProducts}
       />
     </div>

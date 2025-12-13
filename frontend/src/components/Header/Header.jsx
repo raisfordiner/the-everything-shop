@@ -114,6 +114,11 @@ const Header = () => {
                                     <span>Cart</span>
                                 </Link>
 
+                                <Link to="/orders" className="header-action-item">
+                                    <DropboxOutlined className="icon" />
+                                    <span>Orders</span>
+                                </Link>
+
                                 <Divider type="vertical" style={{ height: "20px", borderLeft: "1px solid #d9d9d9", margin: "0", alignSelf: "center" }} />
 
                                 <Dropdown menu={userMenu} placement="bottomLeft" arrow>
