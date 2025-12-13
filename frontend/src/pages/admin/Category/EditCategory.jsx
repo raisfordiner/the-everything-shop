@@ -27,9 +27,11 @@ const EditCategory = () => {
             try {
                 const res = await categoryService.getCategoryById(id)
 
+                console.log("Category data:", res)
+
                 form.setFieldsValue({
-                    name: res.name,
-                    description: res.description,
+                    name: res.data.name,
+                    description: res.data.description,
                 })
 
                 if (res.imageUrl) {
@@ -38,11 +40,11 @@ const EditCategory = () => {
                             uid: '-1',
                             name: 'image.png',
                             status: 'done',
-                            url: res.imageUrl
+                            url: res.data.imageUrl
                         }
                     ])
-                    setPreviewImage(res.imageUrl)
-                    setImageUrl(res.imageUrl)
+                    setPreviewImage(res.data.imageUrl)
+                    setImageUrl(res.data.imageUrl)
                 }
             } catch (error) {
                 messageApi.error("Failed to load category!")
@@ -81,7 +83,7 @@ const EditCategory = () => {
         setSubmitting(true)
         try {
             const updatedCategory = {
-                imageUrl: imageUrl || "",
+                imageUrl: imageUrl || null,
                 name: values.name,
                 description: values.description,
             }
@@ -95,7 +97,7 @@ const EditCategory = () => {
                 onClose: () => navigate('/admin/categories')
             })
         } catch (error) {
-            messageApi.error(error.message || "Failed to update category!")
++            messageApi.error(error.message || "Failed to update category!")
         } finally {
             setSubmitting(false)
         }
@@ -103,6 +105,7 @@ const EditCategory = () => {
 
     return (
         <div>
+            {contextHolder}
             <div className="title">
                 <Flex justify='space-between' align='center'>
                     <Typography.Title>Edit Category</Typography.Title>
@@ -118,12 +121,12 @@ const EditCategory = () => {
                 </Flex>
             </div>
 
-            <Form layout="vertical" onFinish={onFinish}>
+            <Form form={form} layout="vertical" onFinish={onFinish}>
                 <Flex className="adding-section" gap={16}>
                     <div style={{ flex: 0.5 }}>
                         <Card title="Thumbnail">
                             <Typography.Text>Photo</Typography.Text>
-                            <Form.Item name="thumbnail" valuePropName="fileList">
+                            <Form.Item label="category image">
                                 <div
                                     style={{
                                         width: '100%',

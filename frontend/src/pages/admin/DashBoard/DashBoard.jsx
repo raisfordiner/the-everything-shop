@@ -4,7 +4,7 @@ import {
     ArrowUpOutlined
 } from '@ant-design/icons'
 import SimpleReportCard from '../../../components/SimpleReportCard/SimpleReportCard'
-import { Column, Line } from '@ant-design/plots';
+// import { Column, Line } from '@ant-design/plots';
 import { useState } from 'react'
 import React from 'react'
 
@@ -44,7 +44,7 @@ const DashBoard = () => {
                                         ))} */}
                                     </Space>
                                 </Flex>
-                                <Line {...lineChartConfig} />
+                                {/* <Line {...lineChartConfig} /> */}
                             </Card>
                         </Col>
                         <Col span={6}>
@@ -59,7 +59,7 @@ const DashBoard = () => {
                                     <Typography.Text type='success'>Revenue</Typography.Text>
                                 </Flex>
                                 <Divider/>
-                                <Column {...columnChartConfig}/> 
+                                {/* <Column {...columnChartConfig}/>  */}
                             </Card>
                         </Col>
                     </Row>
