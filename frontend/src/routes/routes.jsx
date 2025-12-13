@@ -9,6 +9,7 @@ import Profile from "../components/layouts/Profile/Profile.jsx";
 import AccountInfo from "../pages/customer/AccountInfo/AccountInfo.jsx";
 import Address from "../pages/customer/Address/Address.jsx";
 import AddressEdit from "../pages/customer/Address/AddressEdit.jsx";
+import MyOrder from "../pages/customer/MyOrder/MyOrder.jsx";
 import ChangePassword from "../pages/customer/ChangePassword/ChangePassword.jsx";
 import FilteredProducts from "../pages/customer/FilteredProducts/FilteredProducts.jsx";
 import CustomerProductDetail from "../components/ProductDetail/ProductDetail.jsx";
@@ -34,6 +35,9 @@ import Cart from '../pages/customer/Cart/Cart.jsx';
 import Orders from '../pages/customer/Orders/Orders.jsx';
 import OrderDetail from '../pages/customer/Orders/OrderDetail.jsx';
 import SellerOrders from '../pages/seller/Orders/SellerOrders.jsx';
+import Staffs from "../pages/admin/Staffs/Staffs.jsx";
+import EditStaff from "../pages/admin/Staffs/EditStaff.jsx";
+import AddStaff from "../pages/admin/Staffs/AddStaff.jsx";
 
 export const routes = [
     {
@@ -97,6 +101,10 @@ export const routes = [
                         element: <Address />,
                     },
                     {
+                        path: 'my-order',
+                        element: <MyOrder />,
+                    },
+                    {
                         path: 'my-address/new',
                         element: <AddressEdit />,
                     },
@@ -126,6 +134,7 @@ export const routes = [
             <ProtectedRoute allowedRoles={['ADMIN']}>
                 <AdminLayout />
             </ProtectedRoute>
+            // <AdminLayout /> 
         ),
         children: [
             {
@@ -147,6 +156,18 @@ export const routes = [
             {
                 path: "orders",
                 element: <Order />,
+            },
+            {
+                path: "staffs",
+                element: <Staffs />
+            },
+            {
+                path: "staffs/edit-staff/:id",
+                element: <EditStaff />
+            },
+            {
+                path: "staffs/add-staff",
+                element: <AddStaff />
             },
             {
                 path: "customers",

@@ -113,7 +113,7 @@ export default class OrderService {
     return order;
   }
 
-  static async find(id?: string, customerId?: string) {
+  static async find(id?: string, customerId?: string, status?: string) {
     const include = {
       orderItems: {
         include: {
@@ -139,11 +139,14 @@ export default class OrderService {
     if (customerId) {
       where.customerId = customerId;
     }
+    if (status) {
+      where.status = status as any;
+    }
 
     return await prisma.order.findMany({
       where,
       include,
-      orderBy: { createdAt: "desc" },
+      orderBy: { orderDate: "desc" },
     });
   }
 
