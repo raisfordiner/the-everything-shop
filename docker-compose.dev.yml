@@ -47,15 +47,21 @@ services:
 
   app:
     build: 
-      context: ./backend
-      dockerfile: Dockerfile
-    image: the-everything-shop-backend
+      context: .
+      dockerfile: dev.Dockerfile
+    image: the-everything-shop-monolith
     restart: unless-stopped
     env_file: ./backend/.env
-    # environment:
-    # Override working directory to match the VSCode workspace mount location
-    working_dir: /workspaces/the-everything-shop
-    command: sleep infinity
+    # Auto-start both services in parallel.
+    command: >
+      sh -c "
+      cd /workspaces/the-everything-shop &&
+      npm run db:dev --prefix backend &&\
+      npm run db:seed --prefix backend &&\
+      npm run dev --prefix backend &
+      npm run dev --prefix frontend -- --host 0.0.0.0 &
+      wait
+      "
     depends_on:
       db:
         condition: service_healthy
