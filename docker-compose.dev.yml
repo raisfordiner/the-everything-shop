@@ -53,9 +53,9 @@ services:
     restart: unless-stopped
     env_file: ./backend/.env
     environment:
-      - POSTGRES_HOST=db
-    # Match the VSCode workspace mount location
-    working_dir: /workspaces/the-everything-shop/backend
+    # Override working directory to match the VSCode workspace mount location
+    working_dir: /workspaces/the-everything-shop
+    command: sleep infinity
     depends_on:
       db:
         condition: service_healthy
@@ -65,31 +65,19 @@ services:
       - tes-net
     labels:
       - "traefik.enable=true"
+      # Backend Routing
       - "traefik.http.routers.backend.rule=Host(`${DOMAIN_NAME:-localhost}`) && PathPrefix(`/api`)"
       - "traefik.http.routers.backend.entrypoints=websecure"
       - "traefik.http.routers.backend.tls.certresolver=myresolver"
       - "traefik.http.services.backend.loadbalancer.server.port=${APP_PORT:-8000}"
-      # Swagger
+      # Swagger Routing
       - "traefik.http.routers.swagger.rule=Host(`swagger.${DOMAIN_NAME:-localhost}`)"
       - "traefik.http.routers.swagger.entrypoints=websecure"
       - "traefik.http.routers.swagger.tls.certresolver=myresolver"
       - "traefik.http.routers.swagger.service=backend"
       - "traefik.http.middlewares.swagger-prefix.addprefix.prefix=/docs"
       - "traefik.http.routers.swagger.middlewares=swagger-prefix"
-
-  frontend:
-    build: 
-      context: ./frontend
-      dockerfile: Dockerfile
-    image: the-everything-shop-frontend
-    restart: unless-stopped
-    env_file: ./frontend/.env
-    # Match the VSCode workspace mount location
-    working_dir: /workspaces/the-everything-shop/frontend
-    networks:
-      - tes-net
-    labels:
-      - "traefik.enable=true"
+      # Frontend Routing (Merged into app service)
       - "traefik.http.routers.frontend.rule=Host(`${DOMAIN_NAME:-localhost}`)"
       - "traefik.http.routers.frontend.entrypoints=websecure"
       - "traefik.http.routers.frontend.tls.certresolver=myresolver"

@@ -10,6 +10,7 @@
         "ghcr.io/devcontainers/features/git:1": {},
         "ghcr.io/devcontainers/features/node:1": {}
     },
+    "postCreateCommand": "npm install --prefix backend && npm install --prefix frontend",
     "customizations": {
         "vscode": {
             "extensions": [
