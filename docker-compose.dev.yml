@@ -23,7 +23,7 @@ services:
       - "8080:8080"
     volumes:
       - "/var/run/docker.sock:/var/run/docker.sock:ro"
-      # - "./letsencrypt:/letsencrypt"
+      - "traefik_certificates:/letsencrypt"
     networks:
       - tes-net
 
@@ -52,7 +52,7 @@ services:
     image: the-everything-shop-backend
     restart: unless-stopped
     env_file: ./backend/.env
-    environment:
+    # environment:
     # Override working directory to match the VSCode workspace mount location
     working_dir: /workspaces/the-everything-shop
     command: sleep infinity
@@ -142,8 +142,7 @@ services:
   prisma-studio:
     image: the-everything-shop-backend
     command: npx prisma studio --port 5555 --browser none
-    # Override to workspace path so it finds schema.prisma if checked out
-    working_dir: /workspaces/the-everything-shop/backend
+    working_dir: /app
     env_file:
       - ./backend/.env
     networks:
@@ -158,6 +157,7 @@ services:
       - "traefik.http.services.prisma.loadbalancer.server.port=5555"
 
 volumes:
+  traefik_certificates:
   postgres_data:
   s3_data:
 
