@@ -1,10 +1,11 @@
 services:
   traefik:
-    image: traefik:v2.10
+    build:
+      context: ./traefik
+      dockerfile: Dockerfile
     command:
       - "--api.insecure=true"
-      - "--providers.docker=true"
-      - "--providers.docker.exposedbydefault=false"
+      - "--providers.file.filename=/etc/traefik/dynamic.yml"
       # Entrypoints
       - "--entrypoints.web.address=:80"
       - "--entrypoints.websecure.address=:443"
@@ -22,7 +23,6 @@ services:
       - "443:443"
       - "8080:8080"
     volumes:
-      - "/var/run/docker.sock:/var/run/docker.sock:ro"
       - "traefik_certificates:/letsencrypt"
     networks:
       - tes-net
@@ -63,36 +63,12 @@ services:
         condition: service_started
     networks:
       - tes-net
-    labels:
-      - "traefik.enable=true"
-      # Backend Routing
-      - "traefik.http.routers.backend.rule=Host(`${DOMAIN_NAME:-localhost}`) && PathPrefix(`/api`)"
-      - "traefik.http.routers.backend.entrypoints=websecure"
-      - "traefik.http.routers.backend.tls.certresolver=myresolver"
-      - "traefik.http.services.backend.loadbalancer.server.port=${APP_PORT:-8000}"
-      # Swagger Routing
-      - "traefik.http.routers.swagger.rule=Host(`swagger.${DOMAIN_NAME:-localhost}`)"
-      - "traefik.http.routers.swagger.entrypoints=websecure"
-      - "traefik.http.routers.swagger.tls.certresolver=myresolver"
-      - "traefik.http.routers.swagger.service=backend"
-      - "traefik.http.middlewares.swagger-prefix.addprefix.prefix=/docs"
-      - "traefik.http.routers.swagger.middlewares=swagger-prefix"
-      # Frontend Routing (Merged into app service)
-      - "traefik.http.routers.frontend.rule=Host(`${DOMAIN_NAME:-localhost}`)"
-      - "traefik.http.routers.frontend.entrypoints=websecure"
-      - "traefik.http.routers.frontend.tls.certresolver=myresolver"
-      - "traefik.http.services.frontend.loadbalancer.server.port=3000"
 
   mailhog:
     image: mailhog/mailhog:latest
     networks:
       - tes-net
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.mailhog.rule=Host(`mail.${DOMAIN_NAME:-localhost}`)"
-      - "traefik.http.routers.mailhog.entrypoints=websecure"
-      - "traefik.http.routers.mailhog.tls.certresolver=myresolver"
-      - "traefik.http.services.mailhog.loadbalancer.server.port=8025"
+
 
   s3:
     image: minio/minio
@@ -104,20 +80,7 @@ services:
       - tes-net
     volumes:
       - s3_data:/data
-    labels:
-      - "traefik.enable=true"
-      # Console (9001)
-      - "traefik.http.routers.minio-console.rule=Host(`admin.storage.${DOMAIN_NAME:-localhost}`)"
-      - "traefik.http.routers.minio-console.service=minio-console"
-      - "traefik.http.routers.minio-console.entrypoints=websecure"
-      - "traefik.http.routers.minio-console.tls.certresolver=myresolver"
-      - "traefik.http.services.minio-console.loadbalancer.server.port=9001"
-      # API (9000)
-      - "traefik.http.routers.minio-api.rule=Host(`obj.storage.${DOMAIN_NAME:-localhost}`)"
-      - "traefik.http.routers.minio-api.service=minio-api"
-      - "traefik.http.routers.minio-api.entrypoints=websecure"
-      - "traefik.http.routers.minio-api.tls.certresolver=myresolver"
-      - "traefik.http.services.minio-api.loadbalancer.server.port=9000"
+
 
   mc:
     image: minio/mc
@@ -149,12 +112,7 @@ services:
       - tes-net
     depends_on:
       - db
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.prisma.rule=Host(`db.${DOMAIN_NAME:-localhost}`)"
-      - "traefik.http.routers.prisma.entrypoints=websecure"
-      - "traefik.http.routers.prisma.tls.certresolver=myresolver"
-      - "traefik.http.services.prisma.loadbalancer.server.port=5555"
+
 
 volumes:
   traefik_certificates:
