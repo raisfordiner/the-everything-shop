@@ -1,0 +1,23 @@
+{
+    "name": "The Everything Shop Dev",
+    "dockerComposeFile": [
+        "../docker-compose.dev.yml"
+    ],
+    "service": "app",
+    "workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}",
+    "features": {
+        "ghcr.io/devcontainers/features/common-utils:2": {},
+        "ghcr.io/devcontainers/features/git:1": {},
+        "ghcr.io/devcontainers/features/node:1": {}
+    },
+    "postCreateCommand": "npm install --prefix backend && npm install --prefix frontend",
+    "customizations": {
+        "vscode": {
+            "extensions": [
+                "dbaeumer.vscode-eslint",
+                "esbenp.prettier-vscode",
+                "Prisma.prisma"
+            ]
+        }
+    }
+}
