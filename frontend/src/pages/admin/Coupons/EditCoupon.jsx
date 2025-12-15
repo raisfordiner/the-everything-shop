@@ -24,10 +24,8 @@ const EditCoupon = () => {
 
                 form.setFieldsValue({
                     code: data.code,
-                    description: data.description,
-                    discount: data.discountPercentage,
-                    usage: data.maxUsage,
-                    expiresAt: data.expiresAt ? dayjs(data.expiresAt) : null,
+                    discountPercentage: data.discountPercentage,
+                    maxUsage: data.maxUsage,
                     isActive: data.isActive !== false,
                 });
             }
@@ -45,7 +43,10 @@ const EditCoupon = () => {
         setSubmitting(true);
         try {
             const updateData = {
-                ...values,
+                code: values.code,
+                discountPercentage: values.discountPercentage,
+                maxUsage: values.maxUsage,
+                isActive: values.isActive
             };
 
             await couponService.updateCoupon(id, updateData);
@@ -115,32 +116,15 @@ const EditCoupon = () => {
 
                         <Col span={16}>
                             <Card title="Coupon Details" style={{ borderRadius: 12 }}>
-                                <Row gutter={16}>
-                                    <Col span={12}>
-                                        <Form.Item
-                                            name="code"
-                                            label="Coupon Code"
-                                            rules={[{ required: true, message: 'Please enter coupon code' }]}
-                                        >
-                                            <Input
-                                                placeholder="e.g. SUMMER2024"
-                                                style={{ textTransform: 'uppercase', fontWeight: 'bold', letterSpacing: '1px' }}
-                                            />
-                                        </Form.Item>
-                                    </Col>
-                                    <Col span={12}>
-                                        <Form.Item name="expiresAt" label="Expiration Date">
-                                            <DatePicker
-                                                showTime
-                                                style={{ width: '100%' }}
-                                                format="DD/MM/YYYY HH:mm"
-                                            />
-                                        </Form.Item>
-                                    </Col>
-                                </Row>
-
-                                <Form.Item name="description" label="Description">
-                                    <Input.TextArea rows={3} placeholder="Describe the coupon..." />
+                                <Form.Item
+                                    name="code"
+                                    label="Coupon Code"
+                                    rules={[{ required: true, message: 'Please enter coupon code' }]}
+                                >
+                                    <Input
+                                        placeholder="e.g. SUMMER2024"
+                                        style={{ textTransform: 'uppercase', fontWeight: 'bold', letterSpacing: '1px' }}
+                                    />
                                 </Form.Item>
 
                                 <Divider orientation="left" style={{ borderColor: '#f0f0f0' }}>Discount Configuration</Divider>
@@ -148,7 +132,7 @@ const EditCoupon = () => {
                                 <Row gutter={16}>
                                     <Col span={12}>
                                         <Form.Item
-                                            name="discount"
+                                            name="discountPercentage"
                                             label="Discount Percentage"
                                             rules={[{ required: true, message: 'Please enter percentage' }]}
                                         >
@@ -162,7 +146,7 @@ const EditCoupon = () => {
                                         </Form.Item>
                                     </Col>
                                     <Col span={12}>
-                                        <Form.Item name="usage" label="Usage Limit (Total)">
+                                        <Form.Item name="maxUsage" label="Usage Limit (Total)">
                                             <InputNumber style={{ width: '100%' }} min={1} placeholder="Unlimited if empty" />
                                         </Form.Item>
                                     </Col>
