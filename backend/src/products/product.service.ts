@@ -200,12 +200,7 @@ export default class ProductService {
       throw new Error("Product not found");
     }
 
-    const isProductCreator = userContext.sellerId && product.createdBy === userContext.sellerId;
-
-    if (!isProductCreator) {
-      throw new Error("You are not authorized to update this product");
-    }
-
+    // Allow all sellers to update any product
     const updatedProduct = await prisma.product.update({
       where: { id: productId },
       data: updateData,
@@ -240,14 +235,7 @@ export default class ProductService {
       throw new Error("Product not found");
     }
 
-    // Check authorization: allow if user is admin OR if user is the product creator (seller)
-    const isAdmin = userContext.role === "ADMIN";
-    const isProductCreator = userContext.sellerId && product.createdBy === userContext.sellerId;
-
-    if (!isAdmin && !isProductCreator) {
-      throw new Error("You are not authorized to delete this product");
-    }
-
+    // Allow all sellers and admins to delete any product
     await prisma.product.update({
       where: { id: productId },
       data: { is_deleted: true },

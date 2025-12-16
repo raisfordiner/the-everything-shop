@@ -16,6 +16,9 @@ const ProductInfo = ({
     amount,
     setAmount
 }) => {
+    console.log("ProductInfo selectedProductVariant:", selectedProductVariant)
+    console.log("ProductInfo selectedAttributes:", selectedAttributes)
+    
     const basePrice = productData.price || 0
     const adjustment = selectedProductVariant?.priceAdjustment || 0
     const finalPrice = basePrice + adjustment
@@ -34,9 +37,9 @@ const ProductInfo = ({
                     <Text type="secondary">(2.8/5)</Text>
                 </div>
                 <Divider type="vertical" />
-                <Text type="secondary">128 đánh giá</Text>
+                <Text type="secondary">128 reviews</Text>
                 <Divider type="vertical" />
-                <Text type="secondary">Đã bán 512</Text>
+                <Text type="secondary">512 sold</Text>
             </div>
 
             <div className="info__price">
@@ -72,7 +75,11 @@ const ProductInfo = ({
 
             <QuantitySelector amount={amount} setAmount={setAmount} />
 
-            <ActionButtons />
+            <ActionButtons 
+                selectedProductVariant={selectedProductVariant}
+                amount={amount}
+                productData={productData}
+            />
         </div>
     )
 }

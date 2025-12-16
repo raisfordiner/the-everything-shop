@@ -6,10 +6,10 @@ import "./ProductCard.css";
 const { Text } = Typography;
 
 const ProductCard = ({ product }) => {
-    // Giả định thêm: product.originalPrice và product.sold
-    // Giả định giá gốc: 250, số lượng đã bán: 1540
+    // Assumption: product.originalPrice and product.sold
+    // Assumed original price: 250, quantity sold: 1540
     const originalPrice = product.originalPrice || 250; 
-    const soldCount = product.sold || 1540; // Giả định số lượng đã bán
+    const soldCount = product.sold || 1540; // Assumed quantity sold
 
     const discountPercent = Math.round(
         ((originalPrice - product.price) / originalPrice) * 100
@@ -17,10 +17,10 @@ const ProductCard = ({ product }) => {
 
     const formatSoldCount = (count) => {
         if (count < 1000) {
-            return `Đã bán ${count}`;
+            return `${count} sold`;
         } else {
             const k = Math.floor(count / 1000);
-            return `Đã bán ${k}k+`;
+            return `${k}k+ sold`;
         }
     };
 
@@ -31,7 +31,7 @@ const ProductCard = ({ product }) => {
                 <div className="product-image-container">
                     <img
                         alt={product.name}
-                        src={product.images && product.images.length > 0 ? product.images[0] : ''} // Lấy ảnh đầu tiên
+                        src={product.images && product.images.length > 0 ? product.images[0] : ''} // Get first image
                         style={{ height: 200, objectFit: "contain" }}
                     />
 
@@ -49,7 +49,7 @@ const ProductCard = ({ product }) => {
                     {product.name}
                 </Text>
 
-                // có thể thêm trong tương lai nếu có nhu cầu
+                // Can be added in the future if needed
                 {/* <div className="price-and-original">
                     <Text delete type="secondary" className="product-original">
                         {originalPrice.toLocaleString()}₫

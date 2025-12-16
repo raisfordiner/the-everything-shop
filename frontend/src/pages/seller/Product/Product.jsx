@@ -10,26 +10,28 @@ import {
   Space,
   Table,
   Tag,
+  Typography,
 } from 'antd';
 import {
   DeleteOutlined,
-  EditOutlined,
   ExportOutlined,
   PlusOutlined,
   SearchOutlined,
 } from '@ant-design/icons';
 import dayjs from 'dayjs';
 import productService from '../../../services/productService.js';
-import authService from '../../../services/authService.js';
 import ActionButtons from '../../../components/common/ActionButtons/ActionButtons.jsx';
 import StockBadge from '../../../components/common/StockBadge/StockBadge.jsx';
 import TablePagination from '../../../components/common/TablePagination/TablePagination.jsx';
+
+const { Text } = Typography;
 
 const Product = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [products, setProducts] = useState([]);
   const [searchText, setSearchText] = useState('');
+  const [selectedRowKeys, setSelectedRowKeys] = useState([]);
   const [pagination, setPagination] = useState({
     current: 1,
     pageSize: 10,
@@ -38,27 +40,7 @@ const Product = () => {
   const fetchSellerAndProducts = async () => {
     setLoading(true);
     try {
-      // First, get the current user to get seller ID
-      console.log('Starting to fetch seller and products...');
-      const userResponse = await authService.checkSession();
-      console.log('User response:', userResponse);
-      
-      // Extract seller ID from the seller relation
-      const sellerId = userResponse?.data?.user?.seller?.id;
-      
-      console.log('Extracted seller ID:', sellerId);
-      console.log('Full user data:', userResponse?.data?.user);
-
-      if (!sellerId) {
-        console.error('No seller ID found. User might not be a seller.');
-        message.error('You are not registered as a seller');
-        setLoading(false);
-        return;
-      }
-
-      // Then fetch products using seller ID
-      console.log(`Fetching products for seller ID: ${sellerId}`);
-      const response = await productService.getSellerProductsBySellerId(sellerId);
+      const response = await productService.getAllProducts();
       console.log('Products response:', response);
       
       if (response && response.data) {
@@ -87,6 +69,27 @@ const Product = () => {
     } catch (error) {
       console.error('Error deleting product:', error);
       message.error('Failed to delete product');
+    }
+  };
+
+  const handleBulkDelete = async () => {
+    if (selectedRowKeys.length === 0) {
+      message.warning('Please select at least one product');
+      return;
+    }
+
+    try {
+      await Promise.all(
+        selectedRowKeys.map(productId => 
+          productService.deleteProduct(productId)
+        )
+      );
+      message.success(`${selectedRowKeys.length} product(s) deleted successfully`);
+      setSelectedRowKeys([]);
+      fetchSellerAndProducts();
+    } catch (error) {
+      console.error('Error bulk deleting products:', error);
+      message.error('Failed to delete some products');
     }
   };
 
@@ -172,10 +175,17 @@ const Product = () => {
     setPagination({ current: page, pageSize });
   };
 
+  const rowSelection = {
+    selectedRowKeys,
+    onChange: (newSelectedRowKeys) => {
+      setSelectedRowKeys(newSelectedRowKeys);
+    },
+  };
+
   return (
     <>
 
-      <Row justify="space-between" align="middle" style={{ marginBottom: 24 }}>
+      <Row justify="space-between" align="middle" style={{ marginBottom:  '12px'}}>
         <Col>
           <h2>Products</h2>
         </Col>
@@ -195,7 +205,7 @@ const Product = () => {
       </Row>
 
       <Card style={{ borderRadius: '12px', boxShadow: '0 4px 12px rgba(0,0,0,0.05)' }}>
-        <div style={{ marginBottom: 16, display: 'flex', justifyContent: 'space-between' }}>
+        <Space style={{ marginBottom: '16px', width: '100%' }} direction="vertical">
           <Input
             placeholder="Search by product name or category..."
             prefix={<SearchOutlined />}
@@ -205,15 +215,38 @@ const Product = () => {
               setSearchText(e.target.value);
               setPagination({ ...pagination, current: 1 }); // Reset to page 1 on search
             }}
+            allowClear
           />
-        </div>
+
+          {selectedRowKeys.length > 0 && (
+            <Space>
+              <Text>Selected {selectedRowKeys.length} product(s)</Text>
+              <Button
+                size="small"
+                danger
+                icon={<DeleteOutlined />}
+                onClick={handleBulkDelete}
+              >
+                Delete Selected
+              </Button>
+              <Button
+                size="small"
+                onClick={() => setSelectedRowKeys([])}
+              >
+                Clear Selection
+              </Button>
+            </Space>
+          )}
+        </Space>
 
         <Table
           columns={columns}
           dataSource={paginatedProducts}
           rowKey="id"
           loading={loading}
+          rowSelection={rowSelection}
           pagination={false}
+          scroll={{ x: 1200, y: 'calc(100vh - 380px)' }}
         />
 
         <TablePagination
