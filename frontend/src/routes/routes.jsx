@@ -38,6 +38,8 @@ import SellerOrders from '../pages/seller/Orders/SellerOrders.jsx';
 import Staffs from "../pages/admin/Staffs/Staffs.jsx";
 import EditStaff from "../pages/admin/Staffs/EditStaff.jsx";
 import AddStaff from "../pages/admin/Staffs/AddStaff.jsx";
+import AllProducts from '../pages/customer/AllProducts/AllProducts.jsx';
+import SearchProduct from '../pages/customer/SearchProduct/SearchProduct.jsx';
 
 export const routes = [
     {
@@ -59,6 +61,14 @@ export const routes = [
             {
                 path: '/auth/verify',
                 element: <VerifyEmail />,
+            },
+            {
+                path: '/products',
+                element: <AllProducts />
+            },
+            {
+                path: '/search',
+                element: <SearchProduct/>
             },
             {
                 path: '/products/:productId',

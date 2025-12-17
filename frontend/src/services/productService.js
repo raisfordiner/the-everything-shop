@@ -1,7 +1,8 @@
 import { get, post, patch, del, put } from '../utils/request';
 
-const getAllProducts = () => {
-    return get('/products');
+const getAllProducts = (search) => {
+    const url = search ? `/products?search=${search}` : '/products';
+    return get(url);
 };
 
 const getProductById = async (productId) => {
