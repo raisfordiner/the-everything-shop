@@ -12,8 +12,8 @@ const ProductGrid = ({ products, from=0, end=products.length }) => {
                     xs={12}
                     sm={8}
                     md={6}
-                    lg={4}
-                    xl={4}
+                    lg={{ flex: '20%' }}
+                    xl={{ flex: '20%' }}
                     xxl={3}
                     style={{ height: "100%" }} 
                 >
