@@ -3,10 +3,10 @@ import { Row, Col } from "antd";
 import ProductCard from "./ProductCard";
 import { Link } from "react-router"; // Note: 'react-router-dom' is commonly used for web
 
-const ProductGrid = ({ products }) => {
+const ProductGrid = ({ products, from=0, end=products.length }) => {
     return (
         <Row gutter={[16, 16]}>
-            {products.slice(0, 8).map((p) => (
+            {products.slice(from, end).map((p) => (
                 <Col 
                     key={p.id} // Setting key here is best practice
                     xs={12}

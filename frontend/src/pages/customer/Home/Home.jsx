@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { use, useEffect, useState } from 'react'
 import { useNavigate } from 'react-router'
 import CategoryListing from '../../../components/Category/CategoryListing'
 import ProductSection from '../../../components/Product/ProductSection'
@@ -12,6 +12,7 @@ const Home = () => {
   const [error, setError] = useState(null)
 
   const allProducts = useSelector(state => state.allProducts.products)
+  const allCategories = useSelector(state => state.allCategories.categories)
   const user = useSelector(state => state.authReducer.user)
   const navigate = useNavigate()
 
@@ -45,7 +46,15 @@ const Home = () => {
   return (
     <div>
       <CategoryListing />
-      <ProductSection
+      {allCategories.slice(0, 3).map(category => (
+        <ProductSection
+          key={category.id}
+          title={category.name}
+          products={allProducts.filter(p => p.categoryId === category.id)}
+          categoryId={category.id}
+        />  
+      ))}
+      {/* <ProductSection
         title='test'
         products={allProducts}
       />
@@ -56,7 +65,7 @@ const Home = () => {
       <ProductSection
         title='Suggested: this should be recommended products for the user'
         products={allProducts}
-      />
+      /> */}
     </div>
   )
 }
