@@ -10,13 +10,23 @@
     "moduleResolution": "node",
     "resolveJsonModule": true,
     "allowJs": true,
-    "types": ["node"],
+    "types": [
+      "node",
+      "jest"
+    ],
     "noEmit": true,
-    "lib": ["es6"],
+    "lib": [
+      "es6"
+    ],
     "outDir": "./dist",
     "rootDir": "./src",
     "baseUrl": "./src"
   },
-  "include": ["src/**/*"],
-  "exclude": ["node_modules", "dist"]
+  "include": [
+    "src/**/*"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist"
+  ]
 }

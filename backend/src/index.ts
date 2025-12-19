@@ -1,4 +1,4 @@
-import "tsconfig-paths/register";
+// import "tsconfig-paths/register";
 import "dotenv/config";
 
 import App from "app";
