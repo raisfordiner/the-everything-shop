@@ -16,6 +16,14 @@ http:
       tls:
         certResolver: myresolver
 
+    swagger-api:
+      rule: "Host(`swagger.localhost`) && PathPrefix(`/api`)"
+      service: backend
+      entryPoints:
+        - websecure
+      tls:
+        certResolver: myresolver
+
     swagger:
       rule: "Host(`swagger.localhost`)"
       service: backend
