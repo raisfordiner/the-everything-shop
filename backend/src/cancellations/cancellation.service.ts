@@ -10,7 +10,6 @@ export default class CancellationService {
           order: {
             select: {
               id: true,
-              customerId: true,
               status: true,
               orderDate: true,
               createdAt: true,
@@ -31,7 +30,6 @@ export default class CancellationService {
         order: {
           select: {
             id: true,
-            customerId: true,
             status: true,
             orderDate: true,
             createdAt: true,
@@ -62,7 +60,6 @@ export default class CancellationService {
         order: {
           select: {
             id: true,
-            customerId: true,
             status: true,
             orderDate: true,
             createdAt: true,
@@ -86,7 +83,6 @@ export default class CancellationService {
         order: {
           select: {
             id: true,
-            customerId: true,
             status: true,
             orderDate: true,
             createdAt: true,
