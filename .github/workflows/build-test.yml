@@ -27,18 +27,33 @@ jobs:
         working-directory: backend
         run: npx eslint ./src
 
-      - name: Run Docker compose
+      - name: Run Tests (Backend)
+        working-directory: backend
+        run: npm test
+
+      - name: Install dependencies (Frontend)
+        working-directory: frontend
+        run: npm ci
+
+      - name: Run Tests (Frontend)
+        working-directory: frontend
+        run: npm test
+
+      - name: Run Docker compose (Production)
         run: |
-          docker compose up -d --build
+          docker compose -f docker-compose.prod.yml up -d --build
 
       - name: Verify Frontend
         run: |
           echo "Waiting for frontend..."
           sleep 10
-          if curl -f http://localhost > /dev/null; then
+          if curl -f -k https://localhost > /dev/null; then
              echo "Frontend is reachable!"
           else
              echo "Frontend failed to respond."
+             # Debug info
+             docker compose -f docker-compose.prod.yml logs frontend
+             docker compose -f docker-compose.prod.yml logs traefik
              exit 1
           fi
 
@@ -47,14 +62,14 @@ jobs:
           echo "Waiting for backend..."
           sleep 10
           
-          if docker compose exec -T app node -e 'fetch("http://localhost:8000/api/health").then(r => r.ok ? process.exit(0) : process.exit(1))'; then
+          if docker compose -f docker-compose.prod.yml exec -T app node -e 'fetch("http://localhost:8000/api/health").then(r => r.ok ? process.exit(0) : process.exit(1))'; then
              echo "Backend is healthy (checked via internal node fetch)!"
           else
              echo "Backend health check failed."
-             docker compose logs app
+             docker compose -f docker-compose.prod.yml logs app
              exit 1
           fi
 
       - name: Stop containers
         if: always()
-        run: docker compose down
+        run: docker compose -f docker-compose.prod.yml down
