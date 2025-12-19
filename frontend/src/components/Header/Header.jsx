@@ -103,7 +103,11 @@ const Header = () => {
                     </Link>
                 </Col>
                 <Col span={12}>
-                    <Search placeholder="Search essentials, groceries and more..." enterButton />
+                    <Search placeholder="Search essentials, groceries and more..." enterButton onSearch={(value) => {
+                        if (value.trim()) {
+                            navigate(`/search?key=${encodeURIComponent(value.trim())}`);
+                        }
+                    }} />
                 </Col>
                 <Col span={6}>
                     <div className="middle__right">
