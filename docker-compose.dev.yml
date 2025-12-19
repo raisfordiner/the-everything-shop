@@ -109,7 +109,7 @@ services:
       "
 
   prisma-studio:
-    image: the-everything-shop-backend
+    image: the-everything-shop-monolith
     command: npx prisma studio --port 5555 --browser none
     working_dir: /app
     env_file:
@@ -118,6 +118,7 @@ services:
       - tes-net
     depends_on:
       - db
+      - app
 
 
 volumes:
