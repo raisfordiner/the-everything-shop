@@ -4,13 +4,11 @@
   "description": "",
   "main": "src/app.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
     "start": "ts-node-dev -r tsconfig-paths/register --respawn --transpile-only src/index.ts",
     "dev": "ts-node-dev -r tsconfig-paths/register --respawn --watch src --transpile-only src/index.ts",
-    "db:dev": "npx prisma migrate dev --name init && npx prisma generate",
+    "db:dev": "npx prisma migrate dev --name dev",
     "db:deploy": "npx prisma migrate deploy && npx prisma generate",
     "db:seed": "node -r dotenv/config -r ts-node/register src/db/seed.ts",
-    "test": "jest",
     "test": "jest",
     "build": "tsc -p tsconfig.build.json && tsc-alias -p tsconfig.build.json"
   },
