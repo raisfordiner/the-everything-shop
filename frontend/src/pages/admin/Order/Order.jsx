@@ -1,9 +1,11 @@
 import React, {useEffect, useState} from 'react'
 import {Button, Card, Col, Flex, Input, message, Popconfirm, Row, Space, Spin, Table, Typography} from "antd"
 import {PlusOutlined, ExportOutlined, EyeOutlined, EditOutlined, DeleteOutlined} from "@ant-design/icons"
-import {useNavigate} from 'react-router'
+import {data, useNavigate} from 'react-router'
 import categoryService from '../../../services/categoryService.js'
 import AdminTable from '../../../components/AdminTable/AdminTable.jsx'
+import orderService from '../../../services/orderService.js'
+import userService from '../../../services/userService.js'
 
 const rowSelection = {
     onChange: (selectedRowKeys, selectedRows) => {},
@@ -24,29 +26,44 @@ const Order = () => {
         },
         {
             title: 'Date',
-            dataIndex: 'createdAt',
+            dataIndex: 'orderDate',
             key: 'date',
         },
         {
             title: 'Customer',
-            dataIndex: 'customer',
             key: 'customer',
+            dataIndex: 'customerId',
+            render: async (value) => {
+                try {
+                    const customer = await userService.getUserById(value)
+                    return <Typography.Text>{customer.data.username}</Typography.Text>
+                } catch (error) {
+                    console.error("Failed to fetch user:", error)
+                } finally {
+                    return <Typography.Text>{customer.data.username || 'Unknown User'}</Typography.Text>
+                }
+            }
         },
         {
             title: 'Payment status',
-            dataIndex: 'paymentStatus',
-            key: 'paymentStatus',
+            dataIndex: 'payment',
+            key: 'payment',
+            render: (payment) => (
+                <Typography.Text>
+                    {payment?.status ? 'Paid' : 'Unpaid'}
+                </Typography.Text>
+            )
         },
         {
             title: 'Order status',
-            dataIndex: 'orderStatus',
-            key: 'orderStatus',
+            dataIndex: 'status',
+            key: 'status',
         },
-        {
-            title: 'Total',
-            dataIndex: 'total',
-            key: 'total',
-        },
+        // {
+        //     title: 'Total',
+        //     dataIndex: 'total',
+        //     key: 'total',
+        // },
         {
             title: 'Actions',
             key: 'actions',
@@ -71,13 +88,14 @@ const Order = () => {
         }
     ]
 
-    const fetchCategories = async () => {
+    const fetchOrders = async () => {
         setLoading(true)
         try {
             const response = await orderService.getAllOrders()
-            response && setOrders(response.data)
+            const data = response?.data?.orders
+            setOrders(Array.isArray(data) ? data : [])
         } catch (error) {
-            console.error("Failed to fetch categories:", error)
+            console.error("Failed to fetch orders:", error)
         } finally {
             setLoading(false)
         }
@@ -85,15 +103,15 @@ const Order = () => {
 
     const handleDelete = async (id) => {
         try {
-            await categoryService.deleteCategory(id)
-            fetchCategories()
+            await orderService.deleteOrder(id)
+            fetchOrders()
         } catch (error) {
             console.error(error)
         }
     }
 
     useEffect(() => {
-        fetchCategories()
+        fetchOrders()
     }, [])
 
 
@@ -101,12 +119,12 @@ const Order = () => {
         <>
             <Flex justify="space-between" style={{marginBottom: 24}}>
                 <Typography.Title level={3} style={{margin: 0}}>
-                    Categories
+                    Orders
                 </Typography.Title>
                 <Space>
                     <Button icon={<ExportOutlined/>}>Export</Button>
                     <Button type="primary" icon={<PlusOutlined/>} onClick={() => navigate('add-order')}>
-                        Add Category
+                        Add Order
                     </Button>
                 </Space>
             </Flex>
