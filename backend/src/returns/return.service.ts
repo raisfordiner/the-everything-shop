@@ -1,32 +1,16 @@
 import { prisma } from "util/db";
 import { ReturnStatus } from "@prisma/client";
 
+const returnInclude = {
+  order: true,
+};
+
 export default class ReturnService {
   static async find(id?: string, q?: string, orderId?: string, status?: ReturnStatus) {
     if (id) {
       return await prisma.return.findUnique({
         where: { id },
-        include: {
-          order: {
-            select: {
-              id: true,
-              orderDate: true,
-              status: true,
-              customer: {
-                select: {
-                  id: true,
-                  user: {
-                    select: {
-                      id: true,
-                      username: true,
-                      email: true,
-                    },
-                  },
-                },
-              },
-            },
-          },
-        },
+        include: returnInclude,
       });
     }
 
@@ -36,27 +20,7 @@ export default class ReturnService {
         orderId: orderId || undefined,
         status: status || undefined,
       },
-      include: {
-        order: {
-          select: {
-            id: true,
-            orderDate: true,
-            status: true,
-            customer: {
-              select: {
-                id: true,
-                user: {
-                  select: {
-                    id: true,
-                    username: true,
-                    email: true,
-                  },
-                },
-              },
-            },
-          },
-        },
-      },
+      include: returnInclude,
     });
   }
 
@@ -76,27 +40,7 @@ export default class ReturnService {
         orderId: data.orderId,
         reason: data.reason,
       },
-      include: {
-        order: {
-          select: {
-            id: true,
-            orderDate: true,
-            status: true,
-            customer: {
-              select: {
-                id: true,
-                user: {
-                  select: {
-                    id: true,
-                    username: true,
-                    email: true,
-                  },
-                },
-              },
-            },
-          },
-        },
-      },
+      include: returnInclude,
     });
   }
 
@@ -115,27 +59,7 @@ export default class ReturnService {
     return await prisma.return.update({
       where: { id },
       data,
-      include: {
-        order: {
-          select: {
-            id: true,
-            orderDate: true,
-            status: true,
-            customer: {
-              select: {
-                id: true,
-                user: {
-                  select: {
-                    id: true,
-                    username: true,
-                    email: true,
-                  },
-                },
-              },
-            },
-          },
-        },
-      },
+      include: returnInclude,
     });
   }
 

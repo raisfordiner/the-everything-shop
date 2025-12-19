@@ -1,22 +1,16 @@
 import { prisma } from "util/db";
 import { CancellationStatus } from "@prisma/client";
 
+const cancellationInclude = {
+  order: true,
+};
+
 export default class CancellationService {
   static async find(id?: string, q?: string, orderId?: string, status?: CancellationStatus) {
     if (id) {
       return await prisma.cancellation.findUnique({
         where: { id },
-        include: {
-          order: {
-            select: {
-              id: true,
-              status: true,
-              orderDate: true,
-              createdAt: true,
-              updatedAt: true,
-            },
-          },
-        },
+        include: cancellationInclude,
       });
     }
 
@@ -26,17 +20,7 @@ export default class CancellationService {
         orderId: orderId || undefined,
         status: status || undefined,
       },
-      include: {
-        order: {
-          select: {
-            id: true,
-            status: true,
-            orderDate: true,
-            createdAt: true,
-            updatedAt: true,
-          },
-        },
-      },
+      include: cancellationInclude,
     });
   }
 
@@ -56,17 +40,7 @@ export default class CancellationService {
         orderId: data.orderId,
         reason: data.reason,
       },
-      include: {
-        order: {
-          select: {
-            id: true,
-            status: true,
-            orderDate: true,
-            createdAt: true,
-            updatedAt: true,
-          },
-        },
-      },
+      include: cancellationInclude,
     });
   }
 
@@ -79,17 +53,7 @@ export default class CancellationService {
     return await prisma.cancellation.update({
       where: { id },
       data,
-      include: {
-        order: {
-          select: {
-            id: true,
-            status: true,
-            orderDate: true,
-            createdAt: true,
-            updatedAt: true,
-          },
-        },
-      },
+      include: cancellationInclude,
     });
   }
 
