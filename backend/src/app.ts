@@ -30,6 +30,7 @@ import cartsRoute from "cart/cart.route";
 import reviewsRoute from "reviews/reviews.route";
 import addressRoute from "addresses/address.route";
 import orderRoute from "orders/order.route";
+import membershipRoute from "memberships/membership.route";
 
 export default class App {
   private app: Express;
@@ -79,6 +80,7 @@ export default class App {
     this.app.use("/api/reviews", reviewsRoute);
     this.app.use("/api/addresses", addressRoute);
     this.app.use("/api/orders", orderRoute);
+    this.app.use("/api/memberships", membershipRoute); // /api/memberships/*
 
     this.app.use("/api", healthRoute); // /api/healthcheck
 
