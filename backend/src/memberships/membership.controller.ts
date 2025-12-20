@@ -8,14 +8,9 @@ export default class MembershipController {
   static async getMemberships(req: Request, res: Response) {
     try {
       const { id } = req.params;
-      const { q, customerId, membership } = req.query;
+      const { membership } = req.query;
 
-      const result = await MembershipService.find(
-        id,
-        q as string,
-        customerId as string,
-        membership as MembershipStatus
-      );
+      const result = await MembershipService.find(id, membership as MembershipStatus);
 
       if (!result) {
         return Send.notFound(res, {}, id ? "Membership not found" : "Memberships not found");
@@ -35,7 +30,6 @@ export default class MembershipController {
 
       const membershipRecord = await MembershipService.create({
         customerId,
-        membership,
         spent,
       });
 
@@ -49,11 +43,10 @@ export default class MembershipController {
   static async updateMembership(req: Request, res: Response) {
     try {
       const { id } = req.params;
-      const { customerId, membership, spent } = req.body;
+      const { customerId, spent } = req.body;
 
       const membershipRecord = await MembershipService.update(id, {
         customerId,
-        membership,
         spent,
       });
 
