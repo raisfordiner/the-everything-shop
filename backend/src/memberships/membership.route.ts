@@ -8,37 +8,24 @@ import { adminOrSellerGuard, authGuard } from "middlewares/authGuard";
  * @swagger
  * tags:
  *   name: Memberships
- *   description: Membership management endpoints (Admin only)
+ *   description: Customer membership tier management
  *
  * /memberships:
  *   get:
- *     summary: Get all memberships or search memberships (Admin only)
+ *     summary: List all memberships with optional filters
  *     tags: [Memberships]
  *     security:
  *       - bearerAuth: []
  *     parameters:
  *       - in: query
- *         name: q
- *         required: false
- *         schema:
- *           type: string
- *         description: Search query
- *       - in: query
- *         name: customerId
- *         required: false
- *         schema:
- *           type: string
- *         description: Filter by customer ID
- *       - in: query
  *         name: membership
- *         required: false
  *         schema:
  *           type: string
  *           enum: [BRONZE, SILVER, GOLD]
- *         description: Filter by membership status
+ *         description: Filter by tier
  *     responses:
  *       200:
- *         description: List of memberships
+ *         description: Memberships retrieved
  *         content:
  *           application/json:
  *             schema:
@@ -63,11 +50,9 @@ import { adminOrSellerGuard, authGuard } from "middlewares/authGuard";
  *       401:
  *         description: Unauthorized
  *       403:
- *         description: Forbidden - Admin access required
- *       500:
- *         description: Internal server error
+ *         description: Forbidden
  *   post:
- *     summary: Create new membership (Admin only)
+ *     summary: Create membership for customer
  *     tags: [Memberships]
  *     security:
  *       - bearerAuth: []
@@ -79,29 +64,23 @@ import { adminOrSellerGuard, authGuard } from "middlewares/authGuard";
  *             type: object
  *             required:
  *               - customerId
- *               - membership
  *               - spent
  *             properties:
  *               customerId:
  *                 type: string
- *               membership:
- *                 type: string
- *                 enum: [BRONZE, SILVER, GOLD]
  *               spent:
  *                 type: number
  *     responses:
  *       200:
- *         description: Membership created successfully
+ *         description: Membership created
  *       401:
  *         description: Unauthorized
  *       403:
- *         description: Forbidden - Admin access required
- *       500:
- *         description: Internal server error
+ *         description: Forbidden
  *
  * /memberships/{id}:
  *   get:
- *     summary: Get membership by ID (Admin only)
+ *     summary: Get membership by ID
  *     tags: [Memberships]
  *     security:
  *       - bearerAuth: []
@@ -111,10 +90,9 @@ import { adminOrSellerGuard, authGuard } from "middlewares/authGuard";
  *         required: true
  *         schema:
  *           type: string
- *         description: Membership ID
  *     responses:
  *       200:
- *         description: Membership details
+ *         description: Membership found
  *         content:
  *           application/json:
  *             schema:
@@ -137,13 +115,11 @@ import { adminOrSellerGuard, authGuard } from "middlewares/authGuard";
  *       401:
  *         description: Unauthorized
  *       403:
- *         description: Forbidden - Admin access required
+ *         description: Forbidden
  *       404:
- *         description: Membership not found
- *       500:
- *         description: Internal server error
+ *         description: Not found
  *   put:
- *     summary: Update membership (Admin only)
+ *     summary: Update membership
  *     tags: [Memberships]
  *     security:
  *       - bearerAuth: []
@@ -153,9 +129,7 @@ import { adminOrSellerGuard, authGuard } from "middlewares/authGuard";
  *         required: true
  *         schema:
  *           type: string
- *         description: Membership ID
  *     requestBody:
- *       required: true
  *       content:
  *         application/json:
  *           schema:
@@ -163,24 +137,19 @@ import { adminOrSellerGuard, authGuard } from "middlewares/authGuard";
  *             properties:
  *               customerId:
  *                 type: string
- *               membership:
- *                 type: string
- *                 enum: [BRONZE, SILVER, GOLD]
  *               spent:
  *                 type: number
  *     responses:
  *       200:
- *         description: Membership updated successfully
+ *         description: Updated
  *       401:
  *         description: Unauthorized
  *       403:
- *         description: Forbidden - Admin access required
+ *         description: Forbidden
  *       404:
- *         description: Membership not found
- *       500:
- *         description: Internal server error
+ *         description: Not found
  *   delete:
- *     summary: Delete membership (Admin only)
+ *     summary: Delete membership
  *     tags: [Memberships]
  *     security:
  *       - bearerAuth: []
@@ -190,18 +159,15 @@ import { adminOrSellerGuard, authGuard } from "middlewares/authGuard";
  *         required: true
  *         schema:
  *           type: string
- *         description: Membership ID
  *     responses:
  *       200:
- *         description: Membership deleted successfully
+ *         description: Deleted
  *       401:
  *         description: Unauthorized
  *       403:
- *         description: Forbidden - Admin access required
+ *         description: Forbidden
  *       404:
- *         description: Membership not found
- *       500:
- *         description: Internal server error
+ *         description: Not found
  */
 
 class MembershipRouter extends BaseRouter {

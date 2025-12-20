@@ -26,7 +26,7 @@ export default class MembershipController {
 
   static async createMembership(req: Request, res: Response) {
     try {
-      const { customerId, membership, spent } = req.body;
+      const { customerId, spent } = req.body;
 
       const membershipRecord = await MembershipService.create({
         customerId,
