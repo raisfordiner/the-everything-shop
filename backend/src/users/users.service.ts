@@ -33,8 +33,8 @@ export default class UsersService {
   }
 
   static async create(data: { username: string; email: string; password: string; role: UserRole }) {
-    const check_for_email = await prisma.user.findUnique({ where: { email: data.email } });
-    if (check_for_email) {
+    const check_email = await prisma.user.findUnique({ where: { email: data.email } });
+    if (check_email) {
       throw new Error("Email is already in use");
     }
 
@@ -54,9 +54,10 @@ export default class UsersService {
     });
 
     if (data.role === UserRole.CUSTOMER) {
-      await prisma.customer.create({
+      await prisma.membership.create({
         data: {
-          userId: user.id,
+          customer: { create: { userId: user.id } },
+          spent: 0,
         },
       });
     }
