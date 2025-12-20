@@ -1,3 +1,4 @@
+import Stripe from "stripe";
 import { prisma } from "util/db";
 
 export default class CartService {
@@ -69,7 +70,7 @@ export default class CartService {
     const cart = await prisma.cart.findUnique({
       where: { id: data.cartId },
     });
-
+    console.log("cart", cart);
     if (!cart) {
         throw new Error("Cart not found");
     }
@@ -77,6 +78,8 @@ export default class CartService {
     const productVariant = await prisma.productVariant.findUnique({
       where: { id: data.productVariantId },
     });
+
+    console.log(productVariant);
 
     if (!productVariant) {
       throw new Error("Product variant not found");
@@ -89,6 +92,8 @@ export default class CartService {
         productVariantId: data.productVariantId,
       },
     });
+
+    console.log(existingCartItem);
 
     if (existingCartItem) {
       // Update quantity if item already exists
@@ -121,6 +126,7 @@ export default class CartService {
       },
     });
 
+    console.log(cartItem);
     return cartItem;
   }
 
@@ -161,7 +167,7 @@ export default class CartService {
     customerId: string;
     cartItemIds: string[];
     addressId: string;
-    paymentMethod: "COD" | "VNPAY";
+    paymentMethod: "COD" | "VNPAY" | "STRIPE";
   }) {
     // Validate cart items exist and belong to customer's cart
     const cartItems = await prisma.cartItem.findMany({
@@ -236,7 +242,7 @@ export default class CartService {
             connect: { id: newOrder.id },
           },
           amount: totalAmount,
-          method: data.paymentMethod,
+          method: data.paymentMethod as any,
           status: data.paymentMethod === "COD" ? "PENDING" : "PENDING",
         },
       });
@@ -260,6 +266,33 @@ export default class CartService {
         },
       });
 
+      if (data.paymentMethod === "STRIPE") {
+        const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "");
+        const session = await stripe.checkout.sessions.create({
+          payment_method_types: ['card'],
+          line_items: [{
+            price_data: {
+              currency: 'usd',
+              product_data: {
+                name: `Order #${newOrder.id}`,
+              },
+              unit_amount: Math.round(totalAmount * 100),
+            },
+            quantity: 1,
+          }],
+          expires_at: Math.floor(Date.now() / 1000) + 30 * 60, // 30 minutes from now
+          mode: 'payment',
+          success_url: `${process.env.FRONTEND_URL}/loading?orderId=${newOrder.id}`,
+          cancel_url: `${process.env.FRONTEND_URL}/cart`,
+          metadata: {
+            orderIds: newOrder.id,
+            userId: data.customerId,
+            appId: 'the-everything-shop',
+          }
+        })
+        return { session, orderId: newOrder.id };
+      }
+
       return {
         ...newOrder,
         orderItems,
@@ -270,8 +303,9 @@ export default class CartService {
 
 
     // Return the complete order with details
-    return await prisma.order.findUnique({
-      where: { id: order.id },
+    const orderId = 'session' in order ? order.orderId : order.id;
+    const fullOrder = await prisma.order.findUnique({
+      where: { id: orderId },
       include: {
         orderItems: {
           include: {
@@ -286,5 +320,15 @@ export default class CartService {
         address: true,
       },
     });
+
+    // If Stripe session exists, return it with the order
+    if ('session' in order) {
+      return {
+        ...fullOrder,
+        stripeSessionUrl: order.session.url,
+      };
+    }
+
+    return fullOrder;
   }
 }

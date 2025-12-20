@@ -34,6 +34,7 @@ import AccessRestricted from "../pages/public/AccessRestricted/AccessRestricted.
 import Cart from '../pages/customer/Cart/Cart.jsx';
 import Orders from '../pages/customer/Orders/Orders.jsx';
 import OrderDetail from '../pages/customer/Orders/OrderDetail.jsx';
+import Loading from '../pages/customer/Loading/Loading.jsx';
 import SellerOrders from '../pages/seller/Orders/SellerOrders.jsx';
 import Staffs from "../pages/admin/Staffs/Staffs.jsx";
 import EditStaff from "../pages/admin/Staffs/EditStaff.jsx";
@@ -87,6 +88,10 @@ export const routes = [
             {
                 path: '/cart',
                 element: <Cart/>,
+            },
+            {
+                path: '/loading',
+                element: <Loading />,
             },
             {
                 path: '/profile',
