@@ -1,15 +1,10 @@
 import {
-    DashboardOutlined,
     ShoppingCartOutlined,
-    AppstoreOutlined,
     TagsOutlined,
     UserOutlined,
     BarChartOutlined,
     GiftOutlined,
-    InboxOutlined,
-    SettingOutlined,
-    UserSwitchOutlined,
-    GlobalOutlined,
+    ProductOutlined
 } from "@ant-design/icons";
 import { Layout, Menu } from "antd";
 import { Link, useLocation } from "react-router-dom";
@@ -22,24 +17,9 @@ const AdminSidebar = () => {
 
     const menuItems = [
         {
-            key: "/admin/dashboard",
-            icon: <DashboardOutlined />,
-            label: <Link to="/admin/dashboard">Dashboard</Link>,
-        },
-        {
             key: "/admin/orders",
             icon: <ShoppingCartOutlined />,
             label: <Link to="/admin/orders">Orders</Link>,
-        },
-        {
-            key: "/admin/products",
-            icon: <AppstoreOutlined />,
-            label: <Link to="/admin/products">Products</Link>,
-        },
-        {
-            key: "/admin/categories",
-            icon: <TagsOutlined />,
-            label: <Link to="/admin/categories">Categories</Link>,
         },
         {
             key: "/admin/staffs",
@@ -52,9 +32,9 @@ const AdminSidebar = () => {
             label: <Link to="/admin/customers">Customers</Link>,
         },
         {
-            key: "/admin/reports",
-            icon: <BarChartOutlined />,
-            label: <Link to="/admin/reports">Reports</Link>,
+            key: "/admin/promotions",
+            icon: <ProductOutlined />,
+            label: <Link to="/admin/promotions">Promotions</Link>,
         },
         {
             key: "/admin/coupons",
@@ -62,37 +42,28 @@ const AdminSidebar = () => {
             label: <Link to="/admin/coupons">Coupons</Link>,
         },
         {
-            key: "/admin/inbox",
-            icon: <InboxOutlined />,
-            label: <Link to="/admin/inbox">Inbox</Link>,
-        },
-        {
-            key: "settings",
-            icon: <SettingOutlined />,
-            label: "Settings",
-            children: [
-                {
-                    key: "/admin/settings/personal",
-                    icon: <UserSwitchOutlined />,
-                    label: <Link to="/admin/settings/personal">Personal Setting</Link>,
-                },
-                {
-                    key: "/admin/settings/global",
-                    icon: <GlobalOutlined />,
-                    label: <Link to="/admin/settings/global">Global Setting</Link>,
-                },
-            ],
+            key: "/admin/reports",
+            icon: <BarChartOutlined />,
+            label: <Link to="/admin/reports">Reports</Link>,
         },
     ];
 
     return (
         <Sider
             width={230}
-            className="admin-sidebar light"
             collapsible
             breakpoint="lg"
             collapsedWidth="70"
             theme="light"
+            style={{
+                background: "#fff",
+                borderRight: "1px solid #f0f0f0",
+                position: "sticky",
+                left: "0",
+                top: "64px",
+                height: "calc(100vh - 64px)",
+                zIndex: "99",
+            }}
         >
             <Menu
                 mode="inline"
