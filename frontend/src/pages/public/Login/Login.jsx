@@ -16,7 +16,7 @@ const Login = () => {
   const navigateBasedOnRole = (role) => {
     switch (role) {
       case 'ADMIN':
-        navigate('/admin/dashboard');
+        navigate('/admin/orders');
         break;
       case 'SELLER':
         navigate('/seller/products');
