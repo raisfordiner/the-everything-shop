@@ -37,11 +37,55 @@
     background-color: #fff;
 }
 
+/* Responsive padding */
+@media (max-width: 1200px) {
+    .header .header__middle {
+        padding: 20px 60px 28px 60px;
+    }
+}
+
+@media (max-width: 992px) {
+    .header .header__middle {
+        padding: 16px 40px 20px 40px;
+    }
+}
+
+@media (max-width: 768px) {
+    .header .header__middle {
+        padding: 12px 24px 16px 24px;
+    }
+}
+
+@media (max-width: 576px) {
+    .header .header__middle {
+        padding: 12px 16px;
+    }
+}
+
 .header .header__middle .logo {
     font-size: 24px;
     font-weight: bold;
     color: #008ecc;
     text-decoration: none;
+}
+
+.header .header__middle .logo .logo-short {
+    display: none;
+}
+
+/* Show shorter logo on small screens */
+@media (max-width: 768px) {
+    .header .header__middle .logo {
+        font-size: 20px;
+    }
+    
+    .header .header__middle .logo .logo-full {
+        display: none;
+    }
+    
+    .header .header__middle .logo .logo-short {
+        display: inline;
+    }
 }
 
 .header .header__middle .ant-input-search-button {
@@ -57,6 +101,34 @@
     justify-content: flex-end;
     align-items: center;
     gap: 20px;
+}
+
+/* Responsive actions */
+@media (max-width: 768px) {
+    .header .header__middle .middle__right {
+        justify-content: center;
+        gap: 16px;
+    }
+}
+
+@media (max-width: 576px) {
+    .header .header__middle .middle__right {
+        gap: 12px;
+    }
+    
+    /* Hide text labels on mobile, show only icons */
+    .header .header__middle .action-text {
+        display: none;
+    }
+    
+    .header .header__middle .action-divider {
+        display: none;
+    }
+    
+    .header-action-item .icon,
+    .user-menu-trigger .icon {
+        font-size: 20px;
+    }
 }
 
 .header-action-item,
@@ -95,4 +167,29 @@
     background-color: #fff;
     border-top: 1px solid #e8e8e8;
     border-bottom: 1px solid #e8e8e8;
+}
+
+/* Responsive padding for lower header */
+@media (max-width: 1200px) {
+    .header .header__lower {
+        padding: 8px 60px;
+    }
+}
+
+@media (max-width: 992px) {
+    .header .header__lower {
+        padding: 8px 40px;
+    }
+}
+
+@media (max-width: 768px) {
+    .header .header__lower {
+        padding: 8px 24px;
+    }
+}
+
+@media (max-width: 576px) {
+    .header .header__lower {
+        padding: 8px 16px;
+    }
 }
