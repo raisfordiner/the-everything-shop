@@ -1,4 +1,4 @@
-import {get, del} from "../utils/request.js";
+import {get, del, put, post} from "../utils/request.js";
 
 const getAllCategories = (params) => {
     return get('/categories', params);
@@ -20,11 +20,17 @@ const createCategory = async (data) => {
     return await post(`/categories`, data)
 }
 
+const updateCategory = async (id, data) => {
+    return await put(`/categories/${id}`, data)
+}
+
 const categoryService = {
     getAllCategories,
     getAllCategoriesSimple,
     getCategoryById,
-    deleteCategory
+    deleteCategory,
+    updateCategory,
+    createCategory
 }
 
 export default categoryService;

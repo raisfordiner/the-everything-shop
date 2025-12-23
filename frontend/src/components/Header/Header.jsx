@@ -103,7 +103,11 @@ const Header = () => {
                     </Link>
                 </Col>
                 <Col span={12}>
-                    <Search placeholder="Search essentials, groceries and more..." enterButton />
+                    <Search placeholder="Search essentials, groceries and more..." enterButton onSearch={(value) => {
+                        if (value.trim()) {
+                            navigate(`/search?key=${encodeURIComponent(value.trim())}`);
+                        }
+                    }} />
                 </Col>
                 <Col span={6}>
                     <div className="middle__right">
@@ -112,6 +116,11 @@ const Header = () => {
                                 <Link to="/cart" className="header-action-item">
                                     <ShoppingCartOutlined className="icon" />
                                     <span>Cart</span>
+                                </Link>
+
+                                <Link to="/orders" className="header-action-item">
+                                    <DropboxOutlined className="icon" />
+                                    <span>Orders</span>
                                 </Link>
 
                                 <Divider type="vertical" style={{ height: "20px", borderLeft: "1px solid #d9d9d9", margin: "0", alignSelf: "center" }} />

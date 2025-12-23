@@ -163,6 +163,12 @@ class OrdersRoutes extends BaseRouter {
         controller: OrderController.create,
       },
       {
+        method: "post",
+        path: "/direct",
+        middlewares: [authGuard, validateBody(OrderSchema.createDirect)],
+        controller: OrderController.createDirect,
+      },
+      {
         method: "patch",
         path: "/:id",
         middlewares: [authGuard, validateBody(OrderSchema.update)],

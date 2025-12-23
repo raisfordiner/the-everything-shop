@@ -33,7 +33,7 @@ import orderRoute from "orders/order.route";
 import membershipRoute from "memberships/membership.route";
 
 export default class App {
-  private app: Express;
+  public app: Express;
 
   constructor() {
     this.app = express();

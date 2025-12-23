@@ -2,7 +2,7 @@ import BaseRouter, { RouteConfig } from "util/router";
 import AddressController from "./address.controller";
 import { validateBody, validateQuery } from "util/validation";
 import AddressSchema from "./address.schema";
-import { authGuard } from "middlewares/authGuard";
+import AuthMiddleware from "auth/auth.middleware";
 
 /**
  * @swagger
@@ -193,7 +193,7 @@ import { authGuard } from "middlewares/authGuard";
 
 class AddressRoutes extends BaseRouter {
   protected routes(): RouteConfig[] {
-    const checkIfAuth = [authGuard];
+    const checkIfAuth = [AuthMiddleware.authenticateUser];
 
     return [
       {

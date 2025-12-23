@@ -256,6 +256,72 @@ import CartSchema from "./cart.schema";
  *         description: Unauthorized
  *       500:
  *         description: Internal server error
+ *
+ * /carts/{customerId}/checkout:
+ *   post:
+ *     summary: Checkout cart items and create an order
+ *     tags: [Carts]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: customerId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Customer ID
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - cartItemIds
+ *               - addressId
+ *               - paymentMethod
+ *             properties:
+ *               cartItemIds:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *                 description: Array of cart item IDs to checkout
+ *               addressId:
+ *                 type: string
+ *                 description: Delivery address ID
+ *               paymentMethod:
+ *                 type: string
+ *                 enum: [COD, VNPAY]
+ *                 description: Payment method
+ *     responses:
+ *       200:
+ *         description: Checkout successful, order created
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 order:
+ *                   type: object
+ *                   properties:
+ *                     id:
+ *                       type: string
+ *                     customerId:
+ *                       type: string
+ *                     addressId:
+ *                       type: string
+ *                     status:
+ *                       type: string
+ *                     orderItems:
+ *                       type: array
+ *                     payment:
+ *                       type: object
+ *       400:
+ *         description: Bad request - Invalid cart items or address
+ *       401:
+ *         description: Unauthorized
+ *       500:
+ *         description: Internal server error
  */
 
 class CartRoutes extends BaseRouter {
@@ -311,6 +377,12 @@ class CartRoutes extends BaseRouter {
         middlewares: checkIfAuth,
         controller: CartController.deleteCartItem,
       },
+      {
+        method: "post",
+        path: "/:customerId/checkout",
+        middlewares: [...checkIfAuth, validateBody(CartSchema.checkout)],
+        controller: CartController.checkout,
+      }
     ];
   }
 }

@@ -10,6 +10,7 @@ import { z } from "zod";
 import AuthService from "./auth.service";
 import { logger } from "util/logger";
 import { sendMail } from "util/mail";
+import { prisma } from "util/db";
 
 const ONE_MINUTE: number = 60 * 1000; // one minute in milliseconds
 const COOKIE_OPTIONS = {
@@ -165,8 +166,49 @@ export default class AuthController {
 
       setAuthCookies(res, accessToken, refreshToken);
 
-      return Send.success(res, { id: user.id, username: user.username, email: user.email, role: user.role });
+      // Fetch complete user info including customer/seller/admin relations
+      const completeUser = await prisma.user.findUnique({
+        where: { id: user.id },
+        select: {
+          id: true,
+          username: true,
+          email: true,
+          role: true,
+          createdAt: true,
+          updatedAt: true,
+          customer: {
+            select: {
+              id: true,
+              image: true,
+              addresses: true,
+              createdAt: true,
+              updatedAt: true,
+            }
+          },
+          seller: {
+            select: {
+              id: true,
+              email: true,
+              image: true,
+              createdAt: true,
+              updatedAt: true,
+            }
+          },
+          admin: {
+            select: {
+              id: true,
+              createdAt: true,
+              updatedAt: true,
+            }
+          }
+        },
+      });
+
+      return Send.success(res, completeUser);
     } catch (error: any) {
+      if (error.message === "Invalid email or password.") {
+        return Send.unauthorized(res, null, error.message);
+      }
       logger.error({ error }, "Login Failed");
       return Send.error(res, null, error.message || "Login failed.");
     }

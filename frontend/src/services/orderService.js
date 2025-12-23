@@ -1,16 +1,30 @@
-import { get } from '../utils/request';
+import { get, patch, post } from '../utils/request';
 
-const getAllOrders = () => {
-    return get('/orders');
+const getAllOrders = (status) => {
+    let url = '/orders';
+    if (status) {
+        url += `?status=${status}`;
+    }
+    return get(url);
 };
 
 const getOrderById = async (orderId) => {
     return await get(`/orders/${orderId}`);
 };
 
+const createDirectOrder = async (addressId, productVariantId, quantity) => {
+    return await post('/orders/direct', { addressId, productVariantId, quantity });
+};
+
+const updateOrderStatus = async (orderId, status) => {
+    return await patch(`/orders/${orderId}`, { status });
+};
+
 const orderService = {
     getAllOrders,
     getOrderById,
+    createDirectOrder,
+    updateOrderStatus,
 };
 
 export default orderService;

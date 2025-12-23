@@ -1,23 +1,57 @@
 import {useNavigate} from "react-router";
-import {Button, Card, Col, DatePicker, Divider, Form, Input, InputNumber, message, Row, Statistic, Switch} from "antd";
-import {useState} from "react";
+import {
+    Button,
+    Card,
+    Col,
+    DatePicker,
+    Divider,
+    Form,
+    Input,
+    InputNumber,
+    message,
+    Row,
+    Select,
+    Statistic,
+    Switch
+} from "antd";
+import {useEffect, useState} from "react";
 import couponService from "../../../services/couponService.js";
 import {GiftOutlined, PercentageOutlined, PlusOutlined} from "@ant-design/icons";
+import promotionService from "../../../services/promotionService.js";
 
 const AddCoupon = () => {
     const navigate = useNavigate();
     const [form] = Form.useForm();
     const [submitting, setSubmitting] = useState(false);
     const [messageApi, contextHolder] = message.useMessage();
+    const [promotions, setPromotions] = useState([]);
 
-    const discountValue = Form.useWatch('discount', form);
+    const discountValue = Form.useWatch('discountPercentage', form);
     const couponCode = Form.useWatch('code', form);
+
+    useEffect(() => {
+        const fetchPromotions = async () => {
+            try {
+                const res = await promotionService.getAllPromotions({ status: 'ACTIVE' });
+                const promotionList = res.data?.promotions || res.data || [];
+                setPromotions(promotionList);
+            } catch (error) {
+                console.error("Failed to fetch promotions", error);
+                message.error("Could not load promotions list.");
+            }
+        };
+        fetchPromotions();
+    }, []);
 
     const onFinish = async (values) => {
         setSubmitting(true);
         try {
             const newCoupon = {
-                ...values,
+                code: values.code,
+                discountPercentage: values.discountPercentage,
+                maxUsage: values.maxUsage,
+                promotionId: values.promotionId,
+                isActive: values.isActive
             };
 
             await couponService.createCoupon(newCoupon);
@@ -64,7 +98,6 @@ const AddCoupon = () => {
                                 <h4 style={{ margin: 0, textTransform: 'uppercase' }}>
                                     {couponCode || 'COUPON CODE'}
                                 </h4>
-                                <span>Percentage Discount</span>
                             </div>
 
                             <Divider />
@@ -103,27 +136,29 @@ const AddCoupon = () => {
                                     </Form.Item>
                                 </Col>
                                 <Col span={12}>
-                                    <Form.Item name="expiresAt" label="Expiration Date">
-                                        <DatePicker
-                                            showTime
-                                            style={{ width: '100%' }}
-                                            format="DD/MM/YYYY HH:mm"
-                                            placeholder="Select expiration date"
-                                        />
+                                    <Form.Item
+                                        name="promotionId"
+                                        label="Select Promotion"
+                                        rules={[{ required: true, message: 'Please select a promotion' }]}
+                                    >
+                                        <Select placeholder="Select a campaign">
+                                            {promotions.map(promo => (
+                                                <Select.Option key={promo.id} value={promo.id}>
+                                                    {promo.name}
+                                                </Select.Option>
+                                            ))}
+                                        </Select>
                                     </Form.Item>
                                 </Col>
                             </Row>
 
-                            <Form.Item name="description" label="Description">
-                                <Input.TextArea rows={3} placeholder="Describe the coupon..." />
-                            </Form.Item>
 
                             <Divider orientation="left" style={{ borderColor: '#f0f0f0' }}>Configuration</Divider>
 
                             <Row gutter={16}>
                                 <Col span={12}>
                                     <Form.Item
-                                        name="discount"
+                                        name="discountPercentage"
                                         label="Discount Percentage"
                                         rules={[{ required: true, message: 'Please enter percentage' }]}
                                     >
@@ -137,7 +172,7 @@ const AddCoupon = () => {
                                     </Form.Item>
                                 </Col>
                                 <Col span={12}>
-                                    <Form.Item name="usage" label="Usage Limit (Total)">
+                                    <Form.Item name="maxUsage" label="Usage Limit (Total)">
                                         <InputNumber style={{ width: '100%' }} min={1} placeholder="Unlimited if empty" />
                                     </Form.Item>
                                 </Col>

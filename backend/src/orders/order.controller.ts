@@ -8,13 +8,14 @@ export default class OrderController {
 
     const userRole = (req as any).user?.role;
     const customerId = req.query.customerId as string | undefined;
+    const status = req.query.status as string | undefined;
     const userCustomerId = (req as any).user?.customer?.id;
 
     try {
-      // If not admin, only show own orders
-      const filterCustomerId = userRole === "ADMIN" ? customerId : userCustomerId;
+      // If not admin or seller, only show own orders
+      const filterCustomerId = userRole === "ADMIN" || userRole === "SELLER" ? customerId : userCustomerId;
 
-      const result = await OrderService.find(id, filterCustomerId);
+      const result = await OrderService.find(id, filterCustomerId, status);
 
       if (!result) {
         return Send.notFound(res, null, id ? "Order not found" : "Orders not found");
@@ -43,6 +44,26 @@ export default class OrderController {
 
     try {
       const order = await OrderService.create(customerId, addressId);
+
+      return Send.success(res, order, "Order created successfully");
+    } catch (error: any) {
+      return Send.badRequest(res, null, error.message);
+    }
+  }
+
+  static async createDirect(req: Request, res: Response) {
+    const { addressId, productVariantId, quantity } = req.body;
+    console.log("request", (req as any).user);
+    const customerId = (req as any).user?.customer?.id;
+
+    console.log("Creating direct order for customerId:", customerId);
+
+    if (!customerId) {
+      return Send.notFound(res, null, "Customer not found");
+    }
+
+    try {
+      const order = await OrderService.createDirectOrder(customerId, addressId, productVariantId, quantity);
 
       return Send.success(res, order, "Order created successfully");
     } catch (error: any) {

@@ -27,11 +27,6 @@ const EditCustomer = () => {
                     email: data.email,
                     role: data.role,
                     status: data.status || true,
-                    firstName: data.firstName || '',
-                    lastName: data.lastName || '',
-                    phone: data.phone || '',
-                    gender: data.gender || 'other',
-                    dob: data.dob ? dayjs(data.dob) : null,
                 });
             }
             catch (error) {
@@ -86,7 +81,6 @@ const EditCustomer = () => {
                     initialValues={{
                         role: 'CUSTOMER',
                         status: true,
-                        gender: 'other'
                     }}
                     onFinish={onFinish}
                 >
@@ -116,8 +110,6 @@ const EditCustomer = () => {
                                     <Form.Item name="role" label="User Role" rules={[{required: true}]}>
                                         <Select>
                                             <Select.Option value="CUSTOMER">Customer</Select.Option>
-                                            <Select.Option value="SELLER">Seller</Select.Option>
-                                            <Select.Option value="ADMIN">Admin</Select.Option>
                                         </Select>
                                     </Form.Item>
 
@@ -137,19 +129,6 @@ const EditCustomer = () => {
                             <Card title="Personal Information" style={{borderRadius: 12}}>
                                 <Row gutter={16}>
                                     <Col span={12}>
-                                        <Form.Item name="firstName" label="First Name">
-                                            <Input placeholder="Enter first name"/>
-                                        </Form.Item>
-                                    </Col>
-                                    <Col span={12}>
-                                        <Form.Item name="lastName" label="Last Name">
-                                            <Input placeholder="Enter last name"/>
-                                        </Form.Item>
-                                    </Col>
-                                </Row>
-
-                                <Row gutter={16}>
-                                    <Col span={12}>
                                         <Form.Item name="username" label="Username" rules={[{required: true}]}>
                                             <Input/>
                                         </Form.Item>
@@ -157,31 +136,6 @@ const EditCustomer = () => {
                                     <Col span={12}>
                                         <Form.Item name="email" label="Email Address">
                                             <Input disabled style={{color: '#555'}}/>
-                                        </Form.Item>
-                                    </Col>
-                                </Row>
-
-                                <Row gutter={16}>
-                                    <Col span={12}>
-                                        <Form.Item name="phone" label="Phone Number">
-                                            <Input placeholder="+84..."/>
-                                        </Form.Item>
-                                    </Col>
-                                    <Col span={12}>
-                                        <Form.Item name="dob" label="Date of Birth">
-                                            <DatePicker style={{width: '100%'}} format="DD/MM/YYYY"/>
-                                        </Form.Item>
-                                    </Col>
-                                </Row>
-
-                                <Row gutter={16}>
-                                    <Col span={12}>
-                                        <Form.Item name="gender" label="Gender">
-                                            <Select>
-                                                <Select.Option value="male">Male</Select.Option>
-                                                <Select.Option value="female">Female</Select.Option>
-                                                <Select.Option value="other">Other</Select.Option>
-                                            </Select>
                                         </Form.Item>
                                     </Col>
                                 </Row>

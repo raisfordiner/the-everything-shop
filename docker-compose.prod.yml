@@ -5,14 +5,27 @@ services:
       - "--api.insecure=true"
       - "--providers.docker=true"
       - "--providers.docker.exposedbydefault=false"
+      # Entrypoints
       - "--entrypoints.web.address=:80"
+      - "--entrypoints.websecure.address=:443"
+      # Redirect HTTP to HTTPS
+      - "--entrypoints.web.http.redirections.entrypoint.to=websecure"
+      - "--entrypoints.web.http.redirections.entrypoint.scheme=https"
+      # ACME / Let's Encrypt
+      - "--certificatesresolvers.myresolver.acme.httpchallenge=true"
+      - "--certificatesresolvers.myresolver.acme.httpchallenge.entrypoint=web"
+      #- "--certificatesresolvers.myresolver.acme.caserver=https://acme-staging-v02.api.letsencrypt.org/directory" # Uncomment for testing to avoid rate limits
+      - "--certificatesresolvers.myresolver.acme.email=${ACME_EMAIL:-someone@example.me}"
+      - "--certificatesresolvers.myresolver.acme.storage=/letsencrypt/acme.json"
     ports:
       - "80:80"
-      - "8080:8080"
+      - "443:443"
+      # - "8080:8080" # Disable Dashboard port exposure in prod if desired, or keep behind auth
     volumes:
       - "/var/run/docker.sock:/var/run/docker.sock:ro"
+      - "./letsencrypt:/letsencrypt"
     networks:
-      - tes-net
+      - tes-net-prod
 
   db:
     image: postgres:15-alpine
@@ -25,7 +38,7 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
     networks:
-      - tes-net
+      - tes-net-prod
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
       interval: 5s
@@ -35,53 +48,52 @@ services:
   app:
     build: 
       context: ./backend
-      dockerfile: Dockerfile
-    image: the-everything-shop-backend
+      dockerfile: prod.Dockerfile
+    image: the-everything-shop-backend-prod
     restart: unless-stopped
     env_file: ./backend/.env
     environment:
+      - NODE_ENV=production
       - POSTGRES_HOST=db
-    volumes:
-      - ./backend/src:/app/src
-      - ./backend/prisma:/app/prisma
-      - ./backend/.env:/app/.env
-      - ./backend/tsconfig.json:/app/tsconfig.json
     depends_on:
       db:
         condition: service_healthy
       s3:
         condition: service_started
     networks:
-      - tes-net
+      - tes-net-prod
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.backend.rule=Host(`${DOMAIN_NAME:-localhost}`) && PathPrefix(`/api`)"
-      - "traefik.http.services.backend.loadbalancer.server.port=${APP_PORT:-8000}"
+      - "traefik.http.routers.backend.entrypoints=websecure"
+      - "traefik.http.routers.backend.tls.certresolver=myresolver"
+      - "traefik.http.services.backend.loadbalancer.server.port=8000"
 
   frontend:
     build: 
       context: ./frontend
-      dockerfile: Dockerfile
-    image: the-everything-shop-frontend
+      dockerfile: prod.Dockerfile
+    image: the-everything-shop-frontend-prod
     restart: unless-stopped
     env_file: ./frontend/.env
-    volumes:
-      - ./frontend:/app
-      - /app/node_modules
     networks:
-      - tes-net
+      - tes-net-prod
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.frontend.rule=Host(`${DOMAIN_NAME:-localhost}`)"
-      - "traefik.http.services.frontend.loadbalancer.server.port=3000"
+      - "traefik.http.routers.frontend.entrypoints=websecure"
+      - "traefik.http.routers.frontend.tls.certresolver=myresolver"
+      - "traefik.http.services.frontend.loadbalancer.server.port=80"
 
   mailhog:
     image: mailhog/mailhog:latest
     networks:
-      - tes-net
+      - tes-net-prod
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.mailhog.rule=Host(`mail.${DOMAIN_NAME:-localhost}`)"
+      - "traefik.http.routers.mailhog.entrypoints=websecure"
+      - "traefik.http.routers.mailhog.tls.certresolver=myresolver"
       - "traefik.http.services.mailhog.loadbalancer.server.port=8025"
 
   s3:
@@ -91,7 +103,7 @@ services:
       - MINIO_ROOT_USER=admin
       - MINIO_ROOT_PASSWORD=adminpass
     networks:
-      - tes-net
+      - tes-net-prod
     volumes:
       - s3_data:/data
     labels:
@@ -99,10 +111,14 @@ services:
       # Console (9001)
       - "traefik.http.routers.minio-console.rule=Host(`admin.storage.${DOMAIN_NAME:-localhost}`)"
       - "traefik.http.routers.minio-console.service=minio-console"
+      - "traefik.http.routers.minio-console.entrypoints=websecure"
+      - "traefik.http.routers.minio-console.tls.certresolver=myresolver"
       - "traefik.http.services.minio-console.loadbalancer.server.port=9001"
       # API (9000)
       - "traefik.http.routers.minio-api.rule=Host(`obj.storage.${DOMAIN_NAME:-localhost}`)"
       - "traefik.http.routers.minio-api.service=minio-api"
+      - "traefik.http.routers.minio-api.entrypoints=websecure"
+      - "traefik.http.routers.minio-api.tls.certresolver=myresolver"
       - "traefik.http.services.minio-api.loadbalancer.server.port=9000"
 
   mc:
@@ -110,7 +126,7 @@ services:
     depends_on:
       - s3
     networks:
-      - tes-net
+      - tes-net-prod
     entrypoint: >
       sh -c "
       until (/usr/bin/mc alias set tess3 http://s3:9000 admin adminpass --insecure); do
@@ -125,27 +141,10 @@ services:
       exit 0
       "
 
-  prisma-studio:
-    image: node:alpine
-    working_dir: /usr/src/app
-    volumes:
-      - ./backend:/usr/src/app
-    command: npx prisma studio --port 5555 --browser none
-    env_file:
-      - ./backend/.env
-    networks:
-      - tes-net
-    depends_on:
-      - db
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.prisma.rule=Host(`db.${DOMAIN_NAME:-localhost}`)" # Added this just in case, though not requested
-      - "traefik.http.services.prisma.loadbalancer.server.port=5555"
-
 volumes:
   postgres_data:
   s3_data:
 
 networks:
-  tes-net:
-    name: tes-net
+  tes-net-prod:
+    name: tes-net-prod

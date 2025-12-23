@@ -14,20 +14,24 @@ async function main() {
 
   // Check if seeding has already been done
   const existingAdmin = await prisma.user.findUnique({
-      where: { email: "admin@example.com" },
+    where: { email: "admin@example.com" },
   });
 
   if (existingAdmin) {
-      console.log("Seeding already completed, skipping...");
-      return;
-  } 
+    console.log("Seeding already completed, skipping...");
+    return;
+  }
 
   // ============ USERS ============
-  const adminPassword = await hashPassword('AdminPass123!');
-  const sellerPassword = await hashPassword('SellerPass123!');
-  const seller2Password = await hashPassword('Seller2Pass123!');
-  const customerPassword = await hashPassword('CustomerPass123!');
-  const customer2Password = await hashPassword('Customer2Pass123!');
+  const adminPassword = await hashPassword('Pass123!');
+  const sellerPassword = await hashPassword('Pass123!');
+  const seller2Password = await hashPassword('Pass123!');
+  const customerPassword = await hashPassword('Pass123!');
+  const customer2Password = await hashPassword('Pass123!');
+  const seller3Password = await hashPassword('Pass123!');
+  const customer3Password = await hashPassword('Pass123!');
+  const customer4Password = await hashPassword('Pass123!');
+  const customer5Password = await hashPassword('Pass123!');
 
   const adminUser = await prisma.user.upsert({
     where: { email: 'admin@example.com' },
@@ -89,6 +93,54 @@ async function main() {
     },
   });
 
+  const sellerUser3 = await prisma.user.upsert({
+    where: { email: 'seller3@example.com' },
+    update: {},
+    create: {
+      username: 'Mister Number Three',
+      email: 'seller3@example.com',
+      password: seller3Password,
+      role: 'SELLER',
+      emailVerified: new Date(),
+    },
+  });
+
+  const customerUser3 = await prisma.user.upsert({
+    where: { email: 'customer3@example.com' },
+    update: {},
+    create: {
+      username: 'Alice Wonderland',
+      email: 'customer3@example.com',
+      password: customer3Password,
+      role: 'CUSTOMER',
+      emailVerified: new Date(),
+    },
+  });
+
+  const customerUser4 = await prisma.user.upsert({
+    where: { email: 'customer4@example.com' },
+    update: {},
+    create: {
+      username: 'Bob Builder',
+      email: 'customer4@example.com',
+      password: customer4Password,
+      role: 'CUSTOMER',
+      emailVerified: new Date(),
+    },
+  });
+
+  const customerUser5 = await prisma.user.upsert({
+    where: { email: 'customer5@example.com' },
+    update: {},
+    create: {
+      username: 'Charlie Brown',
+      email: 'customer5@example.com',
+      password: customer5Password,
+      role: 'CUSTOMER',
+      emailVerified: new Date(),
+    },
+  });
+
   // ============ PROFILES ============
   const admin = await prisma.admin.upsert({
     where: { userId: adminUser.id },
@@ -134,6 +186,43 @@ async function main() {
     },
   });
 
+  const seller3 = await prisma.seller.upsert({
+    where: { userId: sellerUser3.id },
+    update: {},
+    create: {
+      userId: sellerUser3.id,
+      email: sellerUser3.email,
+      image: 'https://cdn-icons-png.flaticon.com/512/10003/10003972.png',
+    },
+  });
+
+  const customer3 = await prisma.customer.upsert({
+    where: { userId: customerUser3.id },
+    update: {},
+    create: {
+      userId: customerUser3.id,
+      image: 'https://cdn-icons-png.flaticon.com/512/9308/9308266.png',
+    },
+  });
+
+  const customer4 = await prisma.customer.upsert({
+    where: { userId: customerUser4.id },
+    update: {},
+    create: {
+      userId: customerUser4.id,
+      image: 'https://cdn-icons-png.flaticon.com/512/3048/3048122.png',
+    },
+  });
+
+  const customer5 = await prisma.customer.upsert({
+    where: { userId: customerUser5.id },
+    update: {},
+    create: {
+      userId: customerUser5.id,
+      image: 'https://cdn-icons-png.flaticon.com/512/4042/4042422.png',
+    },
+  });
+
   // ============ ADDRESSES ============
   const address1 = await prisma.address.create({
     data: {
@@ -144,8 +233,6 @@ async function main() {
       ward: 'Ward 1',
       district: 'District 1',
       province: 'Ho Chi Minh City',
-      latitude: 10.7769,
-      longitude: 106.7009,
     },
   });
 
@@ -158,8 +245,6 @@ async function main() {
       ward: 'Ward 2',
       district: 'District 2',
       province: 'Hanoi',
-      latitude: 21.0285,
-      longitude: 105.8542,
     },
   });
 
@@ -172,8 +257,18 @@ async function main() {
       ward: 'Ward 3',
       district: 'District 3',
       province: 'Da Nang',
-      latitude: 16.0544,
-      longitude: 108.2022,
+    },
+  });
+
+  const address4 = await prisma.address.create({
+    data: {
+      customerId: customer3.id,
+      phoneNumber: '0901112223',
+      address: '101 Wonderland Lane',
+      street: 'Wonderland Lane',
+      ward: 'Ward 4',
+      district: 'District 4',
+      province: 'Can Tho',
     },
   });
 
@@ -202,6 +297,33 @@ async function main() {
     create: {
       name: 'Home & Garden',
       description: 'Home and garden products',
+    },
+  });
+
+  const sports = await prisma.category.upsert({
+    where: { name: 'Sports & Outdoors' },
+    update: {},
+    create: {
+      name: 'Sports & Outdoors',
+      description: 'Sporting equipment and outdoor gear',
+    },
+  });
+
+  const books = await prisma.category.upsert({
+    where: { name: 'Books' },
+    update: {},
+    create: {
+      name: 'Books',
+      description: 'Books and literature',
+    },
+  });
+
+  const toys = await prisma.category.upsert({
+    where: { name: 'Toys & Games' },
+    update: {},
+    create: {
+      name: 'Toys & Games',
+      description: 'Toys, games, and puzzles',
     },
   });
 
@@ -262,6 +384,48 @@ async function main() {
     },
   });
 
+  const product5 = await prisma.product.create({
+    data: {
+      name: 'Yoga Mat',
+      description: 'Premium non-slip yoga mat',
+      stockQuantity: 100,
+      images: ['https://images.unsplash.com/photo-1601925260368-ae2f83cf8b7f?q=80&w=2680&auto=format&fit=crop'],
+      createdBy: seller3.id,
+      price: 25.00,
+      categoryId: sports.id,
+      variantTypes: [Variants.COLOR],
+      variantOptions: { colors: ['Pink', 'Purple'] },
+    },
+  });
+
+  const product7 = await prisma.product.create({
+    data: {
+      name: 'Clean Code',
+      description: 'A Handbook of Agile Software Craftsmanship',
+      stockQuantity: 200,
+      images: ['https://m.media-amazon.com/images/I/41jEbK-jG+L._SX258_BO1,204,203,200_.jpg'],
+      createdBy: seller1.id,
+      price: 40.00,
+      categoryId: books.id,
+      variantTypes: [],
+      variantOptions: {},
+    },
+  });
+
+  const product8 = await prisma.product.create({
+    data: {
+      name: 'LEGO Star Wars',
+      description: 'Millennium Falcon building kit',
+      stockQuantity: 15,
+      images: ['https://images.unsplash.com/photo-1585366119957-e9730b6d0f60?q=80&w=2071&auto=format&fit=crop'],
+      createdBy: seller3.id,
+      price: 159.99,
+      categoryId: toys.id,
+      variantTypes: [],
+      variantOptions: {},
+    },
+  });
+
   // ============ PRODUCT VARIANTS ============
   const variant1 = await prisma.productVariant.create({
     data: {
@@ -313,6 +477,26 @@ async function main() {
     },
   });
 
+  const variant6 = await prisma.productVariant.create({
+    data: {
+      quantity: 50,
+      variantAttributes: { color: 'Pink' },
+      productId: product5.id,
+      images: ['https://images.unsplash.com/photo-1601925260368-ae2f83cf8b7f?q=80&w=2680&auto=format&fit=crop'],
+      priceAdjustment: 0,
+    },
+  });
+
+  const variant7 = await prisma.productVariant.create({
+    data: {
+      quantity: 50,
+      variantAttributes: { color: 'Purple' },
+      productId: product5.id,
+      images: ['https://images.unsplash.com/photo-1599447421405-0c1a1141d005?q=80&w=2515&auto=format&fit=crop'],
+      priceAdjustment: 0,
+    },
+  });
+
   // ============ CART & CART ITEMS ============
   const cart1 = await prisma.cart.create({
     data: { customerId: customer1.id },
@@ -341,18 +525,16 @@ async function main() {
   // ============ ORDERS ============
   const order1 = await prisma.order.create({
     data: {
-      customerId: customer1.id,
-      phoneNumber: '0912345678',
-      addressId: address1.id,
+      customer: { connect: { id: customer1.id } },
+      address: { connect: { id: address1.id } },
       status: 'DELIVERED',
     },
   });
 
   const order2 = await prisma.order.create({
     data: {
-      customerId: customer2.id,
-      phoneNumber: '0934567890',
-      addressId: address3.id,
+      customer: { connect: { id: customer2.id } },
+      address: { connect: { id: address3.id } },
       status: 'PENDING',
     },
   });
@@ -382,6 +564,23 @@ async function main() {
     },
   });
 
+  // Additional order for new customer
+  const order3 = await prisma.order.create({
+    data: {
+      customer: { connect: { id: customer3.id } },
+      address: { connect: { id: address4.id } },
+      status: 'DELIVERED',
+    },
+  });
+
+  const orderItem4 = await prisma.orderItem.create({
+    data: {
+      orderId: order3.id,
+      productVariantId: variant6.id, // Pink Yoga Mat
+      quantity: 1,
+    },
+  });
+
   // ============ PAYMENTS ============
   await prisma.payment.create({
     data: {
@@ -398,6 +597,15 @@ async function main() {
       amount: 899.99,
       method: 'VNPAY',
       status: 'PENDING',
+    },
+  });
+
+  await prisma.payment.create({
+    data: {
+      orderId: order3.id,
+      amount: 25.00,
+      method: 'COD',
+      status: 'SUCCESS',
     },
   });
 
@@ -419,6 +627,31 @@ async function main() {
       images: [],
       orderItemId: orderItem2.id,
       customerId: customer1.id,
+    },
+  });
+
+  // ============ RETURNS & CANCELLATIONS ============
+  await prisma.return.create({
+    data: {
+      orderId: order1.id,
+      reason: 'Product defective',
+      status: 'APPROVED',
+    },
+  });
+
+  const order4 = await prisma.order.create({
+    data: {
+      customer: { connect: { id: customer3.id } },
+      address: { connect: { id: address4.id } },
+      status: 'CANCELLED',
+    },
+  });
+
+  await prisma.cancellation.create({
+    data: {
+      orderId: order4.id,
+      reason: 'Changed mind',
+      status: 'COMPLETED',
     },
   });
 
@@ -536,6 +769,7 @@ async function main() {
   console.log(`  - 2 Payments & 2 Reviews`);
   console.log(`  - 2 Promotions with Coupons & Clearance Events`);
   console.log(`  - 2 Notifications & 1 Report`);
+  console.log(`  - 1 Return & 1 Cancellation`);
   console.log(`  - 2 System Parameters`);
 }
 

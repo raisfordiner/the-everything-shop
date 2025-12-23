@@ -42,6 +42,11 @@ const AdminSidebar = () => {
             label: <Link to="/admin/categories">Categories</Link>,
         },
         {
+            key: "/admin/staffs",
+            icon: <UserOutlined />,
+            label: <Link to="/admin/staffs">Staffs</Link>,
+        },
+        {
             key: "/admin/customers",
             icon: <UserOutlined />,
             label: <Link to="/admin/customers">Customers</Link>,

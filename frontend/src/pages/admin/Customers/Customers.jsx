@@ -17,7 +17,9 @@ const Customers = () => {
             const response = await userService.getAllUsers();
             if (response) {
                 const data = response.data.users;
-                setUsers(data);
+                const customerUsers = data.filter(user => user.role === "CUSTOMER");
+
+                setUsers(customerUsers);
             }
         }
         catch (error) {

@@ -5,10 +5,10 @@ import "./AdminHeader.css";
 
 const AdminHeader = () => {
     const items = [
-        { key: "1", label: <Link to="/admin/profile">Hồ sơ cá nhân</Link> },
-        { key: "2", label: <Link to="/admin/settings">Cài đặt</Link> },
+        { key: "1", label: <Link to="/admin/profile">Profile</Link> },
+        { key: "2", label: <Link to="/admin/settings">Settings</Link> },
         { type: "divider" },
-        { key: "3", label: <Link to="/logout">Đăng xuất</Link> },
+        { key: "3", label: <Link to="/logout">Logout</Link> },
     ];
 
     return (

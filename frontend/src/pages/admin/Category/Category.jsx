@@ -40,23 +40,14 @@ const Category = () => {
     const colums = [
         {
             title: 'Category',
-            dataIndex: 'name',
+            // dataIndex: 'name',
             key: 'name',
-        },
-        {
-            title: 'Sales',
-            dataIndex: 'sales',
-            key: 'sales',
-        }, 
-        {
-            title: 'Stock',
-            dataIndex: 'stock',
-            key: 'stock',
-        },
-        {
-            title: 'Added',
-            dataIndex: 'added',
-            key: 'added',
+            render: (_, record) => (
+                <Space direction='vertical' size='small'>
+                    <Typography.Text strong>{record.name}</Typography.Text>
+                    <Typography.Text type="secondary">{record.description}</Typography.Text>
+                </Space>
+            )
         },
         {
             title: 'Actions',

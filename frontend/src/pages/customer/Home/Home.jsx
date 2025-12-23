@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { use, useEffect, useState } from 'react'
 import { useNavigate } from 'react-router'
 import CategoryListing from '../../../components/Category/CategoryListing'
 import ProductSection from '../../../components/Product/ProductSection'
@@ -12,6 +12,7 @@ const Home = () => {
   const [error, setError] = useState(null)
 
   const allProducts = useSelector(state => state.allProducts.products)
+  const allCategories = useSelector(state => state.allCategories.categories)
   const user = useSelector(state => state.authReducer.user)
   const navigate = useNavigate()
 
@@ -33,7 +34,7 @@ const Home = () => {
         setError(null)
       } catch (error) {
         console.error("Lỗi khi tải sản phẩm:", error);
-        setError("Không thể tải dữ liệu sản phẩm.");
+        setError("Unable to load product data.");
       } finally {
         setIsLoading(false)
       }
@@ -45,18 +46,26 @@ const Home = () => {
   return (
     <div>
       <CategoryListing />
-      <ProductSection
+      {allCategories.slice(0, 3).map(category => (
+        <ProductSection
+          key={category.id}
+          title={category.name}
+          products={allProducts.filter(p => p.categoryId === category.id)}
+          categoryId={category.id}
+        />  
+      ))}
+      {/* <ProductSection
         title='test'
         products={allProducts}
       />
       <ProductSection
-        title='đề xuất đây nên là sản phẩm bán chạy trong tuần/tháng'
+        title='Suggested: this should be best-selling products of the week/month'
         products={allProducts}
       />
       <ProductSection
-        title='đề xuất đây nên là sản phẩm gợi ý cho người dùng'
+        title='Suggested: this should be recommended products for the user'
         products={allProducts}
-      />
+      /> */}
     </div>
   )
 }

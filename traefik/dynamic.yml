@@ -1,0 +1,103 @@
+http:
+  routers:
+    backend:
+      rule: "Host(`localhost`) && PathPrefix(`/api`)"
+      service: backend
+      entryPoints:
+        - websecure
+      tls:
+        certResolver: myresolver
+
+    frontend:
+      rule: "Host(`localhost`)"
+      service: frontend
+      entryPoints:
+        - websecure
+      tls:
+        certResolver: myresolver
+
+    swagger-api:
+      rule: "Host(`swagger.localhost`) && PathPrefix(`/api`)"
+      service: backend
+      entryPoints:
+        - websecure
+      tls:
+        certResolver: myresolver
+
+    swagger:
+      rule: "Host(`swagger.localhost`)"
+      service: backend
+      entryPoints:
+        - websecure
+      middlewares:
+        - swagger-prefix
+      tls:
+        certResolver: myresolver
+
+    minio-console:
+      rule: "Host(`admin.storage.localhost`)"
+      service: minio-console
+      entryPoints:
+        - websecure
+      tls:
+        certResolver: myresolver
+
+    minio-api:
+      rule: "Host(`obj.storage.localhost`)"
+      service: minio-api
+      entryPoints:
+        - websecure
+      tls:
+        certResolver: myresolver
+
+    mailhog:
+      rule: "Host(`mail.localhost`)"
+      service: mailhog
+      entryPoints:
+        - websecure
+      tls:
+        certResolver: myresolver
+
+    prisma:
+      rule: "Host(`db.localhost`)"
+      service: prisma
+      entryPoints:
+        - websecure
+      tls:
+        certResolver: myresolver
+
+  middlewares:
+    swagger-prefix:
+      addPrefix:
+        prefix: "/docs"
+
+  services:
+    backend:
+      loadBalancer:
+        servers:
+          - url: "http://app:8000"
+    
+    frontend:
+      loadBalancer:
+        servers:
+          - url: "http://app:3000"
+
+    minio-console:
+      loadBalancer:
+        servers:
+          - url: "http://s3:9001"
+
+    minio-api:
+      loadBalancer:
+        servers:
+          - url: "http://s3:9000"
+
+    mailhog:
+      loadBalancer:
+        servers:
+          - url: "http://mailhog:8025"
+
+    prisma:
+      loadBalancer:
+        servers:
+          - url: "http://prisma-studio:5555"

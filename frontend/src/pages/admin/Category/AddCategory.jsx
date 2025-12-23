@@ -44,12 +44,13 @@ const AddCategory = () => {
         setSubmitting(true)
         try {
             const newCategory = {
-                imageUrl: '',
+                imageUrl: imageUrl || null,
                 name: values.name,
                 description: values.description,
             }
 
             await categoryService.createCategory(newCategory)
+
             messageApi.open({
                 type: 'success',
                 content: 'Category created successfully',
@@ -68,6 +69,7 @@ const AddCategory = () => {
 
     return (
         <div>
+            {contextHolder}
             <div className="title">
                 <Flex justify='space-between' align='center'>
                     <Typography.Title>Edit Category</Typography.Title>
@@ -76,13 +78,14 @@ const AddCategory = () => {
                         <Button 
                             type="primary" 
                             icon={<SaveOutlined />}
+                            onClick={() => form.submit()}
                             htmlType='submit'
                         >Save Category</Button>
                     </Space>
                 </Flex>
             </div>
 
-            <Form layout="vertical" onFinish={onFinish}>
+            <Form form={form} layout="vertical" onFinish={onFinish}>
                 <Flex className="adding-section" gap={16}>
                     <div style={{ flex: 0.5 }}>
                         <Card title="Thumbnail">
