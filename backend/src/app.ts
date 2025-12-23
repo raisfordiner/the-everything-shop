@@ -31,7 +31,7 @@ import addressRoute from "addresses/address.route";
 import orderRoute from "orders/order.route";
 
 export default class App {
-  private app: Express;
+  public app: Express;
 
   constructor() {
     this.app = express();
