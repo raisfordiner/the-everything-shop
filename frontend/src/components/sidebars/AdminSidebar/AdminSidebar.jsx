@@ -36,11 +36,11 @@ const AdminSidebar = () => {
             icon: <AppstoreOutlined />,
             label: <Link to="/admin/products">Products</Link>,
         },
-        {
-            key: "/admin/categories",
-            icon: <TagsOutlined />,
-            label: <Link to="/admin/categories">Categories</Link>,
-        },
+        // {
+        //     key: "/admin/categories",
+        //     icon: <TagsOutlined />,
+        //     label: <Link to="/admin/categories">Categories</Link>,
+        // },
         {
             key: "/admin/staffs",
             icon: <UserOutlined />,

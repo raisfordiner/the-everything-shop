@@ -1,5 +1,5 @@
-import React, { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import React, { useState, useEffect } from 'react'
+import { useNavigate, useParams } from 'react-router-dom'
 import { Avatar, Button, Card, Flex, Form, Image, Input, Space, Typography, Upload, message } from 'antd'
 import { 
     SaveOutlined,
@@ -7,24 +7,63 @@ import {
 } from '@ant-design/icons'
 import categoryService from '../../../services/categoryService.js'
 
-const AddCategory = () => {
+const EditCategory = () => {
     const navigate = useNavigate()
-    const [imageUrl, setImageUrl] = useState()
+    const { id } = useParams()
+
+    const [imageUrl, setImageUrl] = useState(null)
     const [previewOpen, setPreviewOpen] = useState(false)
     const [previewImage, setPreviewImage] = useState('')
     const [fileList, setFileList] = useState([])
 
+    const [loading, setLoading] = useState(true)
     const [submitting, setSubmitting] = useState(false)
+
     const [messageApi, contextHolder] = message.useMessage()
     const [form] = Form.useForm()
 
+    useEffect(() => {
+        const fetchCategory = async () => {
+            try {
+                const res = await categoryService.getCategoryById(id)
+
+                console.log("Category data:", res)
+
+                form.setFieldsValue({
+                    name: res.data.name,
+                    description: res.data.description,
+                })
+
+                if (res.imageUrl) {
+                    setFileList([
+                        {
+                            uid: '-1',
+                            name: 'image.png',
+                            status: 'done',
+                            url: res.data.imageUrl
+                        }
+                    ])
+                    setPreviewImage(res.data.imageUrl)
+                    setImageUrl(res.data.imageUrl)
+                }
+            } catch (error) {
+                messageApi.error("Failed to load category!")
+            } finally {
+                setLoading(false)
+            }
+        }
+
+        fetchCategory()
+    }, [id])
+
     const handleChange = ({ fileList: newList }) => {
         setFileList(newList)
+
         if (newList.length === 0) {
             setImageUrl(null)
         }
     }
-    
+
     const handlePreview = async (file) => {
         if (!file.url && !file.preview) {
             file.preview = await new Promise((resolve) => {
@@ -35,7 +74,7 @@ const AddCategory = () => {
         setPreviewOpen(true)
     }
 
-    const beforeUpload=(file) => {
+    const beforeUpload = (file) => {
         getBase64(file, (url) => setImageUrl(url))
         return false
     }
@@ -43,25 +82,22 @@ const AddCategory = () => {
     const onFinish = async (values) => {
         setSubmitting(true)
         try {
-            const newCategory = {
+            const updatedCategory = {
                 imageUrl: imageUrl || null,
                 name: values.name,
                 description: values.description,
             }
 
-            await categoryService.createCategory(newCategory)
+            await categoryService.updateCategory(id, updatedCategory)
 
             messageApi.open({
                 type: 'success',
-                content: 'Category created successfully',
+                content: 'Category updated successfully',
                 duration: 0.5,
-                onClose: () => { navigate('/admin/categories') }
+                onClose: () => navigate('/seller/categories')
             })
         } catch (error) {
-            messageApi.open({
-                type: 'error',
-                content: error.message || 'Failed to create customer!'
-            })
++            messageApi.error(error.message || "Failed to update category!")
         } finally {
             setSubmitting(false)
         }
@@ -74,12 +110,12 @@ const AddCategory = () => {
                 <Flex justify='space-between' align='center'>
                     <Typography.Title>Edit Category</Typography.Title>
                     <Space className="actions">
-                        <Button onClick={() => navigate('/admin/categories')}>Cancel</Button>
+                        <Button onClick={() => navigate('/seller/categories')}>Cancel</Button>
                         <Button 
                             type="primary" 
                             icon={<SaveOutlined />}
-                            onClick={() => form.submit()}
-                            htmlType='submit'
+                            onClick={() => form.submit()} 
+                            loading={submitting}
                         >Save Category</Button>
                     </Space>
                 </Flex>
@@ -90,7 +126,7 @@ const AddCategory = () => {
                     <div style={{ flex: 0.5 }}>
                         <Card title="Thumbnail">
                             <Typography.Text>Photo</Typography.Text>
-                            <Form.Item name="thumbnail" valuePropName="fileList">
+                            <Form.Item label="category image">
                                 <div
                                     style={{
                                         width: '100%',
@@ -143,7 +179,7 @@ const AddCategory = () => {
     )
 }
 
-export default AddCategory
+export default EditCategory
 
 const getBase64 = (img, callback) => {
     const reader = new FileReader()
