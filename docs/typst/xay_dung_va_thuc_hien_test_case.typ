@@ -1,0 +1,2 @@
+- Danh sách test case
+- Kết quả kiểm thử

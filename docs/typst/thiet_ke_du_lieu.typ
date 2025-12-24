@@ -1,0 +1,3 @@
+- Mô hình dữ liệu
+- ERD
+- Thiết kế bảng và quan hệ

@@ -1,0 +1,3 @@
+- Người sử dụng
+- Người quản trị
+- Các bên liên quan khác
