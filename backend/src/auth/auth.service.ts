@@ -16,8 +16,11 @@ export default class AuthService {
         data: { username, email, password: await hashPassword(password) },
       });
 
-      await prisma.customer.create({
-        data: { userId: createdUser.id },
+      await prisma.membership.create({
+        data: {
+          customer: { create: { userId: createdUser.id } },
+          spent: 0,
+        },
       });
 
       return createdUser;
