@@ -63,6 +63,7 @@ export default class CartController {
 
       return Send.success(res, { cartItem }, "Item added to cart successfully");
     } catch (error: any) {
+      console.log(error.message);
       logger.error({ error }, "Error adding item to cart");
       return Send.error(res, {}, "Internal server error");
     }

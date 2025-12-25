@@ -4,3 +4,11 @@
 # Adding routes
 - Register each domain's routes in its own file first. E.g. `auth.route.ts`
 - Initiate routes in `app.ts`
+
+# Stripe payment
+
+Visit: https://dashboard.stripe.com/ to get your secret stripe key, use sandbox for testing purpose
+Simulated card information for testing: 
+
+- Card number: 4242424242424242
+- Any future date for expire date, and random 3 numbers for cvc

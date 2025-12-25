@@ -189,6 +189,16 @@ const Cart = () => {
             console.log('Checkout response:', response);
             
             if (response && (response.ok || response.data)) {
+                const orderData = response.data?.order || response.data;
+                
+                // Check if Stripe session URL exists
+                if (orderData?.stripeSessionUrl) {
+                    message.success('Redirecting to Stripe checkout...');
+                    // Redirect to Stripe checkout page
+                    window.location.href = orderData.stripeSessionUrl;
+                    return;
+                }
+                
                 message.success('Order placed successfully!');
                 setCheckoutModalVisible(false);
                 setSelectedItems([]);
@@ -403,6 +413,7 @@ const Cart = () => {
                         <Space direction="vertical">
                             <Radio value="COD">Cash on Delivery (COD)</Radio>
                             <Radio value="VNPAY">VNPay</Radio>
+                            <Radio value="STRIPE">Stripe</Radio>
                         </Space>
                     </Radio.Group>
                 </div>
