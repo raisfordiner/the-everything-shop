@@ -1,5 +1,5 @@
 #set page(margin: 1.75in)
-#set par(leading: 0.55em, spacing: 0.55em, first-line-indent: 1.8em, justify: true)
+#set par(leading: 0.55em, spacing: 1.5em, first-line-indent: 0pt, justify: true)
 #show heading: set block(above: 1.4em, below: 1em)
 #set text(font: "New Computer Modern")
 
@@ -12,8 +12,8 @@
 #include "000_front_matter/001_cover_page.typ"
 
 
-= Declaration of Authorship
-#include "000_front_matter/002_declaration_of_authorship.typ"
+// = Declaration of Authorship
+// #include "000_front_matter/002_declaration_of_authorship.typ"
 
 = Acknowledgments
 #include "000_front_matter/003_acknowledgments.typ"

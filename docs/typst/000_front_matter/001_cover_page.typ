@@ -1,3 +1,5 @@
+#set par(leading: 0.55em, spacing: 0.55em, first-line-indent: 0pt, justify: true)
+
 #align(center)[
   #text(size: 14pt)[
     #smallcaps[Vietnam National University HCMC] \
