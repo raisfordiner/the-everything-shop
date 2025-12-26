@@ -5,16 +5,16 @@ import { Link } from "react-router"; // Note: 'react-router-dom' is commonly use
 
 const ProductGrid = ({ products, from=0, end=products.length }) => {
     return (
-        <Row gutter={[16, 16]}>
+        <Row gutter={[8, 8]}>
             {products.slice(from, end).map((p) => (
                 <Col 
                     key={p.id} 
                     xs={12}
-                    sm={8}
-                    md={6}
-                    lg={{ flex: '20%' }}
+                    sm={12}
+                    md={8}
+                    lg={6}
                     xl={{ flex: '20%' }}
-                    xxl={3}
+                    xxl={4}
                     style={{ height: "100%" }} 
                 >
                     <Link 

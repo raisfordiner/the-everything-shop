@@ -1,10 +1,31 @@
 .category-list {
     display: flex;
-    flex-wrap: wrap;             /* Cho phép xuống hàng khi tràn */
-    /* gap: 8px; */
-    overflow-x: auto;            /* Cho scroll ngang khi quá 2 hàng */
-    max-height: calc(2 * 150px + 8px); /* Giới hạn tối đa 2 hàng (kể cả gap) */
+    flex-wrap: nowrap;           /* Không cho xuống hàng - giữ 1 hàng duy nhất */
+    gap: 8px;
+    overflow-x: auto;            /* Cho scroll ngang */
+    overflow-y: hidden;          /* Ẩn scroll dọc */
     padding: 8px;
+    /* Smooth scrolling on mobile */
+    -webkit-overflow-scrolling: touch;
+}
+
+/* Hide scrollbar but keep functionality */
+.category-list::-webkit-scrollbar {
+    height: 6px;
+}
+
+.category-list::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 10px;
+}
+
+.category-list::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 10px;
+}
+
+.category-list::-webkit-scrollbar-thumb:hover {
+    background: #555;
 }
 
 .category {
