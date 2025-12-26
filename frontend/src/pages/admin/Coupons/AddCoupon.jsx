@@ -3,7 +3,6 @@ import {
     Button,
     Card,
     Col,
-    DatePicker,
     Divider,
     Form,
     Input,
@@ -12,12 +11,13 @@ import {
     Row,
     Select,
     Statistic,
-    Switch
+    Switch, Typography
 } from "antd";
-import {useEffect, useState} from "react";
+import React, {useEffect, useState} from "react";
 import couponService from "../../../services/couponService.js";
 import {GiftOutlined, PercentageOutlined, PlusOutlined} from "@ant-design/icons";
 import promotionService from "../../../services/promotionService.js";
+const { Title} = Typography;
 
 const AddCoupon = () => {
     const navigate = useNavigate();
@@ -80,7 +80,9 @@ const AddCoupon = () => {
         <>
             {contextHolder}
 
-            <h2 style={{marginBottom: "24px"}}>Add Coupon</h2>
+            <div style={{marginBottom: "24px"}}>
+                <Title level={2} style={{margin: 0, color: '#008ECC'}}>Add New Coupon</Title>
+            </div>
 
             <Form
                 form={form}
@@ -92,46 +94,43 @@ const AddCoupon = () => {
             >
                 <Row gutter={24}>
                     <Col span={8}>
-                        <Card style={{ borderRadius: 12, marginBottom: 24 }}>
-                            <div style={{ textAlign: 'center', padding: '20px 0' }}>
-                                <GiftOutlined style={{ fontSize: '48px', color: '#008ECC', marginBottom: 16 }} />
-                                <h4 style={{ margin: 0, textTransform: 'uppercase' }}>
+                        <Card style={{borderRadius: 12, marginBottom: 24}}>
+                            <div style={{textAlign: 'center', padding: '20px 0'}}>
+                                <GiftOutlined style={{fontSize: '48px', color: '#008ECC', marginBottom: 16}}/>
+                                <h4 style={{margin: 0, textTransform: 'uppercase'}}>
                                     {couponCode || 'COUPON CODE'}
                                 </h4>
                             </div>
 
-                            <Divider />
+                            <Divider/>
 
-                            <Form.Item name="isActive" label="Coupon Status" valuePropName="checked">
-                                <Switch
-                                    checkedChildren="Active"
-                                    unCheckedChildren="Inactive"
-                                />
-                            </Form.Item>
-
-                            <div style={{ background: '#f5f5f5', padding: 16, borderRadius: 8, marginTop: 16 }}>
+                            <div style={{background: '#f5f5f5', padding: 16, borderRadius: 8, marginTop: 16}}>
                                 <Statistic
                                     title="Discount Value"
                                     value={discountValue || 0}
                                     suffix="%"
-                                    valueStyle={{ color: '#008ECC' }}
+                                    valueStyle={{color: '#008ECC'}}
                                 />
                             </div>
                         </Card>
                     </Col>
 
                     <Col span={16}>
-                        <Card title="Coupon Details" style={{ borderRadius: 12 }}>
+                        <Card title="Coupon Details" style={{borderRadius: 12}}>
                             <Row gutter={16}>
                                 <Col span={12}>
                                     <Form.Item
                                         name="code"
                                         label="Coupon Code"
-                                        rules={[{ required: true, message: 'Please enter coupon code' }]}
+                                        rules={[{required: true, message: 'Please enter coupon code'}]}
                                     >
                                         <Input
                                             placeholder="e.g. SUMMER2024"
-                                            style={{ textTransform: 'uppercase', fontWeight: 'bold', letterSpacing: '1px' }}
+                                            style={{
+                                                textTransform: 'uppercase',
+                                                fontWeight: 'bold',
+                                                letterSpacing: '1px'
+                                            }}
                                         />
                                     </Form.Item>
                                 </Col>
@@ -139,7 +138,7 @@ const AddCoupon = () => {
                                     <Form.Item
                                         name="promotionId"
                                         label="Select Promotion"
-                                        rules={[{ required: true, message: 'Please select a promotion' }]}
+                                        rules={[{required: true, message: 'Please select a promotion'}]}
                                     >
                                         <Select placeholder="Select a campaign">
                                             {promotions.map(promo => (
@@ -153,38 +152,39 @@ const AddCoupon = () => {
                             </Row>
 
 
-                            <Divider orientation="left" style={{ borderColor: '#f0f0f0' }}>Configuration</Divider>
+                            <Divider orientation="left" style={{borderColor: '#f0f0f0'}}>Configuration</Divider>
 
                             <Row gutter={16}>
                                 <Col span={12}>
                                     <Form.Item
                                         name="discountPercentage"
                                         label="Discount Percentage"
-                                        rules={[{ required: true, message: 'Please enter percentage' }]}
+                                        rules={[{required: true, message: 'Please enter percentage'}]}
                                     >
                                         <InputNumber
-                                            style={{ width: '100%' }}
+                                            style={{width: '100%'}}
                                             min={0}
                                             max={100}
-                                            prefix={<PercentageOutlined />}
+                                            prefix={<PercentageOutlined/>}
                                             placeholder="e.g. 10"
                                         />
                                     </Form.Item>
                                 </Col>
                                 <Col span={12}>
                                     <Form.Item name="maxUsage" label="Usage Limit (Total)">
-                                        <InputNumber style={{ width: '100%' }} min={1} placeholder="Unlimited if empty" />
+                                        <InputNumber style={{width: '100%'}} min={1} placeholder="Unlimited if empty"/>
                                     </Form.Item>
                                 </Col>
                             </Row>
 
-                            <Divider />
+                            <Divider/>
 
-                            <Form.Item style={{ marginBottom: 0, textAlign: 'right' }}>
-                                <Button style={{ marginRight: 12 }} onClick={() => navigate('/admin/coupons')}>
+                            <Form.Item style={{marginBottom: 0, textAlign: 'right'}}>
+                                <Button style={{marginRight: 12}} onClick={() => navigate('/admin/coupons')}>
                                     Cancel
                                 </Button>
-                                <Button type="primary" htmlType="submit" icon={<PlusOutlined />} loading={submitting} style={{ backgroundColor: '#008ECC' }}>
+                                <Button type="primary" htmlType="submit" icon={<PlusOutlined/>} loading={submitting}
+                                        style={{backgroundColor: '#008ECC'}}>
                                     Create Coupon
                                 </Button>
                             </Form.Item>

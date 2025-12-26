@@ -189,7 +189,6 @@ import AuthMiddleware from "auth/auth.middleware";
  *         description: Address deleted successfully
  *       401:
  *         description: Unauthorized
- *
  */
 
 class AddressRoutes extends BaseRouter {

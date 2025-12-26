@@ -34,12 +34,17 @@ import AccessRestricted from "../pages/public/AccessRestricted/AccessRestricted.
 import Cart from '../pages/customer/Cart/Cart.jsx';
 import Orders from '../pages/customer/Orders/Orders.jsx';
 import OrderDetail from '../pages/customer/Orders/OrderDetail.jsx';
+import Loading from '../pages/customer/Loading/Loading.jsx';
 import SellerOrders from '../pages/seller/Orders/SellerOrders.jsx';
 import Staffs from "../pages/admin/Staffs/Staffs.jsx";
 import EditStaff from "../pages/admin/Staffs/EditStaff.jsx";
 import AddStaff from "../pages/admin/Staffs/AddStaff.jsx";
 import AllProducts from '../pages/customer/AllProducts/AllProducts.jsx';
 import SearchProduct from '../pages/customer/SearchProduct/SearchProduct.jsx';
+import AdminReports from "../pages/admin/Reports/Reports.jsx";
+import Promotions from "../pages/admin/Promotions/Promotions.jsx";
+import EditPromotion from "../pages/admin/Promotions/EditPromotion.jsx";
+import AddPromotion from "../pages/admin/Promotions/AddPromotion.jsx";
 
 export const routes = [
     {
@@ -99,6 +104,10 @@ export const routes = [
                 element: <Cart/>,
             },
             {
+                path: '/loading',
+                element: <Loading />,
+            },
+            {
                 path: '/profile',
                 element: <Profile />,
                 children: [
@@ -144,13 +153,24 @@ export const routes = [
             <ProtectedRoute allowedRoles={['ADMIN']}>
                 <AdminLayout />
             </ProtectedRoute>
-            // <AdminLayout /> 
         ),
         children: [
-            {
-                path: "dashboard",
-                element: <DashBoard />
-            },
+            // {
+            //     path: "dashboard",
+            //     element: <DashBoard />
+            // },
+            // {
+            //     path: "categories",
+            //     element: <Category />
+            // },
+            // {
+            //     path: "categories/add-category",
+            //     element: <AddCategory />
+            // },
+            // {
+            //     path: "categories/edit-category/:id",
+            //     element: <EditCategory />
+            // },
             {
                 path: "orders",
                 element: <Order />,
@@ -180,6 +200,18 @@ export const routes = [
                 element: <AddCustomer />
             },
             {
+                path: "promotions",
+                element: <Promotions/>,
+            },
+            {
+                path: "promotions/edit-promotion/:id",
+                element: <EditPromotion />,
+            },
+            {
+                path: "promotions/add-promotion",
+                element: <AddPromotion />,
+            },
+            {
                 path: "coupons",
                 element: <Coupons />,
             },
@@ -190,6 +222,10 @@ export const routes = [
             {
                 path: "coupons/add-coupon",
                 element: <AddCoupon />
+            },
+            {
+                path: "reports",
+                element: <AdminReports />,
             }
         ]
     },

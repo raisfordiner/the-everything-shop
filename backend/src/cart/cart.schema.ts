@@ -28,7 +28,7 @@ const checkout = z.object({
     .array(z.string())
     .min(1, "At least one cart item is required"),
   addressId: z.string(),
-  paymentMethod: z.enum(["COD", "VNPAY"]),
+  paymentMethod: z.enum(["COD", "VNPAY", "STRIPE"]),
 });
 
 const CartSchema = { create, search, addItem, updateItem, checkout };

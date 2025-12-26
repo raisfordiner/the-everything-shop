@@ -38,7 +38,16 @@ export const post = (path, data) => {
     });
 };
 
-export const del = (path) => {
+export const del = (path, data) => {
+    if (data) {
+        const isFormData = data instanceof FormData;
+        return request(path, {
+            method: 'DELETE',
+            body: isFormData ? data : JSON.stringify(data),
+            headers: isFormData ? {} : { 'Content-Type': 'application/json' },
+        });
+    }
+
     return request(path, { method: 'DELETE' });
 };
 

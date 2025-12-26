@@ -80,6 +80,9 @@ export default class AddressController {
       return Send.success(res, { address: newAddress }, "Address created successfully");
     } catch (error: any) {
       logger.error({ error }, "Error creating address");
+      if (error.message === "Customer not found") {
+        return Send.notFound(res, {}, "Customer not found");
+      }
       return Send.error(res, {}, "Internal server error");
     }
   }

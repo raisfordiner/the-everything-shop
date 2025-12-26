@@ -93,3 +93,47 @@
     font-size: 12px !important;
     color: #888 !important;
 }
+
+/* Responsive adjustments for mobile screens */
+@media (max-width: 576px) {
+    /* Reduce image height on very small screens */
+    .product-image-container img {
+        height: 120px;
+        padding: 8px;
+    }
+    
+    /* Smaller text */
+    .product-name {
+        font-size: 12px;
+        line-height: 1.3;
+        min-height: 32px;
+    }
+    
+    /* Smaller price */
+    .product-sale-price {
+        font-size: 13px;
+    }
+    
+    /* Smaller sold count */
+    .sold-count {
+        font-size: 10px !important;
+    }
+    
+    /* Reduce discount tag size */
+    .discount-tag.ant-tag {
+        font-size: 10px;
+        padding: 1px 4px;
+        top: 6px;
+        right: 6px;
+    }
+    
+    /* Reduce min-height of product info */
+    .product-info {
+        min-height: 100px;
+    }
+    
+    /* Reduce card padding */
+    .product-card.ant-card .ant-card-body {
+        padding: 8px;
+    }
+}

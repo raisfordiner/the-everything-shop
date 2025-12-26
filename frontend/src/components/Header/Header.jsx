@@ -77,7 +77,7 @@ const Header = () => {
     return (
         <div className='header'>
             {contextHolder}
-            <div className="header__upper">
+            {/* <div className="header__upper">
                 <div className="upper__left">
                     <span>Welcome to my everything-shop!</span>
                 </div>
@@ -95,40 +95,41 @@ const Header = () => {
                         All offers
                     </span>
                 </div>
-            </div>
-            <Row className="header__middle">
-                <Col span={6}>
+            </div> */}
+            <Row className="header__middle" gutter={[16, 16]}>
+                <Col xs={24} sm={24} md={6} lg={6}>
                     <Link to="/" className="logo">
-                        EVERYTHING SHOP
+                        <span className="logo-full">EVERYTHING SHOP</span>
+                        <span className="logo-short">E-SHOP</span>
                     </Link>
                 </Col>
-                <Col span={12}>
+                <Col xs={24} sm={24} md={12} lg={12}>
                     <Search placeholder="Search essentials, groceries and more..." enterButton onSearch={(value) => {
                         if (value.trim()) {
                             navigate(`/search?key=${encodeURIComponent(value.trim())}`);
                         }
                     }} />
                 </Col>
-                <Col span={6}>
+                <Col xs={24} sm={24} md={6} lg={6}>
                     <div className="middle__right">
                         {isAuthenticated ? (
                             <>
                                 <Link to="/cart" className="header-action-item">
                                     <ShoppingCartOutlined className="icon" />
-                                    <span>Cart</span>
+                                    <span className="action-text">Cart</span>
                                 </Link>
 
                                 <Link to="/orders" className="header-action-item">
                                     <DropboxOutlined className="icon" />
-                                    <span>Orders</span>
+                                    <span className="action-text">Orders</span>
                                 </Link>
 
-                                <Divider type="vertical" style={{ height: "20px", borderLeft: "1px solid #d9d9d9", margin: "0", alignSelf: "center" }} />
+                                <Divider type="vertical" style={{ height: "20px", borderLeft: "1px solid #d9d9d9", margin: "0", alignSelf: "center" }} className="action-divider" />
 
                                 <Dropdown menu={userMenu} placement="bottomLeft" arrow>
                                     <a onClick={(e) => e.preventDefault()} className="user-menu-trigger">
                                         <UserOutlined className="icon" />
-                                        {user?.username || 'User'}
+                                        <span className="action-text">{user?.username || 'User'}</span>
                                     </a>
                                 </Dropdown>
                             </>
@@ -136,7 +137,7 @@ const Header = () => {
                             <>
                                 <Link to="/login" className="header-action-item">
                                     <UserOutlined className="icon" />
-                                    <span>Sign Up/Sign In</span>
+                                    <span className="action-text">Sign Up/Sign In</span>
                                 </Link>
                             </>
                         )}
