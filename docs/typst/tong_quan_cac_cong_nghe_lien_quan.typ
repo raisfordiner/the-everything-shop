@@ -1,0 +1,4 @@
+- Ngôn ngữ lập trình
+- Framework, thư viện
+- Cơ sở dữ liệu
+- Công cụ hỗ trợ phát triển và triển khai

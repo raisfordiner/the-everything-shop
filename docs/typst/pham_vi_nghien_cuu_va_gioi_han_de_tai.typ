@@ -1,0 +1,2 @@
+- Các chức năng nằm trong phạm vi thực hiện
+- Các nội dung không nằm trong phạm vi đồ án

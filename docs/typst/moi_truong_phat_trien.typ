@@ -1,0 +1,3 @@
+- Hệ điều hành
+- Công cụ, IDE
+- Cấu hình cần thiết
