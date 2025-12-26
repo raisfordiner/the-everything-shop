@@ -8,6 +8,7 @@ import {
     SettingOutlined,
     UserSwitchOutlined,
     GlobalOutlined,
+    TagsOutlined,
 } from "@ant-design/icons";
 import { Layout, Menu } from "antd";
 import { Link, useLocation } from "react-router-dom";
@@ -32,6 +33,11 @@ const SellerSidebar = ({ onCollapse }) => {
             key: "/seller/dashboard",
             icon: <DashboardOutlined />,
             label: <Link to="/seller/dashboard">Dashboard</Link>,
+        },
+        {
+            key: "/seller/categories",
+            icon: <TagsOutlined />,
+            label: <Link to="/seller/categories">Categories</Link>,
         },
         {
             key: "/seller/orders",

@@ -22,6 +22,16 @@ const AdminSidebar = () => {
             label: <Link to="/admin/orders">Orders</Link>,
         },
         {
+            key: "/admin/products",
+            icon: <AppstoreOutlined />,
+            label: <Link to="/admin/products">Products</Link>,
+        },
+        // {
+        //     key: "/admin/categories",
+        //     icon: <TagsOutlined />,
+        //     label: <Link to="/admin/categories">Categories</Link>,
+        // },
+        {
             key: "/admin/staffs",
             icon: <UserOutlined />,
             label: <Link to="/admin/staffs">Staffs</Link>,
