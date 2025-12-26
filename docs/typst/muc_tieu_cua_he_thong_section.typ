@@ -1,2 +1,0 @@
-- Mục tiêu tổng quát
-- Các mục tiêu cụ thể

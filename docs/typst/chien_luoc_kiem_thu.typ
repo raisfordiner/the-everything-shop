@@ -1,2 +1,0 @@
-- Phương pháp kiểm thử
-- Phạm vi kiểm thử

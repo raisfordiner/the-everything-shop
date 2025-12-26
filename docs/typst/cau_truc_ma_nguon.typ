@@ -1,2 +1,0 @@
-- Sơ đồ thư mục
-- Mô tả các thành phần chính

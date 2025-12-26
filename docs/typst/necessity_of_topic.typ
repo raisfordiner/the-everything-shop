@@ -1,0 +1,4 @@
+- Practical Context
+- Existing Problems
+- Need for IT Application
+- Significance of Building the Assigned System

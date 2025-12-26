@@ -1,0 +1,3 @@
+- Books
+- Technical Documentation
+- Websites, Scientific Articles

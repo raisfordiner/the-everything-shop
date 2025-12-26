@@ -1,2 +1,0 @@
-- Các khái niệm liên quan đến bài toán
-- Mô hình, chuẩn, thuật ngữ sử dụng

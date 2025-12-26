@@ -1,0 +1,2 @@
+- Concepts Related to the Problem
+- Models, Standards, Terminology Used

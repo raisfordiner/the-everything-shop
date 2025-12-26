@@ -1,0 +1,3 @@
+- Operating System
+- Tools, IDE
+- Required Configuration

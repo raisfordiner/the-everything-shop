@@ -1,2 +1,0 @@
-- Mô tả cách hiện thực
-- Minh hoạ bằng đoạn mã hoặc hình ảnh

@@ -1,0 +1,2 @@
+- Functions Within Scope
+- Out of Scope Content

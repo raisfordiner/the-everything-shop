@@ -1,7 +1,7 @@
 #align(center)[
   #text(size: 14pt)[
-    #smallcaps[Đại học quốc gia TP.HCM] \
-    #smallcaps[Trường đại học công nghệ thông tin]
+    #smallcaps[Vietnam National University HCMC] \
+    #smallcaps[University of Information Technology]
   ]
 
   #v(1cm)
@@ -11,8 +11,8 @@
   #v(1cm)
 
   #text(size: 12pt)[
-    #smallcaps[MÔN HỌC] \
-    #text(weight: "bold", size: 14pt)[Công nghệ phần mềm chuyên sâu] \
+    #smallcaps[Course] \
+    #text(weight: "bold", size: 14pt)[SE100 - Object-Oriented Analysis and Design] \
     #v(0.2cm)
     #text(weight: "bold", size: 14pt)[(SE214.Q11)] \
   ]
@@ -23,11 +23,11 @@
 
   #v(0.4cm)
 
-  #text(size: 18pt, weight: "bold")[CHỦ ĐỀ]
+  #text(size: 18pt, weight: "bold")[Topic]
 
   #v(0.4cm)
 
-  #text(size: 18pt, weight: "bold")[Business Modelling for Warehouse System]
+  #text(size: 18pt, weight: "bold")[Online shop management software]
 
   #v(0.4cm)
 
@@ -35,12 +35,12 @@
 
   #v(0.5cm)
 
-  #emph[Giảng viên]: \
+  #emph[Teacher]: \
   Lê Thanh Trọng
 
   #v(0.5cm)
 
-  #emph[Nhóm sinh viên thực hiện]:
+  #emph[Group]:
 
   #v(0.2cm)
 
@@ -48,20 +48,22 @@
     columns: (1fr, 1fr),
     column-gutter: 1em,
     align(right)[
-      2352 1224 \
-      2352 0657 \
-      2352 0651 \
-      2352 0466
+      2352 xxxx \
+      2352 xxxx \
+      2352 xxxx \
+      2352 xxxx \
+      2352 xxxx
     ],
     align(left)[
-      Trương Hoàng Phúc \
-      Vũ Quốc Huy \
-      Trương Đức Huy \
-      Tạ Hoàng Hiệp
+      Placeholder1 \
+      Placeholder2 \
+      Placeholder3 \
+      Placeholder4 \
+      Placeholder5
     ],
   )
 
   #v(1fr)
 
-  #text(size: 9pt)[Thành phố Hồ Chí Minh, tháng 12 năm 2025]
+  #text(size: 9pt)[Ho Chi Minh City, December 2025]
 ]

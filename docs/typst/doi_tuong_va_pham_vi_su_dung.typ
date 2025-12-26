@@ -1,2 +1,0 @@
-- Nhóm người dùng
-- Môi trường sử dụng
