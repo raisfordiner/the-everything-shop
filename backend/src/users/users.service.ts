@@ -44,6 +44,7 @@ export default class UsersService {
         email: data.email,
         password: await hashPassword(data.password),
         role: data.role,
+        emailVerified: new Date()
       },
       select: {
         id: true,
