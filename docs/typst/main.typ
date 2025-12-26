@@ -9,18 +9,36 @@
   it
 }
 
-#include "cover_page.typ"
+#include "000_front_matter/001_cover_page.typ"
 
 
 = Declaration of Authorship
-#include "declaration_of_authorship.typ"
+#include "000_front_matter/002_declaration_of_authorship.typ"
 
 = Acknowledgments
-#include "acknowledgments.typ"
+#include "000_front_matter/003_acknowledgments.typ"
 
 #show outline.entry.where(
   level: 1,
 ): set block(above: 1.2em)
+
+= Abstract
+#include "000_front_matter/004_abstract.typ"
+
+= Problem Statement
+#include "000_front_matter/005_problem_statement.typ"
+
+= System Objectives
+#include "000_front_matter/006_system_objectives_summary.typ"
+
+= Proposed Solution
+#include "000_front_matter/007_proposed_solution.typ"
+
+= Technologies Used
+#include "000_front_matter/008_technologies_used.typ"
+
+= Achieved Results
+#include "000_front_matter/009_achieved_results.typ"
 
 #outline(title: "Table of Contents")
 
@@ -29,135 +47,117 @@
   target: figure.where(kind: image),
 )
 
-= Abstract
-#include "abstract.typ"
-
-= Problem Statement
-#include "problem_statement.typ"
-
-= System Objectives
-#include "system_objectives_summary.typ"
-
-= Proposed Solution
-#include "proposed_solution.typ"
-
-= Technologies Used
-#include "technologies_used.typ"
-
-= Achieved Results
-#include "achieved_results.typ"
-
 #set heading(numbering: "1.")
 
 = INTRODUCTION
 
 == Necessity of the Topic
-#include "necessity_of_topic.typ"
+#include "100_introduction/101_necessity_of_topic.typ"
 
 == System Objectives
-#include "system_objectives.typ"
+#include "100_introduction/102_system_objectives.typ"
 
 == Research Scope and Limitations
-#include "research_scope_and_limitations.typ"
+#include "100_introduction/103_research_scope_and_limitations.typ"
 
 == User Scope and Audience
-#include "user_scope_and_audience.typ"
+#include "100_introduction/104_user_scope_and_audience.typ"
 
 == Methodology
-#include "methodology.typ"
+#include "100_introduction/105_methodology.typ"
 
 == Report Structure
-#include "report_structure.typ"
+#include "100_introduction/106_report_structure.typ"
 
 
 = THEORETICAL BASIS AND TECHNOLOGY
 
 == Theoretical Basis
-#include "theoretical_basis.typ"
+#include "200_theoretical_basis_and_technology/201_theoretical_basis.typ"
 
 == Overview of Related Technologies
-#include "related_technologies_overview.typ"
+#include "200_theoretical_basis_and_technology/202_related_technologies_overview.typ"
 
 == Rationale for Technology Selection
-#include "technology_selection_rationale.typ"
+#include "200_theoretical_basis_and_technology/203_technology_selection_rationale.typ"
 
 
 = SYSTEM REQUIREMENTS ANALYSIS
 
 == Problem Description and Business Logic
-#include "problem_description_and_business_logic.typ"
+#include "300_system_requirements_analysis/301_problem_description_and_business_logic.typ"
 
 == Stakeholders
-#include "stakeholders.typ"
+#include "300_system_requirements_analysis/302_stakeholders.typ"
 
 == Functional Requirements
-#include "functional_requirements.typ"
+#include "300_system_requirements_analysis/303_functional_requirements.typ"
 
 == Non-Functional Requirements
-#include "non_functional_requirements.typ"
+#include "300_system_requirements_analysis/304_non_functional_requirements.typ"
 
 == Use Case Diagram
-#include "use_case_diagram.typ"
+#include "300_system_requirements_analysis/305_use_case_diagram.typ"
 
 
 = SYSTEM DESIGN
 
 == Overall Architecture Design
-#include "overall_architecture_design.typ"
+#include "400_system_design/401_overall_architecture_design.typ"
 
 == Functional Design
-#include "functional_design.typ"
+#include "400_system_design/402_functional_design.typ"
 
 == Data Design
-#include "data_design.typ"
+#include "400_system_design/403_data_design.typ"
 
 == Detailed Module Design
-#include "module_detailed_design.typ"
+#include "400_system_design/404_module_detailed_design.typ"
 
 == User Interface Design (if any)
-#include "ui_design.typ"
+#include "400_system_design/405_ui_design.typ"
 
 
 = IMPLEMENTATION AND DEPLOYMENT
 
 == Development Environment
-#include "development_environment.typ"
+#include "500_implementation_and_deployment/501_development_environment.typ"
 
 == Source Code Structure
-#include "source_code_structure.typ"
+#include "500_implementation_and_deployment/502_source_code_structure.typ"
 
 == Implementation of Main Functions
-#include "implementation_main_functions.typ"
+#include "500_implementation_and_deployment/503_implementation_main_functions.typ"
 
 == System Deployment
-#include "system_deployment.typ"
+#include "500_implementation_and_deployment/504_system_deployment.typ"
 
 
 = TESTING AND EVALUATION
 
 == Testing Strategy
-#include "testing_strategy.typ"
+#include "600_testing_and_evaluation/601_testing_strategy.typ"
 
 == Test Case Construction and Execution
-#include "test_case_construction_and_execution.typ"
+#include "600_testing_and_evaluation/602_test_case_construction_and_execution.typ"
 
 == System Evaluation
-#include "system_evaluation.typ"
+#include "600_testing_and_evaluation/603_system_evaluation.typ"
 
 
 = CONCLUSION AND FUTURE DEVELOPMENT
 
 == Conclusion
-#include "conclusion.typ"
+#include "700_conclusion_and_future_development/701_conclusion.typ"
 
 == Limitations of the Project
-#include "limitations.typ"
+#include "700_conclusion_and_future_development/702_limitations.typ"
 
 == Future Development
-#include "future_development.typ"
+#include "700_conclusion_and_future_development/703_future_development.typ"
 
 = REFERENCES
-#include "references.typ"
+#include "800_references_appendix/801_references.typ"
 
 = APPENDIX
-#include "appendix.typ"
+#include "800_references_appendix/802_appendix.typ"

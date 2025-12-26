@@ -6,7 +6,7 @@
 
   #v(1cm)
 
-  #image("logo-uit.png", width: 50%)
+  #image("../assets/logo-uit.png", width: 50%)
 
   #v(1cm)
 
@@ -14,7 +14,6 @@
     #smallcaps[Course] \
     #text(weight: "bold", size: 14pt)[SE100 - Object-Oriented Analysis and Design] \
     #v(0.2cm)
-    #text(weight: "bold", size: 14pt)[(SE214.Q11)] \
   ]
 
   #v(0.2cm)
