@@ -1,3 +1,1 @@
-- Level of Requirement Satisfaction
-- Advantages
-- Limitations
+[SKIPPED]
