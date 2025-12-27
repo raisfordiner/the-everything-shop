@@ -98,6 +98,7 @@
 
 == Use Case Diagram
 #include "300_system_requirements_analysis/305_use_case_diagram.typ"
+#include "300_system_requirements_analysis/306_use_case_specifications.typ"
 
 
 = SYSTEM DESIGN
