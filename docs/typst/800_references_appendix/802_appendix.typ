@@ -1,4 +1,1 @@
-- Detailed Installation Guide
-- User Guide
-- Source Code Illustration
-- Interface Images
+// [ABANDONED]

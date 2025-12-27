@@ -142,8 +142,8 @@
 == Test Case Construction and Execution
 #include "600_testing_and_evaluation/602_test_case_construction_and_execution.typ"
 
-== System Evaluation
-#include "600_testing_and_evaluation/603_system_evaluation.typ"
+// == System Evaluation
+// #include "600_testing_and_evaluation/603_system_evaluation.typ"
 
 
 = CONCLUSION AND FUTURE DEVELOPMENT
@@ -160,5 +160,5 @@
 = REFERENCES
 #include "800_references_appendix/801_references.typ"
 
-= APPENDIX
-#include "800_references_appendix/802_appendix.typ"
+// = APPENDIX
+// #include "800_references_appendix/802_appendix.typ"
