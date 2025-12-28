@@ -1,0 +1,46 @@
+@startuml
+left to right direction
+skinparam packageStyle rectangle
+
+actor Customer
+actor Seller
+actor LoggingModule
+
+rectangle "The Everything Shop" {
+  package "EP-04: Order Management" {
+    usecase "**Manage My Orders**" as UC_MET_ORDERS
+    usecase "**Manage Customer Orders**" as UC_SELL_ORDERS
+    usecase "UC-29: Manage Cart" as UC29
+    usecase "UC-30: Create Order" as UC30
+    usecase "UC-31: View Order Details" as UC31
+    usecase "UC-32: Manage Order Detail" as UC32
+    usecase "UC-33: Cancel Order (Customer)" as UC33
+    usecase "UC-34: Cancel Order (Seller)" as UC34
+    usecase "UC-36: Log Order Events" as UC36
+    
+    ' External references (placeholders to keep diagram valid)
+    usecase "UC-37: Initiate Payment" as UC37
+    usecase "UC-40: Handle Refund" as UC40
+  }
+}
+
+' Relationships
+' 5. Orders (Customer)
+UC_MET_ORDERS ..> UC30 : <<include>>
+UC_MET_ORDERS ..> UC31 : <<include>>
+Customer --> UC_MET_ORDERS
+Customer --> UC29
+UC33 .> UC31 : <<extend>>
+UC30 ..> UC37 : <<include>>
+UC36 ..> UC30 : <<include>>
+
+' 6. Orders (Seller)
+UC_SELL_ORDERS ..> UC32 : <<include>>
+Seller --> UC_SELL_ORDERS
+UC34 .> UC32 : <<extend>>
+UC40 .> UC34 : <<extend>>
+
+' System
+LoggingModule --> UC36
+
+@enduml

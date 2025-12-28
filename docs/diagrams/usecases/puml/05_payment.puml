@@ -1,0 +1,28 @@
+@startuml
+left to right direction
+skinparam packageStyle rectangle
+
+actor Customer
+actor PaymentModule
+
+rectangle "The Everything Shop" {
+  package "EP-05: Payment" {
+    usecase "UC-37: Initiate Payment" as UC37
+    usecase "UC-38: Update Payment Status" as UC38
+    usecase "UC-39: Generate Receipt" as UC39
+    usecase "UC-40: Handle Refund" as UC40
+  }
+}
+
+' Relationships
+' Note: Payment is often triggered by Order, but for this epic view, we focus on the use cases themselves.
+' Relationships incoming to these UCs are mostly from Order implementations.
+' We can show direct actor triggers if applicable or leave isolated for modularity.
+
+Customer --> UC37
+PaymentModule --> UC37
+PaymentModule --> UC38
+PaymentModule --> UC39
+PaymentModule --> UC40
+
+@enduml

@@ -1,0 +1,28 @@
+@startuml
+left to right direction
+skinparam packageStyle rectangle
+
+actor Admin
+
+rectangle "The Everything Shop" {
+  package "EP-08: Reporting" {
+    usecase "**View Reports**" as UC_REPORTS
+    usecase "UC-49: Inv. Reports" as UC49
+    usecase "UC-50: Order Reports" as UC50
+    usecase "UC-51: Revenue Reports" as UC51
+    usecase "UC-52: Audit Reports" as UC52
+    usecase "UC-53: Export Reports" as UC53
+    usecase "UC-54: View Dashboard" as UC54
+  }
+}
+
+' Relationships
+UC_REPORTS <.. UC49 : <<extend>>
+UC_REPORTS <.. UC50 : <<extend>>
+UC_REPORTS <.. UC51 : <<extend>>
+UC_REPORTS <.. UC53 : <<extend>>
+UC_REPORTS <.. UC54 : <<extend>>
+UC_REPORTS ..> UC52 : <<extend>>
+Admin --> UC_REPORTS
+
+@enduml

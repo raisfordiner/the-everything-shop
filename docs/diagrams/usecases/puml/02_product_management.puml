@@ -1,0 +1,41 @@
+@startuml
+left to right direction
+skinparam packageStyle rectangle
+
+actor Seller
+actor StockManagementModule
+
+rectangle "The Everything Shop" {
+  package "EP-02: Product Management" {
+    usecase "**Manage Products**" as UC_PROD
+    usecase "**Manage Categories**" as UC_CAT_MGMT
+    usecase "UC-14: Create Product" as UC14
+    usecase "UC-15: Edit Product" as UC15
+    usecase "UC-16: Delete Product" as UC16
+    usecase "UC-17: Upload Product Media" as UC17
+    usecase "UC-18: Create Category" as UC18
+    usecase "UC-19: Update Category" as UC19
+    usecase "UC-20: Delete Category" as UC20
+    usecase "UC-21: Update Stock" as UC21
+    usecase "UC-22: Low-Stock Alerts" as UC22
+    usecase "UC-23: Back-in-stock Notif." as UC23
+  }
+}
+
+' Relationships
+UC_PROD ..> UC14 : <<include>>
+UC_PROD ..> UC15 : <<include>>
+UC_PROD ..> UC16 : <<include>>
+UC_PROD ..> UC21 : <<include>>
+Seller --> UC_PROD
+UC14 ..> UC17 : <<include>>
+
+UC_CAT_MGMT ..> UC18 : <<include>>
+UC_CAT_MGMT ..> UC19 : <<include>>
+UC_CAT_MGMT ..> UC20 : <<include>>
+Seller --> UC_CAT_MGMT
+
+StockManagementModule --> UC22
+StockManagementModule --> UC23
+
+@enduml

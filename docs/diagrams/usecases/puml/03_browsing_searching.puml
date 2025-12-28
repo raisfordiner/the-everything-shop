@@ -1,0 +1,28 @@
+@startuml
+left to right direction
+skinparam packageStyle rectangle
+
+actor Guest
+actor Customer
+
+rectangle "The Everything Shop" {
+  package "EP-03: Browsing & Searching" {
+    usecase "**Browse Catalog**" as UC_BROWSE
+    usecase "UC-24: Browse by Category" as UC24
+    usecase "UC-25: Browse by Filter" as UC25
+    usecase "UC-26: Search Products" as UC26
+    usecase "UC-27: View Product Details" as UC27
+    usecase "UC-28: Subscribe Stock Notif." as UC28
+  }
+}
+
+' Relationships
+UC_BROWSE ..> UC24 : <<include>>
+UC_BROWSE ..> UC25 : <<include>>
+UC_BROWSE ..> UC26 : <<include>>
+UC_BROWSE ..> UC27 : <<include>>
+Guest --> UC_BROWSE
+Customer --> UC_BROWSE
+UC28 .> UC27 : <<extend>>
+
+@enduml
