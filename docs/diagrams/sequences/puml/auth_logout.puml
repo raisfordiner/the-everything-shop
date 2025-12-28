@@ -1,0 +1,27 @@
+@startuml
+!theme plain
+title Auth: Logout Sequence
+
+actor "User" as User
+participant "AuthController" as AuthCtrl
+participant "AuthService" as AuthService
+participant "User (DB)" as UserDB
+
+User -> AuthCtrl : POST /auth/logout
+activate AuthCtrl
+
+AuthCtrl -> AuthService : logout(userId)
+activate AuthService
+
+AuthService -> UserDB : updateRefreshToken(userId, null)
+activate UserDB
+UserDB --> AuthService : success
+deactivate UserDB
+
+AuthService --> AuthCtrl : success
+deactivate AuthService
+
+AuthCtrl --> User : 200 OK (Clear Cookies)
+deactivate AuthCtrl
+
+@enduml

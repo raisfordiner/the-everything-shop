@@ -1,0 +1,27 @@
+@startuml
+!theme plain
+title Product: Search & Filter Sequence
+
+actor "Customer" as Customer
+participant "ProductController" as ProdCtrl
+participant "ProductService" as ProdService
+participant "Product (DB)" as ProdDB
+
+Customer -> ProdCtrl : GET /products?search=...&category=...
+activate ProdCtrl
+
+ProdCtrl -> ProdService : getAllProducts(query)
+activate ProdService
+
+ProdService -> ProdDB : findMany(where, include: variants)
+activate ProdDB
+ProdDB --> ProdService : products list
+deactivate ProdDB
+
+ProdService --> ProdCtrl : products list
+deactivate ProdService
+
+ProdCtrl --> Customer : 200 OK (JSON)
+deactivate ProdCtrl
+
+@enduml

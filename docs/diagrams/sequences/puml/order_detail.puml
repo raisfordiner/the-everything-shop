@@ -1,0 +1,27 @@
+@startuml
+!theme plain
+title Order: Detail Sequence
+
+actor "Customer" as User
+participant "OrderController" as OrderCtrl
+participant "OrderService" as OrderService
+participant "Order (DB)" as OrderDB
+
+User -> OrderCtrl : GET /orders/:id
+activate OrderCtrl
+
+OrderCtrl -> OrderService : find(id)
+activate OrderService
+
+OrderService -> OrderDB : findUnique(id, include: items, payment, address)
+activate OrderDB
+OrderDB --> OrderService : order
+deactivate OrderDB
+
+OrderService --> OrderCtrl : order
+deactivate OrderService
+
+OrderCtrl --> User : 200 OK
+deactivate OrderCtrl
+
+@enduml

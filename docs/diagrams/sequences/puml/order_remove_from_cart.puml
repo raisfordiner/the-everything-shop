@@ -1,0 +1,27 @@
+@startuml
+!theme plain
+title Order: Remove from Cart Sequence
+
+actor "Customer" as User
+participant "CartController" as CartCtrl
+participant "CartService" as CartService
+participant "Cart (DB)" as CartDB
+
+User -> CartCtrl : DELETE /cart/items/:id
+activate CartCtrl
+
+CartCtrl -> CartService : deleteCartItem(id)
+activate CartService
+
+CartService -> CartDB : delete(where: id)
+activate CartDB
+CartDB --> CartService : success
+deactivate CartDB
+
+CartService --> CartCtrl : success
+deactivate CartService
+
+CartCtrl --> User : 200 OK
+deactivate CartCtrl
+
+@enduml

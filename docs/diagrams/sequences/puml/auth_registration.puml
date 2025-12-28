@@ -1,0 +1,47 @@
+@startuml
+!theme plain
+title Auth: Registration Sequence
+
+actor "User" as User
+participant "AuthController" as AuthCtrl
+participant "AuthService" as AuthService
+participant "User (DB)" as UserDB
+participant "Customer (DB)" as CustomerDB
+participant "EmailService" as Email
+
+User -> AuthCtrl : POST /auth/register (email, password, ...)
+activate AuthCtrl
+
+AuthCtrl -> AuthService : register(data)
+activate AuthService
+
+AuthService -> UserDB : findByEmail(email)
+activate UserDB
+UserDB --> AuthService : null (User not found)
+deactivate UserDB
+
+AuthService -> AuthService : hashPassword(password)
+AuthService -> AuthService : generateVerificationToken()
+
+AuthService -> UserDB : create(user)
+activate UserDB
+UserDB --> AuthService : user
+deactivate UserDB
+
+AuthService -> CustomerDB : create(customerId)
+activate CustomerDB
+CustomerDB --> AuthService : customer
+deactivate CustomerDB
+
+AuthService -> Email : sendVerificationEmail(email, token)
+activate Email
+Email --> AuthService : success
+deactivate Email
+
+AuthService --> AuthCtrl : user
+deactivate AuthService
+
+AuthCtrl --> User : 201 Created (Check email)
+deactivate AuthCtrl
+
+@enduml

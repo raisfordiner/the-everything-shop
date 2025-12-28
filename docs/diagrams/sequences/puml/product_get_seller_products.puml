@@ -1,0 +1,27 @@
+@startuml
+!theme plain
+title Product: Get Seller Products Sequence
+
+actor "User" as User
+participant "ProductController" as ProdCtrl
+participant "ProductService" as ProdService
+participant "Product (DB)" as ProdDB
+
+User -> ProdCtrl : GET /products/seller/:sellerId
+activate ProdCtrl
+
+ProdCtrl -> ProdService : getProductsBySeller(sellerId)
+activate ProdService
+
+ProdService -> ProdDB : findMany(where: sellerId)
+activate ProdDB
+ProdDB --> ProdService : products list
+deactivate ProdDB
+
+ProdService --> ProdCtrl : products list
+deactivate ProdService
+
+ProdCtrl --> User : 200 OK
+deactivate ProdCtrl
+
+@enduml

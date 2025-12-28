@@ -1,0 +1,45 @@
+@startuml
+!theme plain
+title Auth: Login Sequence
+
+actor "User" as User
+participant "AuthController" as AuthCtrl
+participant "AuthService" as AuthService
+participant "User (DB)" as UserDB
+participant "TokenService" as Token
+
+User -> AuthCtrl : POST /auth/login (email, password)
+activate AuthCtrl
+
+AuthCtrl -> AuthService : login(email, password)
+activate AuthService
+
+AuthService -> UserDB : findByEmail(email)
+activate UserDB
+UserDB --> AuthService : user
+deactivate UserDB
+
+alt User not found or Password invalid
+  AuthService --> AuthCtrl : throw InvalidCredentials
+  AuthCtrl --> User : 401 Unauthorized
+end
+
+AuthService -> AuthService : comparePassword(password, hash)
+
+AuthService -> Token : generateTokens(user)
+activate Token
+Token --> AuthService : {accessToken, refreshToken}
+deactivate Token
+
+AuthService -> UserDB : updateRefreshToken(userId, hashedRefreshToken)
+activate UserDB
+UserDB --> AuthService : success
+deactivate UserDB
+
+AuthService --> AuthCtrl : {user, tokens}
+deactivate AuthService
+
+AuthCtrl --> User : 200 OK (Set Cookies: accessToken, refreshToken)
+deactivate AuthCtrl
+
+@enduml

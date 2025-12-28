@@ -1,0 +1,27 @@
+@startuml
+!theme plain
+title Order: Update Cart Item Sequence
+
+actor "Customer" as User
+participant "CartController" as CartCtrl
+participant "CartService" as CartService
+participant "Cart (DB)" as CartDB
+
+User -> CartCtrl : PUT /cart/items/:id
+activate CartCtrl
+
+CartCtrl -> CartService : updateCartItem(id, quantity)
+activate CartService
+
+CartService -> CartDB : update(where: id, data: quantity)
+activate CartDB
+CartDB --> CartService : updatedItem
+deactivate CartDB
+
+CartService --> CartCtrl : updatedItem
+deactivate CartService
+
+CartCtrl --> User : 200 OK
+deactivate CartCtrl
+
+@enduml

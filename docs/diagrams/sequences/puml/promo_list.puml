@@ -1,0 +1,27 @@
+@startuml
+!theme plain
+title Promotion: List Sequence
+
+actor "User/Admin" as User
+participant "PromotionController" as PromoCtrl
+participant "PromotionService" as PromoService
+participant "Promotion (DB)" as PromoDB
+
+User -> PromoCtrl : GET /promotions
+activate PromoCtrl
+
+PromoCtrl -> PromoService : getAllPromotions(filter: status)
+activate PromoService
+
+PromoService -> PromoDB : findMany(where: status, include: items)
+activate PromoDB
+PromoDB --> PromoService : list
+deactivate PromoDB
+
+PromoService --> PromoCtrl : list
+deactivate PromoService
+
+PromoCtrl --> User : 200 OK
+deactivate PromoCtrl
+
+@enduml

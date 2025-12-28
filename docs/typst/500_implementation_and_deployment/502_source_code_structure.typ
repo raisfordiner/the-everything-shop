@@ -1,5 +1,3 @@
-= Source Code Structure
-
 The source code for "The Everything Shop" is organized as a monorepo, containing both the backend API and the frontend client. This structure facilitates easier development and deployment. The root directory contains the `docker-compose.yml` files for orchestration, while the application logic is split into `backend/` and `frontend/` directories.
 
 == Project Tree

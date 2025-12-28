@@ -1,4 +1,4 @@
-#set page(margin: 1.75in)
+#set page(margin: 2.5cm)
 #set par(leading: 0.55em, spacing: 1.5em, first-line-indent: 0pt, justify: true)
 #show heading: set block(above: 1.4em, below: 1em)
 #set text(font: "New Computer Modern")
@@ -15,29 +15,29 @@
 // = Declaration of Authorship
 // #include "000_front_matter/002_declaration_of_authorship.typ"
 
-= Acknowledgments
+#heading(level: 1, outlined: false)[Acknowledgments]
 #include "000_front_matter/003_acknowledgments.typ"
 
 #show outline.entry.where(
   level: 1,
 ): set block(above: 1.2em)
 
-= Abstract
+#heading(level: 1, outlined: false)[Abstract]
 #include "000_front_matter/004_abstract.typ"
 
-= Problem Statement
+#heading(level: 1, outlined: false)[Problem Statement]
 #include "000_front_matter/005_problem_statement.typ"
 
-= System Objectives
+#heading(level: 1, outlined: false)[System Objectives]
 #include "000_front_matter/006_system_objectives_summary.typ"
 
-= Proposed Solution
+#heading(level: 1, outlined: false)[Proposed Solution]
 #include "000_front_matter/007_proposed_solution.typ"
 
-= Technologies Used
+#heading(level: 1, outlined: false)[Technologies Used]
 #include "000_front_matter/008_technologies_used.typ"
 
-= Achieved Results
+#heading(level: 1, outlined: false)[Achieved Results]
 #include "000_front_matter/009_achieved_results.typ"
 
 #outline(title: "Table of Contents")
@@ -112,11 +112,9 @@
 == Data Design
 #include "400_system_design/403_data_design.typ"
 
-== Detailed Module Design
-#include "400_system_design/404_module_detailed_design.typ"
 
-== User Interface Design (if any)
-#include "400_system_design/405_ui_design.typ"
+
+
 
 
 = IMPLEMENTATION AND DEPLOYMENT

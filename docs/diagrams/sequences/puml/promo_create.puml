@@ -1,0 +1,30 @@
+@startuml
+!theme plain
+title Promotion: Create Sequence
+
+actor "Admin" as Admin
+participant "PromotionController" as PromoCtrl
+participant "PromotionService" as PromoService
+participant "Promotion (DB)" as PromoDB
+
+Admin -> PromoCtrl : POST /promotions
+activate PromoCtrl
+
+PromoCtrl -> PromoService : createPromotion(data)
+activate PromoService
+
+PromoService -> PromoDB : findAdmin(adminId)
+PromoService -> PromoDB : verifyProducts(productIds)
+
+PromoService -> PromoDB : create(data)
+activate PromoDB
+PromoDB --> PromoService : promotion
+deactivate PromoDB
+
+PromoService --> PromoCtrl : promotion
+deactivate PromoService
+
+PromoCtrl --> Admin : 201 Created
+deactivate PromoCtrl
+
+@enduml

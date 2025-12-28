@@ -1,0 +1,23 @@
+@startuml
+!theme plain
+title Payment: Initiate Sequence
+
+actor "Customer" as User
+participant "OrderController" as OrderCtrl
+participant "PaymentGateway" as Gateway
+
+User -> OrderCtrl : POST /orders/pay (orderId, method: VNPAY)
+activate OrderCtrl
+
+OrderCtrl -> OrderCtrl : validateOrder(orderId)
+
+OrderCtrl -> Gateway : createPaymentUrl(amount, orderInfo)
+activate Gateway
+Gateway --> OrderCtrl : paymentUrl
+deactivate Gateway
+
+OrderCtrl --> User : 200 OK (paymentUrl)
+deactivate OrderCtrl
+
+User -> Gateway : Redirect to Payment Page
+@enduml

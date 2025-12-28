@@ -1,0 +1,43 @@
+@startuml
+!theme plain
+title Auth: Verify Email Sequence
+
+actor "User" as User
+participant "AuthController" as AuthCtrl
+participant "AuthService" as AuthService
+participant "User (DB)" as UserDB
+participant "TokenService" as Token
+
+User -> AuthCtrl : GET /auth/verify?token=...
+activate AuthCtrl
+
+AuthCtrl -> AuthService : verifyEmailToken(token)
+activate AuthService
+
+AuthService -> Token : verify(token)
+activate Token
+Token --> AuthService : payload {userId}
+deactivate Token
+
+AuthService -> UserDB : findUnique(userId)
+activate UserDB
+UserDB --> AuthService : user
+deactivate UserDB
+
+AuthService -> UserDB : update(emailVerified: now)
+activate UserDB
+UserDB --> AuthService : updatedUser
+deactivate UserDB
+
+AuthService -> Token : generateTokens(user)
+activate Token
+Token --> AuthService : {accessToken, refreshToken}
+deactivate Token
+
+AuthService --> AuthCtrl : {user, tokens}
+deactivate AuthService
+
+AuthCtrl --> User : 200 OK (Set Cookies & Logged In)
+deactivate AuthCtrl
+
+@enduml

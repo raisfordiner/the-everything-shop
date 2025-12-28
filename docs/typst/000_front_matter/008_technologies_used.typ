@@ -3,7 +3,7 @@ The project utilizes the *PERN stack*, a popular choice for modern web developme
 *Frontend:*
 - *React*: For building the component-based user interface.
 - *Redux*: For global state management (user session, cart).
-- *TailwindCSS/Vanilla CSS*: For styling the application.
+- *Vanilla CSS*: For styling the application.
 
 *Backend:*
 - *Node.js & Express*: For the server-side runtime and RESTful API framework.

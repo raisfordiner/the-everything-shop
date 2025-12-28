@@ -1,0 +1,36 @@
+@startuml
+!theme plain
+title Product: Delete Product Sequence
+
+actor "Seller/Admin" as Seller
+participant "ProductController" as ProdCtrl
+participant "ProductService" as ProdService
+participant "Product (DB)" as ProdDB
+
+Seller -> ProdCtrl : DELETE /products/:id
+activate ProdCtrl
+
+ProdCtrl -> ProdService : deleteProduct(id, userContext)
+activate ProdService
+
+ProdService -> ProdDB : findUnique(id)
+activate ProdDB
+ProdDB --> ProdService : product
+deactivate ProdDB
+
+alt User Authorized
+    ProdService -> ProdDB : update(id, is_deleted: true)
+    activate ProdDB
+    ProdDB --> ProdService : success
+    deactivate ProdDB
+else Unauthorized
+    ProdService --> ProdCtrl : throw Forbidden
+end
+
+ProdService --> ProdCtrl : success
+deactivate ProdService
+
+ProdCtrl --> Seller : 200 OK
+deactivate ProdCtrl
+
+@enduml

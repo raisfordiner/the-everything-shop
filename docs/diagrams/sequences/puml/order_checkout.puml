@@ -1,0 +1,37 @@
+@startuml
+!theme plain
+title Order: Checkout Sequence
+
+actor "Customer" as User
+participant "CartController" as CartCtrl
+participant "CartService" as CartService
+participant "Database (Transaction)" as DB
+
+User -> CartCtrl : POST /cart/checkout
+activate CartCtrl
+
+CartCtrl -> CartService : checkout(customerId, items, address, paymentMethod)
+activate CartService
+
+CartService -> DB : verifyCartItems()
+CartService -> DB : verifyAddress()
+CartService -> DB : calculateTotal()
+
+group Transaction
+    CartService -> DB : createOrder(Pending)
+    CartService -> DB : createOrderItems()
+    CartService -> DB : createPayment(Pending)
+    CartService -> DB : decrementStock()
+    CartService -> DB : deleteCartItems()
+end
+
+DB --> CartService : orderDetails
+deactivate DB
+
+CartService --> CartCtrl : orderDetails
+deactivate CartService
+
+CartCtrl --> User : 201 Created (Order Placed)
+deactivate CartCtrl
+
+@enduml

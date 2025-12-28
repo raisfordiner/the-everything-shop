@@ -1,0 +1,27 @@
+@startuml
+!theme plain
+title Order: View Cart Sequence
+
+actor "Customer" as User
+participant "CartController" as CartCtrl
+participant "CartService" as CartService
+participant "Cart (DB)" as CartDB
+
+User -> CartCtrl : GET /cart
+activate CartCtrl
+
+CartCtrl -> CartService : find(customerId)
+activate CartService
+
+CartService -> CartDB : findMany(where: customerId, include: variants)
+activate CartDB
+CartDB --> CartService : cartWithItems
+deactivate CartDB
+
+CartService --> CartCtrl : cart
+deactivate CartService
+
+CartCtrl --> User : 200 OK (JSON)
+deactivate CartCtrl
+
+@enduml

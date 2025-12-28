@@ -1,0 +1,30 @@
+@startuml
+!theme plain
+title Promotion: Create Coupon Sequence
+
+actor "Admin" as Admin
+participant "CouponController" as CouponCtrl
+participant "CouponService" as CouponService
+participant "Coupon (DB)" as CouponDB
+
+Admin -> CouponCtrl : POST /coupons
+activate CouponCtrl
+
+CouponCtrl -> CouponService : create(promoId, code, discount)
+activate CouponService
+
+CouponService -> CouponDB : findPromotion(promoId)
+CouponService -> CouponDB : checkCodeExists(code)
+
+CouponService -> CouponDB : create(data)
+activate CouponDB
+CouponDB --> CouponService : coupon
+deactivate CouponDB
+
+CouponService --> CouponCtrl : coupon
+deactivate CouponService
+
+CouponCtrl --> Admin : 201 Created
+deactivate CouponCtrl
+
+@enduml
