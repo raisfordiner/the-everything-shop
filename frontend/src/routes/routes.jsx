@@ -45,6 +45,8 @@ import AdminReports from "../pages/admin/Reports/Reports.jsx";
 import Promotions from "../pages/admin/Promotions/Promotions.jsx";
 import EditPromotion from "../pages/admin/Promotions/EditPromotion.jsx";
 import AddPromotion from "../pages/admin/Promotions/AddPromotion.jsx";
+import AdminCancellations from "../pages/admin/Cancellations/Cancellations.jsx";
+import SellerCancellations from "../pages/seller/Cancellations/Cancellations.jsx";
 import AdminReturns from "../pages/admin/Returns/Returns.jsx";
 import SellerReturns from "../pages/seller/Returns/Returns.jsx";
 import { Navigate } from "react-router-dom";
@@ -231,6 +233,10 @@ export const routes = [
                 element: <AddCoupon />
             },
             {
+                path: "cancellations",
+                element: <AdminCancellations />,
+            },
+            {
                 path: "returns",
                 element: <AdminReturns />,
             },
@@ -275,6 +281,10 @@ export const routes = [
             {
                 path: "orders",
                 element: <SellerOrders />,
+            },
+            {
+                path: "cancellations",
+                element: <SellerCancellations />,
             },
             {
                 path: "returns",
