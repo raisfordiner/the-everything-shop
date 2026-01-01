@@ -32,6 +32,7 @@ import addressRoute from "addresses/address.route";
 import orderRoute from "orders/order.route";
 import membershipRoute from "memberships/membership.route";
 import paymentRoute from "payments/payment.route";
+import returnRoute from "./returns/return.route";
 
 export default class App {
   public app: Express;
@@ -83,6 +84,7 @@ export default class App {
     this.app.use("/api/orders", orderRoute);
     this.app.use("/api/memberships", membershipRoute); // /api/memberships/*
     this.app.use("/api/payments", paymentRoute);
+    this.app.use("/api/returns", returnRoute);
 
     this.app.use("/api", healthRoute); // /api/healthcheck
 
