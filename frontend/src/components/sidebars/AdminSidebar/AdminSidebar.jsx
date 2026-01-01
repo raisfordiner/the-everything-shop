@@ -4,7 +4,10 @@ import {
     UserOutlined,
     BarChartOutlined,
     GiftOutlined,
-    ProductOutlined
+    ProductOutlined,
+    AppstoreOutlined,
+    ExceptionOutlined,
+    FileSyncOutlined
 } from "@ant-design/icons";
 import { Layout, Menu } from "antd";
 import { Link, useLocation } from "react-router-dom";
@@ -16,30 +19,30 @@ const AdminSidebar = () => {
     const location = useLocation();
 
     const menuItems = [
-        {
-            key: "/admin/orders",
-            icon: <ShoppingCartOutlined />,
-            label: <Link to="/admin/orders">Orders</Link>,
-        },
-        {
-            key: "/admin/products",
-            icon: <AppstoreOutlined />,
-            label: <Link to="/admin/products">Products</Link>,
-        },
+        // {
+        //     key: "/admin/orders",
+        //     icon: <ShoppingCartOutlined />,
+        //     label: <Link to="/admin/orders">Orders</Link>,
+        // },
+        // {
+        //     key: "/admin/products",
+        //     icon: <AppstoreOutlined />,
+        //     label: <Link to="/admin/products">Products</Link>,
+        // },
         // {
         //     key: "/admin/categories",
         //     icon: <TagsOutlined />,
         //     label: <Link to="/admin/categories">Categories</Link>,
         // },
         {
-            key: "/admin/staffs",
-            icon: <UserOutlined />,
-            label: <Link to="/admin/staffs">Staffs</Link>,
-        },
-        {
             key: "/admin/customers",
             icon: <UserOutlined />,
             label: <Link to="/admin/customers">Customers</Link>,
+        },
+        {
+            key: "/admin/staffs",
+            icon: <UserOutlined />,
+            label: <Link to="/admin/staffs">Staffs</Link>,
         },
         {
             key: "/admin/promotions",
@@ -50,6 +53,16 @@ const AdminSidebar = () => {
             key: "/admin/coupons",
             icon: <GiftOutlined />,
             label: <Link to="/admin/coupons">Coupons</Link>,
+        },
+        {
+            key: "/admin/returns",
+            icon: <FileSyncOutlined />,
+            label: <Link to="/admin/returns">Returns</Link>,
+        },
+        {
+            key: "/admin/cancellations",
+            icon: <ExceptionOutlined />,
+            label: <Link to="/admin/cancellations">Cancellations</Link>,
         },
         {
             key: "/admin/reports",

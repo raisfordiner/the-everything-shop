@@ -45,6 +45,9 @@ import AdminReports from "../pages/admin/Reports/Reports.jsx";
 import Promotions from "../pages/admin/Promotions/Promotions.jsx";
 import EditPromotion from "../pages/admin/Promotions/EditPromotion.jsx";
 import AddPromotion from "../pages/admin/Promotions/AddPromotion.jsx";
+import AdminReturns from "../pages/admin/Returns/Returns.jsx";
+import SellerReturns from "../pages/seller/Returns/Returns.jsx";
+import { Navigate } from "react-router-dom";
 
 export const routes = [
     {
@@ -171,9 +174,13 @@ export const routes = [
             //     path: "categories/edit-category/:id",
             //     element: <EditCategory />
             // },
+            // {
+            //     path: "orders",
+            //     element: <Order />,
+            // },
             {
-                path: "orders",
-                element: <Order />,
+                index: true,
+                element: <Navigate to="customers" replace />
             },
             {
                 path: "staffs",
@@ -224,6 +231,10 @@ export const routes = [
                 element: <AddCoupon />
             },
             {
+                path: "returns",
+                element: <AdminReturns />,
+            },
+            {
                 path: "reports",
                 element: <AdminReports />,
             }
@@ -264,7 +275,11 @@ export const routes = [
             {
                 path: "orders",
                 element: <SellerOrders />,
-            }
+            },
+            {
+                path: "returns",
+                element: <SellerReturns />,
+            },
         ]
     }
 ]
