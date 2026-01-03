@@ -4,67 +4,59 @@ http:
       rule: "Host(`localhost`) && PathPrefix(`/api`)"
       service: backend
       entryPoints:
-        - websecure
-      tls:
-        certResolver: myresolver
+        - web
+
 
     frontend:
       rule: "Host(`localhost`)"
       service: frontend
       entryPoints:
-        - websecure
-      tls:
-        certResolver: myresolver
+        - web
+
 
     swagger-api:
       rule: "Host(`swagger.localhost`) && PathPrefix(`/api`)"
       service: backend
       entryPoints:
-        - websecure
-      tls:
-        certResolver: myresolver
+        - web
+
 
     swagger:
       rule: "Host(`swagger.localhost`)"
       service: backend
       entryPoints:
-        - websecure
+        - web
       middlewares:
         - swagger-prefix
-      tls:
-        certResolver: myresolver
+
 
     minio-console:
       rule: "Host(`admin.storage.localhost`)"
       service: minio-console
       entryPoints:
-        - websecure
-      tls:
-        certResolver: myresolver
+        - web
+
 
     minio-api:
       rule: "Host(`obj.storage.localhost`)"
       service: minio-api
       entryPoints:
-        - websecure
-      tls:
-        certResolver: myresolver
+        - web
+
 
     mailhog:
       rule: "Host(`mail.localhost`)"
       service: mailhog
       entryPoints:
-        - websecure
-      tls:
-        certResolver: myresolver
+        - web
+
 
     prisma:
       rule: "Host(`db.localhost`)"
       service: prisma
       entryPoints:
-        - websecure
-      tls:
-        certResolver: myresolver
+        - web
+
 
   middlewares:
     swagger-prefix:
