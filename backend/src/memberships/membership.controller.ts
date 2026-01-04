@@ -24,6 +24,48 @@ export default class MembershipController {
     }
   }
 
+  static async getMyMembership(req: Request, res: Response) {
+    try {
+      const userId = (req as any).user?.userId;
+
+      const customer = await prisma.customer.findUnique({
+        where: { userId },
+        select: { id: true },
+      });
+
+      if (!customer) {
+        return Send.notFound(res, {}, "Customer not found");
+      }
+
+      const membership = await prisma.membership.findFirst({
+        where: { customerId: customer.id },
+        include: {
+          customer: {
+            select: {
+              id: true,
+              userId: true,
+              user: {
+                select: {
+                  username: true,
+                  email: true,
+                },
+              },
+            },
+          },
+        },
+      });
+
+      if (!membership) {
+        return Send.success(res, { membership: null }, "No membership found for customer");
+      }
+
+      return Send.success(res, { membership });
+    } catch (error) {
+      logger.error({ error }, "Error fetching my membership");
+      return Send.error(res, {}, "Internal server error");
+    }
+  }
+
   static async createMembership(req: Request, res: Response) {
     try {
       const { customerId, spent } = req.body;
