@@ -107,7 +107,10 @@ services:
   prisma-studio:
     image: the-everything-shop-monolith
     command: npx prisma studio --port 5555 --browser none
-    working_dir: /app
+    working_dir: /workspaces/the-everything-shop/backend
+    environment:
+      - PRISMA_CLI_QUERY_ENGINE_TYPE=binary
+      - PRISMA_CLIENT_ENGINE_TYPE=binary
     env_file:
       - ./backend/.env
     networks:
