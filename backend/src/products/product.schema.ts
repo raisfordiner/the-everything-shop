@@ -114,6 +114,11 @@ const paginationParams = z.object({
 const getAllProductsQuery = paginationParams.extend({
   categoryId: z.string().optional(),
   search: z.string().max(255).optional(),
+  sortBy: z.enum(["name", "price", "rating"]).optional().default("name"),
+  sortOrder: z.enum(["asc", "desc"]).optional().default("asc"),
+  minPrice: z.coerce.number().min(0).optional(),
+  maxPrice: z.coerce.number().min(0).optional(),
+  minRating: z.coerce.number().min(0).max(5).optional(),
 });
 
 export type CreateProductRequest = z.infer<typeof createProduct>;

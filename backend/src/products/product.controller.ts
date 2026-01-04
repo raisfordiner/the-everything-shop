@@ -30,9 +30,20 @@ export default class ProductController {
         return Send.validationErrors(res, errors);
       }
 
-      const { skip, take, categoryId, search } = queryValidation.data as GetAllProductsQuery;
+      const { skip, take, categoryId, search, sortBy, sortOrder, minPrice, maxPrice, minRating } =
+        queryValidation.data as GetAllProductsQuery;
 
-      const result = await ProductService.getAllProducts(skip, take, categoryId, search);
+      const result = await ProductService.getAllProducts(
+        skip,
+        take,
+        categoryId,
+        search,
+        sortBy,
+        sortOrder,
+        minPrice,
+        maxPrice,
+        minRating
+      );
 
       return Send.success(res, result, "Products fetched successfully");
     } catch (error) {
