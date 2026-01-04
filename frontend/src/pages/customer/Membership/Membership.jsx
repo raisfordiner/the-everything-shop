@@ -47,17 +47,17 @@ const Membership = () => {
     };
 
     const getNextTierInfo = (spent) => {
-        if (spent < 100000) {
-            return { next: 'SILVER', goal: 100000, remaining: 100000 - spent };
+        if (spent < 100) {
+            return { next: 'SILVER', goal: 100, remaining: 100 - spent };
         }
-        if (spent < 500000) {
-            return { next: 'GOLD', goal: 500000, remaining: 500000 - spent };
+        if (spent < 500) {
+            return { next: 'GOLD', goal: 500, remaining: 500 - spent };
         }
-        return { next: null, goal: 2000000, remaining: 0 };
+        return { next: null, goal: 2000, remaining: 0 };
     };
 
     const formatPrice = (amount) => {
-        return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(amount);
+        return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(amount);
     };
 
     if (loading) {
@@ -130,9 +130,6 @@ const Membership = () => {
                         <ul className="membership__benefits">
                             <li>Exclusive discounts for {tier} members</li>
                             <li>Priority customer support</li>
-                            <li>Early access to sales</li>
-                            {tier === 'GOLD' && <li>Free shipping on all orders</li>}
-                            {tier === 'SILVER' && <li>Birthday rewards</li>}
                         </ul>
                     </Card>
                 </Col>

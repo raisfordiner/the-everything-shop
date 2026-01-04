@@ -3,31 +3,22 @@ import { MembershipStatus } from "@prisma/client";
 
 const include = {
   customer: {
-    select: {
-      id: true,
-      userId: true,
-      user: {
-        select: {
-          username: true,
-          email: true,
-        },
-      },
+    include: {
+      user: true,
     },
   },
 };
 
 function getMembership(spent: number) {
-  if (spent < 100_000) {
+  if (spent < 100) {
     return MembershipStatus.BRONZE;
   }
 
-  if (spent < 500_000) {
+  if (spent < 500) {
     return MembershipStatus.SILVER;
   }
 
-  if (spent > 2_000_000) {
-    return MembershipStatus.GOLD;
-  }
+  return MembershipStatus.GOLD;
 }
 
 export default class MembershipService {
@@ -47,6 +38,28 @@ export default class MembershipService {
       where,
       include: include,
     });
+  }
+
+  static async findByUserId(userId: string) {
+    try {
+      return await prisma.membership.findFirst({
+        where: {
+          customer: {
+            userId: userId,
+          },
+        },
+        include: include,
+      });
+    } catch (error: any) {
+      logger.error({
+        msg: "Prisma error in findByUserId",
+        userId,
+        errorName: error.name,
+        errorMessage: error.message,
+        errorStack: error.stack
+      });
+      throw error;
+    }
   }
 
   static async create(data: { customerId: string; spent: number }) {
