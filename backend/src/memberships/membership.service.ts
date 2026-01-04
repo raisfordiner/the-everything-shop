@@ -1,5 +1,6 @@
 import { prisma } from "util/db";
 import { MembershipStatus } from "@prisma/client";
+import { logger } from "util/logger";
 
 const include = {
   customer: {
