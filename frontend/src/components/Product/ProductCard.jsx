@@ -4,10 +4,8 @@ import { StarFilled } from "@ant-design/icons";
 // import "./ProductCard.css";
 
 const ProductCard = ({ product }) => {
-    // Assumption: product.originalPrice and product.sold
-    // Assumed original price: 250, quantity sold: 1540
-    const originalPrice = product.originalPrice || 250; 
-    const soldCount = product.sold || 1540; // Assumed quantity sold
+    const originalPrice = product.price * 1.25; // Placeholder for original price if not provided
+    const soldCount = product.soldCount || 0;
 
     const discountPercent = Math.round(
         ((originalPrice - product.price) / originalPrice) * 100
@@ -32,12 +30,12 @@ const ProductCard = ({ product }) => {
                         </Tag>
                     )}
                 </div>
-                <div 
+                <div
                     className="product-image-wrapper"
-                    style={{ 
-                        height: 200, 
-                        display: 'flex', 
-                        alignItems: 'center', 
+                    style={{
+                        height: 200,
+                        display: 'flex',
+                        alignItems: 'center',
                         justifyContent: 'center',
                         overflow: 'hidden',
                         transition: 'transform 0.3s ease'
@@ -48,25 +46,25 @@ const ProductCard = ({ product }) => {
                         src={product.images && product.images.length > 0 ? product.images[0] : ''} // Get first image
                         preview={false}
                         height={200}
-                        style={{ 
+                        style={{
                             objectFit: 'contain',
                             width: '100%',
                         }}
                     />
                 </div>
                 <Space direction="vertical" className="product-info" style={{ width: '100%' }}>
-                    <Typography.Title 
-                        level={4} 
-                        strong 
-                        ellipsis={{ tooltip: product.name }} 
+                    <Typography.Title
+                        level={4}
+                        strong
+                        ellipsis={{ tooltip: product.name }}
                         className="product-name"
                         style={{ transition: 'color 0.3s ease' }}
                     >
                         {product.name}
                     </Typography.Title>
 
-                    <Typography.Paragraph 
-                        className="product-description" 
+                    <Typography.Paragraph
+                        className="product-description"
                         ellipsis={{ rows: 2, tooltip: product.description }}
                         style={{ marginBottom: 8, wordBreak: 'break-word' }}
                     >
@@ -75,7 +73,7 @@ const ProductCard = ({ product }) => {
 
                     <Flex justify="space-between" align="center" className="product-bottom-bar" style={{ width: '100%' }}>
                         <Typography.Text className="product-sale-price" type="danger" strong>
-                            {product.price.toLocaleString()}₫
+                            ${product.price.toLocaleString()}
                         </Typography.Text>
 
                         <Typography.Text type="secondary" className="sold-count">

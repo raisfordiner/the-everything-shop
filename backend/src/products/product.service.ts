@@ -52,15 +52,35 @@ export default class ProductService {
               },
             },
           },
-          productVariants: true,
+          productVariants: {
+            include: {
+              orderItems: {
+                include: {
+                  order: true,
+                },
+              },
+            },
+          },
           promotions: true,
         },
       }),
       prisma.product.count({ where }),
     ]);
 
+    const enrichedProducts = products.map(product => {
+      const allOrderItems = product.productVariants.flatMap(v => v.orderItems);
+      const soldCount = allOrderItems
+        .filter(oi => oi.order.status === "SHIPPED" || oi.order.status === "DELIVERED")
+        .reduce((sum, oi) => sum + oi.quantity, 0);
+
+      return {
+        ...product,
+        soldCount,
+      };
+    });
+
     return {
-      products,
+      products: enrichedProducts,
       pagination: {
         total,
         skip,
@@ -73,7 +93,7 @@ export default class ProductService {
   /**
    * Get a single product by ID
    */
-  static async getProductById(productId: string): Promise<Product> {
+  static async getProductById(productId: string): Promise<any> {
     const product = await prisma.product.findFirst({
       where: {
         id: productId,
@@ -94,8 +114,12 @@ export default class ProductService {
         },
         productVariants: {
           include: {
-            cartItems: true,
-            orderItems: true,
+            orderItems: {
+              include: {
+                order: true,
+                review: true,
+              },
+            },
           },
         },
         promotions: true,
@@ -106,7 +130,27 @@ export default class ProductService {
       throw new Error("Product not found or has been deleted");
     }
 
-    return product;
+    // Calculate stats
+    const allOrderItems = product.productVariants.flatMap(v => v.orderItems);
+    const soldCount = allOrderItems
+      .filter(oi => oi.order.status === "SHIPPED" || oi.order.status === "DELIVERED")
+      .reduce((sum, oi) => sum + oi.quantity, 0);
+
+    const reviews = allOrderItems
+      .map(oi => oi.review)
+      .filter(r => r !== null);
+
+    const reviewCount = reviews.length;
+    const averageRating = reviewCount > 0
+      ? reviews.reduce((sum, r) => sum + (r?.rating || 0), 0) / reviewCount
+      : 0;
+
+    return {
+      ...product,
+      soldCount,
+      reviewCount,
+      averageRating: parseFloat(averageRating.toFixed(1)),
+    };
   }
 
   /**
