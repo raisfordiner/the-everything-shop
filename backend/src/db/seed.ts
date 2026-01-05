@@ -784,6 +784,61 @@ async function main() {
     },
   });
 
+  // ============ ADDITIONAL TEST ORDERS FOR JOHN DOE ============
+  // Order 5: Ready for review but not reviewed yet (DELIVERED + SUCCESS)
+  const order5 = await prisma.order.create({
+    data: {
+      customer: { connect: { id: customer1.id } },
+      address: { connect: { id: address1.id } },
+      status: 'DELIVERED',
+      createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000),
+    },
+  });
+
+  await prisma.orderItem.create({
+    data: {
+      orderId: order5.id,
+      productVariantId: variant2.id,
+      quantity: 1,
+    },
+  });
+
+  await prisma.payment.create({
+    data: {
+      orderId: order5.id,
+      amount: 199.99,
+      method: 'VNPAY',
+      status: 'SUCCESS',
+    },
+  });
+
+  // Order 6: Not ready for review (SHIPPED)
+  const order6 = await prisma.order.create({
+    data: {
+      customer: { connect: { id: customer1.id } },
+      address: { connect: { id: address2.id } },
+      status: 'SHIPPED',
+      createdAt: new Date(Date.now() - 1 * 60 * 60 * 1000),
+    },
+  });
+
+  await prisma.orderItem.create({
+    data: {
+      orderId: order6.id,
+      productVariantId: variant3.id,
+      quantity: 1,
+    },
+  });
+
+  await prisma.payment.create({
+    data: {
+      orderId: order6.id,
+      amount: 899.99,
+      method: 'COD',
+      status: 'SUCCESS',
+    },
+  });
+
   console.log('✅ Seeding finished successfully!');
   console.log('📊 Seeded data:');
   console.log(`  - 2 Admins, 3 Sellers, 5 Customers`);
