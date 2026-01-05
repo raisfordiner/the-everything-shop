@@ -1,4 +1,4 @@
-import {Button, Card, Checkbox, List, Rate, Slider, Space, Radio} from "antd";
+import { Button, Card, Checkbox, List, Rate, Slider, Space, Radio } from "antd";
 
 const brands = [
     { name: 'Apple', count: 114 },
@@ -12,7 +12,7 @@ const screenSizes = ["< 5 inch", "5\" - 6\"", "6\" - 6.5\"", "6.5\" >"];
 
 const FilterCard = ({ title, children, showReset = false }) => (
     <Card title={title} style={{ marginBottom: 16 }}
-          extra={showReset && <Button type="link" size="small">Reset</Button>}
+        extra={showReset && <Button type="link" size="small">Reset</Button>}
     >
         {children}
     </Card>
@@ -56,10 +56,10 @@ const ProductFilters = ({ onFilterChange }) => {
             <FilterCard title="By Price">
                 <Slider
                     range
-                    defaultValue={[0, 5000000]}
-                    max={10000000}
-                    step={100000}
-                    tooltip={{ formatter: val => `${val.toLocaleString('vi-VN')} ₫` }}
+                    defaultValue={[0, 500]}
+                    max={1000}
+                    step={10}
+                    tooltip={{ formatter: val => `$${val.toLocaleString()}` }}
                     onAfterChange={onPriceChange}
                 />
             </FilterCard>

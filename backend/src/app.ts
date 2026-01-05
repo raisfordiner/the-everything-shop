@@ -60,7 +60,11 @@ export default class App {
     );
 
     this.app.use(morgan("dev"));
-    this.app.use(helmet());
+    if (process.env.NODE_ENV === "production") {
+      this.app.use(helmet());
+    } else {
+      this.app.use(helmet({ hsts: false }));
+    }
     this.app.use(compression());
 
     this.app.use("/docs", swaggerUi.serve, swaggerUi.setup(specs));

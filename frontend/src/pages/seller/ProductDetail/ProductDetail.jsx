@@ -104,14 +104,14 @@ export default function ProductDetail() {
           setLoading(true);
           const response = await productService.getProductById(id);
           const productData = response?.data;
-          
+
           if (!productData) {
             message.error('Product not found');
             setLoading(false);
             navigate('/seller/products');
             return;
           }
-          
+
           setProduct(productData);
           setDescription(productData.description || '');
           setUploadedImages(productData.images || []);
@@ -128,7 +128,7 @@ export default function ProductDetail() {
               categoryId: productData.categoryId,
             });
           }, 50);
-          
+
           setLoading(false);
         } catch (error) {
           console.error('Error fetching product:', error);
@@ -180,7 +180,7 @@ export default function ProductDetail() {
       }
 
       const data = await response.json();
-      
+
       // Add the uploaded image URL to the state immediately
       setUploadedImages((prevImages) => [...prevImages, data.data.url]);
       message.success('Image uploaded successfully');
@@ -350,7 +350,7 @@ export default function ProductDetail() {
           </Form.Item>
 
           <Form.Item
-            label="Price (₫)"
+            label="Price ($)"
             name="price"
             rules={[
               { required: true, message: 'Price is required' },
@@ -413,7 +413,7 @@ export default function ProductDetail() {
               accept="image/*"
               maxCount={10}
               multiple
-              onChange={() => {}}
+              onChange={() => { }}
             >
               {uploadedImages.length < 10 && (
                 <div>

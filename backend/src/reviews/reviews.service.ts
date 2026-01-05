@@ -1,7 +1,7 @@
 import { prisma } from "util/db";
 
 export default class ReviewsService {
-  static async find(id?: string, q?: string, customerId?: string, minRating?: number, maxRating?: number) {
+  static async find(id?: string, q?: string, customerId?: string, minRating?: number, maxRating?: number, productId?: string) {
     const selectList = {
       id: true,
       rating: true,
@@ -9,9 +9,21 @@ export default class ReviewsService {
       images: true,
       reviewDate: true,
       orderItemId: true,
-      customerId: true, // có nên trả id của customer cho client?
+      customerId: true,
       createdAt: true,
       updatedAt: true,
+      customer: {
+        select: {
+          id: true,
+          image: true,
+          user: {
+            select: {
+              username: true,
+              email: true,
+            },
+          },
+        },
+      },
     };
 
     if (id) {
@@ -29,6 +41,11 @@ export default class ReviewsService {
           gte: minRating,
           lte: maxRating,
         },
+        orderItem: productId ? {
+          productVariant: {
+            productId: productId,
+          },
+        } : undefined,
       },
       select: selectList,
     });

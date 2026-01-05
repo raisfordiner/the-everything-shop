@@ -176,6 +176,12 @@ class MembershipRouter extends BaseRouter {
 
     return [
       {
+        path: "/me",
+        method: "get",
+        middlewares: [authGuard],
+        controller: MembershipController.getMyMembership,
+      },
+      {
         path: "/",
         method: "get",
         middlewares: [...checkIfAdminSeller, validateQuery(MembershipSchema.search)],

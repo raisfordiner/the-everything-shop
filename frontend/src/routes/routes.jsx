@@ -9,8 +9,8 @@ import Profile from "../components/layouts/Profile/Profile.jsx";
 import AccountInfo from "../pages/customer/AccountInfo/AccountInfo.jsx";
 import Address from "../pages/customer/Address/Address.jsx";
 import AddressEdit from "../pages/customer/Address/AddressEdit.jsx";
-import MyOrder from "../pages/customer/MyOrder/MyOrder.jsx";
 import ChangePassword from "../pages/customer/ChangePassword/ChangePassword.jsx";
+import Membership from "../pages/customer/Membership/Membership.jsx";
 import FilteredProducts from "../pages/customer/FilteredProducts/FilteredProducts.jsx";
 import CustomerProductDetail from "../components/ProductDetail/ProductDetail.jsx";
 import SellerProductDetail from "../pages/seller/ProductDetail/ProductDetail.jsx";
@@ -78,7 +78,7 @@ export const routes = [
             },
             {
                 path: '/search',
-                element: <SearchProduct/>
+                element: <SearchProduct />
             },
             {
                 path: '/products/:productId',
@@ -106,7 +106,7 @@ export const routes = [
             },
             {
                 path: '/cart',
-                element: <Cart/>,
+                element: <Cart />,
             },
             {
                 path: '/loading',
@@ -125,8 +125,8 @@ export const routes = [
                         element: <Address />,
                     },
                     {
-                        path: 'my-order',
-                        element: <MyOrder />,
+                        path: 'membership',
+                        element: <Membership />,
                     },
                     {
                         path: 'my-address/new',
@@ -210,7 +210,7 @@ export const routes = [
             },
             {
                 path: "promotions",
-                element: <Promotions/>,
+                element: <Promotions />,
             },
             {
                 path: "promotions/edit-promotion/:id",
