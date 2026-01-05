@@ -1,10 +1,11 @@
 import React from "react";
 import { Card, Rate, Typography, Tag, Space, Image, Flex } from "antd";
 import { StarFilled } from "@ant-design/icons";
+import { Link } from "react-router-dom";
 // import "./ProductCard.css";
 
 const ProductCard = ({ product }) => {
-    const originalPrice = product.price * 1.25; // Placeholder for original price if not provided
+    const originalPrice = product.price * 1.25;
     const soldCount = product.soldCount || 0;
 
     const discountPercent = Math.round(
@@ -21,68 +22,70 @@ const ProductCard = ({ product }) => {
     };
 
     return (
-        <Card hoverable className="product-card">
-            <Space direction="vertical" size="small" className="product-image-container" style={{ width: '100%' }}>
-                <div style={{ height: 24, marginBottom: 4 }}>
-                    {discountPercent > 0 && (
-                        <Tag color="red" className="discount-tag">
-                            -{discountPercent}%
-                        </Tag>
-                    )}
-                </div>
-                <div
-                    className="product-image-wrapper"
-                    style={{
-                        height: 200,
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        overflow: 'hidden',
-                        transition: 'transform 0.3s ease'
-                    }}
-                >
-                    <Image
-                        alt={product.name}
-                        src={product.images && product.images.length > 0 ? product.images[0] : ''} // Get first image
-                        preview={false}
-                        height={200}
+        <Link to={`/products/${product.id}`} style={{ textDecoration: 'none' }}>
+            <Card hoverable className="product-card">
+                <Space direction="vertical" size="small" className="product-image-container" style={{ width: '100%' }}>
+                    <div style={{ height: 24, marginBottom: 4 }}>
+                        {discountPercent > 0 && (
+                            <Tag color="red" className="discount-tag">
+                                -{discountPercent}%
+                            </Tag>
+                        )}
+                    </div>
+                    <div
+                        className="product-image-wrapper"
                         style={{
-                            objectFit: 'contain',
-                            width: '100%',
+                            height: 200,
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            overflow: 'hidden',
+                            transition: 'transform 0.3s ease'
                         }}
-                    />
-                </div>
-                <Space direction="vertical" className="product-info" style={{ width: '100%' }}>
-                    <Typography.Title
-                        level={4}
-                        strong
-                        ellipsis={{ tooltip: product.name }}
-                        className="product-name"
-                        style={{ transition: 'color 0.3s ease' }}
                     >
-                        {product.name}
-                    </Typography.Title>
+                        <Image
+                            alt={product.name}
+                            src={product.images && product.images.length > 0 ? product.images[0] : ''} // Get first image
+                            preview={false}
+                            height={200}
+                            style={{
+                                objectFit: 'contain',
+                                width: '100%',
+                            }}
+                        />
+                    </div>
+                    <Space direction="vertical" className="product-info" style={{ width: '100%' }}>
+                        <Typography.Title
+                            level={4}
+                            strong
+                            ellipsis={{ tooltip: product.name }}
+                            className="product-name"
+                            style={{ transition: 'color 0.3s ease' }}
+                        >
+                            {product.name}
+                        </Typography.Title>
 
-                    <Typography.Paragraph
-                        className="product-description"
-                        ellipsis={{ rows: 2, tooltip: product.description }}
-                        style={{ marginBottom: 8, wordBreak: 'break-word' }}
-                    >
-                        {product.description}
-                    </Typography.Paragraph>
+                        <Typography.Paragraph
+                            className="product-description"
+                            ellipsis={{ rows: 2, tooltip: product.description }}
+                            style={{ marginBottom: 8, wordBreak: 'break-word' }}
+                        >
+                            {product.description}
+                        </Typography.Paragraph>
 
-                    <Flex justify="space-between" align="center" className="product-bottom-bar" style={{ width: '100%' }}>
-                        <Typography.Text className="product-sale-price" type="danger" strong>
-                            ${product.price.toLocaleString()}
-                        </Typography.Text>
+                        <Flex justify="space-between" align="center" className="product-bottom-bar" style={{ width: '100%' }}>
+                            <Typography.Text className="product-sale-price" type="danger" strong>
+                                ${product.price.toLocaleString()}
+                            </Typography.Text>
 
-                        <Typography.Text type="secondary" className="sold-count">
-                            {formatSoldCount(soldCount)}
-                        </Typography.Text>
-                    </Flex>
+                            <Typography.Text type="secondary" className="sold-count">
+                                {formatSoldCount(soldCount)}
+                            </Typography.Text>
+                        </Flex>
+                    </Space>
                 </Space>
-            </Space>
-        </Card>
+            </Card>
+        </Link>
     );
 };
 

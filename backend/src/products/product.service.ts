@@ -9,9 +9,14 @@ export default class ProductService {
     skip: number = 0,
     take: number = 10,
     categoryId?: string,
-    searchTerm?: string
+    searchTerm?: string,
+    sortBy: "name" | "price" | "rating" = "name",
+    sortOrder: "asc" | "desc" = "asc",
+    minPrice?: number,
+    maxPrice?: number,
+    minRating?: number
   ): Promise<{
-    products: Product[];
+    products: any[];
     pagination: {
       total: number;
       skip: number;
@@ -34,53 +39,91 @@ export default class ProductService {
       ];
     }
 
-    const [products, total] = await Promise.all([
-      prisma.product.findMany({
-        where,
-        skip,
-        take,
-        include: {
-          category: true,
-          seller: {
-            select: {
-              id: true,
-              user: {
-                select: {
-                  username: true,
-                  email: true,
-                },
-              },
-            },
-          },
-          productVariants: {
-            include: {
-              orderItems: {
-                include: {
-                  order: true,
-                },
-              },
-            },
-          },
-          promotions: true,
-        },
-      }),
-      prisma.product.count({ where }),
-    ]);
+    if (minPrice !== undefined || maxPrice !== undefined) {
+      where.price = {};
+      if (minPrice !== undefined) where.price.gte = minPrice;
+      if (maxPrice !== undefined) where.price.lte = maxPrice;
+    }
 
-    const enrichedProducts = products.map(product => {
+    const orderBy: any = {};
+    if (sortBy === "name" || sortBy === "price") {
+      orderBy[sortBy] = sortOrder;
+    }
+
+    // Since we need to calculate stats and potentially filter by rating, 
+    // we fetch matching products without skip/take initially if minRating or rating sort is used.
+    // However, to keep it simple and performant, we'll fetch all matching products (within reason),
+    // enrich them, filter by rating, sort, then apply skip/take.
+    const allMatchingProducts = await prisma.product.findMany({
+      where,
+      orderBy: sortBy !== "rating" ? [orderBy] : undefined,
+      include: {
+        category: true,
+        seller: {
+          select: {
+            id: true,
+            user: {
+              select: {
+                username: true,
+                email: true,
+              },
+            },
+          },
+        },
+        productVariants: {
+          include: {
+            orderItems: {
+              include: {
+                order: true,
+                review: true,
+              },
+            },
+          },
+        },
+        promotions: true,
+      },
+    });
+
+    let enrichedProducts = allMatchingProducts.map(product => {
       const allOrderItems = product.productVariants.flatMap(v => v.orderItems);
       const soldCount = allOrderItems
         .filter(oi => oi.order.status === "SHIPPED" || oi.order.status === "DELIVERED")
         .reduce((sum, oi) => sum + oi.quantity, 0);
 
+      const reviews = allOrderItems
+        .map(oi => oi.review)
+        .filter(r => r !== null);
+
+      const reviewCount = reviews.length;
+      const averageRating = reviewCount > 0
+        ? reviews.reduce((sum, r) => sum + (r?.rating || 0), 0) / reviewCount
+        : 0;
+
       return {
         ...product,
         soldCount,
+        reviewCount,
+        averageRating: parseFloat(averageRating.toFixed(1)),
       };
     });
 
+    // 2. Filter by minRating
+    if (minRating !== undefined) {
+      enrichedProducts = enrichedProducts.filter(p => p.averageRating >= minRating);
+    }
+
+    // 3. Custom sort for Rating
+    if (sortBy === "rating") {
+      enrichedProducts.sort((a, b) => {
+        return sortOrder === "asc" ? a.averageRating - b.averageRating : b.averageRating - a.averageRating;
+      });
+    }
+
+    const total = enrichedProducts.length;
+    const paginatedProducts = enrichedProducts.slice(skip, skip + take);
+
     return {
-      products: enrichedProducts,
+      products: paginatedProducts,
       pagination: {
         total,
         skip,
