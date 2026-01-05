@@ -4,6 +4,8 @@ import { Card, Typography, Space, Rate, Input, Button, List, Image, message, Spi
 import { ArrowLeftOutlined, StarFilled, EditOutlined, DeleteOutlined } from '@ant-design/icons';
 import orderService from '../../../services/orderService';
 import reviewService from '../../../services/reviewService';
+import uploadService from '../../../services/uploadService';
+import { PlusOutlined } from '@ant-design/icons';
 
 const { Title, Text } = Typography;
 const { TextArea } = Input;
@@ -71,6 +73,14 @@ const ReviewItem = ({ item, orderId, onSuccess }) => {
     const [comment, setComment] = useState(item.review?.comment || '');
     const [submitting, setSubmitting] = useState(false);
     const [isEditing, setIsEditing] = useState(!item.review);
+    const [fileList, setFileList] = useState(
+        item.review?.images?.map((url, index) => ({
+            uid: `-${index}`,
+            name: `image-${index}`,
+            status: 'done',
+            url: url,
+        })) || []
+    );
     const hasExistingReview = !!item.review;
 
     const handleSubmit = async () => {
@@ -91,6 +101,7 @@ const ReviewItem = ({ item, orderId, onSuccess }) => {
                 rating,
                 comment,
                 orderItemId: item.id,
+                images: fileList.map(file => file.url || file.response?.data?.url).filter(Boolean),
             });
 
             message.success(hasExistingReview ? 'Review updated successfully' : 'Review submitted successfully');
@@ -167,6 +178,41 @@ const ReviewItem = ({ item, orderId, onSuccess }) => {
                                     showCount
                                 />
                             </div>
+                            <div>
+                                <Text strong style={{ display: 'block', marginBottom: '8px' }}>Images</Text>
+                                <Upload
+                                    listType="picture-card"
+                                    fileList={fileList}
+                                    onPreview={async (file) => {
+                                        let src = file.url;
+                                        if (!src) {
+                                            src = await new Promise((resolve) => {
+                                                const reader = new FileReader();
+                                                reader.readAsDataURL(file.originFileObj);
+                                                reader.onload = () => resolve(reader.result);
+                                            });
+                                        }
+                                        const imgWindow = window.open(src);
+                                        imgWindow?.document.write(`<img src="${src}" />`);
+                                    }}
+                                    onChange={({ fileList: newFileList }) => setFileList(newFileList)}
+                                    customRequest={async ({ file, onSuccess, onError }) => {
+                                        try {
+                                            const response = await uploadService.uploadFile(file);
+                                            onSuccess(response);
+                                        } catch (err) {
+                                            onError(err);
+                                        }
+                                    }}
+                                >
+                                    {fileList.length < 5 && (
+                                        <div>
+                                            <PlusOutlined />
+                                            <div style={{ marginTop: 8 }}>Upload</div>
+                                        </div>
+                                    )}
+                                </Upload>
+                            </div>
 
                             <Space>
                                 <Button
@@ -183,6 +229,12 @@ const ReviewItem = ({ item, orderId, onSuccess }) => {
                                         setIsEditing(false);
                                         setRating(item.review.rating);
                                         setComment(item.review.comment);
+                                        setFileList(item.review.images?.map((url, index) => ({
+                                            uid: `-${index}`,
+                                            name: `image-${index}`,
+                                            status: 'done',
+                                            url: url,
+                                        })) || []);
                                     }}>
                                         Cancel
                                     </Button>
@@ -197,9 +249,22 @@ const ReviewItem = ({ item, orderId, onSuccess }) => {
                                     Reviewed on {new Date(item.review.createdAt).toLocaleDateString('en-US')}
                                 </Text>
                             </div>
-                            <Text style={{ fontSize: '16px', fontStyle: 'italic', color: '#434343' }}>
+                            <Text style={{ fontSize: '16px', fontStyle: 'italic', color: '#434343', display: 'block', marginBottom: '16px' }}>
                                 "{comment || 'No comment provided.'}"
                             </Text>
+                            {item.review?.images?.length > 0 && (
+                                <Space size="small" wrap>
+                                    {item.review.images.map((url, index) => (
+                                        <Image
+                                            key={index}
+                                            src={url}
+                                            width={80}
+                                            height={80}
+                                            style={{ objectFit: 'cover', borderRadius: '4px' }}
+                                        />
+                                    ))}
+                                </Space>
+                            )}
                         </div>
                     )}
                 </div>
