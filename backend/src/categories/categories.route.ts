@@ -1,6 +1,6 @@
 import CategoryController from "./categories.controller";
 import BaseRouter, { RouteConfig } from "util/router";
-import { adminGuard } from "middlewares/authGuard";
+import { adminGuard, adminOrSellerGuard } from "middlewares/authGuard";
 
 /**
  * @swagger
@@ -51,7 +51,7 @@ import { adminGuard } from "middlewares/authGuard";
  *         description: Failed to fetch categories
  *
  *   post:
- *     summary: Create a new category (Admin only)
+ *     summary: Create a new category (Admin or Seller only)
  *     tags: [Categories]
  *     security:
  *       - cookieAuth: []
@@ -102,7 +102,7 @@ import { adminGuard } from "middlewares/authGuard";
  *         description: Failed to fetch category
  *
  *   put:
- *     summary: Update a category (Admin only)
+ *     summary: Update a category (Admin or Seller only)
  *     tags: [Categories]
  *     security:
  *       - cookieAuth: []
@@ -135,7 +135,7 @@ import { adminGuard } from "middlewares/authGuard";
  *         description: Failed to update category
  *
  *   delete:
- *     summary: Delete a category (Admin only)
+ *     summary: Delete a category (Admin or Seller only)
  *     tags: [Categories]
  *     security:
  *       - cookieAuth: []
@@ -236,19 +236,19 @@ class CategoryRouter extends BaseRouter {
       {
         method: "post",
         path: "/",
-        middlewares: [adminGuard],
+        middlewares: [adminOrSellerGuard],
         controller: CategoryController.createCategory,
       },
       {
         method: "put",
         path: "/:id",
-        middlewares: [adminGuard],
+        middlewares: [adminOrSellerGuard],
         controller: CategoryController.updateCategory,
       },
       {
         method: "delete",
         path: "/:id",
-        middlewares: [adminGuard],
+        middlewares: [adminOrSellerGuard],
         controller: CategoryController.deleteCategory,
       },
     ];

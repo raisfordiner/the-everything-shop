@@ -58,7 +58,7 @@ export default class CategoryController {
   }
 
   /**
-   * Create a new category (Admin only)
+   * Create a new category (Admin or Seller only)
    * POST /categories
    */
   static async createCategory(req: Request, res: Response) {
@@ -70,9 +70,9 @@ export default class CategoryController {
         return Send.validationErrors(res, errors);
       }
 
-      const { name, description } = bodyValidation.data as CreateCategoryRequest;
+      const { name, description, image } = bodyValidation.data as any;
 
-      const category = await CategoryService.createCategory(name, description);
+      const category = await CategoryService.createCategory(name, description, image);
 
       return Send.success(res, category, "Category created successfully");
     } catch (error: any) {
@@ -87,7 +87,7 @@ export default class CategoryController {
   }
 
   /**
-   * Update a category (Admin only)
+   * Update a category (Admin or Seller only)
    * PUT /categories/:id
    */
   static async updateCategory(req: Request, res: Response) {
@@ -101,9 +101,9 @@ export default class CategoryController {
         return Send.validationErrors(res, errors);
       }
 
-      const updateData = bodyValidation.data as UpdateCategoryRequest;
+      const { name, description, image } = bodyValidation.data as any;
 
-      const category = await CategoryService.updateCategory(id, updateData);
+      const category = await CategoryService.updateCategory(id, { name, description, image });
 
       return Send.success(res, category, "Category updated successfully");
     } catch (error: any) {
@@ -122,14 +122,15 @@ export default class CategoryController {
   }
 
   /**
-   * Delete a category (Admin only)
+   * Delete a category (Admin or Seller only)
    * DELETE /categories/:id
    */
   static async deleteCategory(req: Request, res: Response) {
     try {
       const { id } = req.params;
+      const { force } = req.query;
 
-      const result = await CategoryService.deleteCategory(id);
+      const result = await CategoryService.deleteCategory(id, force === "true");
 
       return Send.success(res, result, "Category deleted successfully");
     } catch (error: any) {

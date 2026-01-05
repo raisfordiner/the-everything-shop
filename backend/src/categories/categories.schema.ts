@@ -33,6 +33,7 @@ const categoryIdSchema = z
 const createCategory = z.object({
   name: categoryNameSchema,
   description: categoryDescriptionSchema,
+  image: z.string().optional(),
 });
 
 /**
@@ -41,7 +42,8 @@ const createCategory = z.object({
 const updateCategory = z
   .object({
     name: categoryNameSchema.optional(),
-    description: categoryDescriptionSchema,
+    description: categoryDescriptionSchema.optional(),
+    image: z.string().optional(),
   })
   .refine((data) => Object.keys(data).length > 0, {
     message: "At least one field must be provided for update",
