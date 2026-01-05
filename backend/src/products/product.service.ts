@@ -69,16 +69,6 @@ export default class ProductService {
               },
             },
           },
-          productVariants: {
-            include: {
-              orderItems: {
-                include: {
-                  order: true,
-                },
-              },
-            },
-          },
-          promotions: true,
         },
         productVariants: {
           include: {
@@ -131,18 +121,6 @@ export default class ProductService {
 
     const total = enrichedProducts.length;
     const paginatedProducts = enrichedProducts.slice(skip, skip + take);
-
-    const enrichedProducts = products.map(product => {
-      const allOrderItems = product.productVariants.flatMap(v => v.orderItems);
-      const soldCount = allOrderItems
-        .filter(oi => oi.order.status === "SHIPPED" || oi.order.status === "DELIVERED")
-        .reduce((sum, oi) => sum + oi.quantity, 0);
-
-      return {
-        ...product,
-        soldCount,
-      };
-    });
 
     return {
       products: paginatedProducts,
