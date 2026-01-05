@@ -1,4 +1,4 @@
-import {get, del, put, post} from "../utils/request.js";
+import { get, del, put, post } from "../utils/request.js";
 
 const getAllCategories = (params) => {
     return get('/categories', params);
@@ -12,8 +12,9 @@ const getCategoryById = async (id) => {
     return await get(`/categories/${id}`)
 }
 
-const deleteCategory = async (id) => {
-    return await del(`/categories/${id}`)
+const deleteCategory = async (id, force = false) => {
+    const query = force ? `?force=true` : '';
+    return await del(`/categories/${id}${query}`)
 }
 
 const createCategory = async (data) => {

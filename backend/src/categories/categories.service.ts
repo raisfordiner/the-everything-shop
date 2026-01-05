@@ -1,5 +1,6 @@
 import { prisma } from "util/db";
 import { Prisma, Category } from "@prisma/client";
+import UploadService from "../upload/upload.service";
 
 export default class CategoryService {
   /**
@@ -101,11 +102,12 @@ export default class CategoryService {
   }
 
   /**
-   * Create a new category (Admin only)
+   * Create a new category (Admin or Seller only)
    */
   static async createCategory(
     name: string,
-    description?: string
+    description?: string,
+    image?: string
   ): Promise<Category> {
     // Check if category with this name already exists
     const existingCategory = await prisma.category.findUnique({
@@ -120,20 +122,22 @@ export default class CategoryService {
       data: {
         name,
         description: description || null,
-      },
+        image: image || null,
+      } as any,
     });
 
     return category;
   }
 
   /**
-   * Update a category (Admin only)
+   * Update a category (Admin or Seller only)
    */
   static async updateCategory(
     categoryId: string,
     updateData: {
       name?: string;
       description?: string;
+      image?: string;
     }
   ): Promise<Category> {
     // Verify category exists
@@ -158,16 +162,19 @@ export default class CategoryService {
 
     const updatedCategory = await prisma.category.update({
       where: { id: categoryId },
-      data: updateData,
+      data: updateData as any, // Cast to any because prisma types might be stale
     });
 
     return updatedCategory;
   }
 
   /**
-   * Delete a category (Admin only)
+   * Delete a category (Admin or Seller only)
    */
-  static async deleteCategory(categoryId: string): Promise<{ message: string }> {
+  static async deleteCategory(
+    categoryId: string,
+    force: boolean = false
+  ): Promise<{ message: string }> {
     const category = await prisma.category.findUnique({
       where: { id: categoryId },
       include: {
@@ -182,15 +189,56 @@ export default class CategoryService {
     }
 
     // Check if category has products
-    if (category.products.length > 0) {
+    if (category.products.length > 0 && !force) {
       throw new Error(
         "Cannot delete category with existing products. Please move or delete products first."
       );
     }
 
-    await prisma.category.delete({
-      where: { id: categoryId },
+    await prisma.$transaction(async (tx) => {
+      if (force && category.products.length > 0) {
+        // Fetch products to get their images for cleanup
+        const productsToDelete = await tx.product.findMany({
+          where: { categoryId: categoryId },
+          select: { images: true, id: true }
+        });
+
+        // Delete all products in this category physically
+        await tx.product.deleteMany({
+          where: { categoryId: categoryId },
+        });
+
+        // Clean up images from storage after DB deletion is successful
+        const uploadService = new UploadService();
+        for (const product of productsToDelete) {
+          if (product.images && product.images.length > 0) {
+            for (const imageUrl of product.images) {
+              try {
+                await uploadService.delete(imageUrl);
+              } catch (error) {
+                console.error(`Failed to delete product image from storage: ${imageUrl}`, error);
+              }
+            }
+          }
+        }
+      }
+
+      await tx.category.delete({
+        where: { id: categoryId },
+      });
     });
+
+    const uploadService = new UploadService();
+
+    // Clean up image from storage
+    if ((category as any).image) {
+      try {
+        await uploadService.delete((category as any).image);
+      } catch (error) {
+        // Log error but don't fail the deletion process
+        console.error("Failed to delete category image from storage:", error);
+      }
+    }
 
     return { message: "Category deleted successfully" };
   }
@@ -215,23 +263,21 @@ export default class CategoryService {
     return category;
   }
 
-  /**
-   * Get all categories (without pagination - for dropdown/select)
-   */
   static async getAllCategoriesSimple(): Promise<Category[]> {
     const categories = await prisma.category.findMany({
       select: {
         id: true,
         name: true,
         description: true,
+        image: true,
         createdAt: true,
         updatedAt: true,
-      },
+      } as any,
       orderBy: {
         name: "asc",
       },
     });
 
-    return categories;
+    return categories as any;
   }
 }

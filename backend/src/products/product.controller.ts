@@ -188,6 +188,7 @@ export default class ProductController {
   static async deleteProduct(req: Request, res: Response) {
     try {
       const { id } = req.params;
+      const { hard } = req.query;
 
       // Get userId and role from token (already validated by adminOrSellerGuard middleware)
       const { userId, role } = ProductController.getTokenData(req);
@@ -206,9 +207,13 @@ export default class ProductController {
         sellerId = seller.id;
       }
 
-      const result = await ProductService.deleteProduct(id, { userId, role, sellerId });
+      const result = await ProductService.deleteProduct(
+        id,
+        { userId, role, sellerId },
+        hard === "true"
+      );
 
-      return Send.success(res, result, "Product deleted successfully");
+      return Send.success(res, result, `Product ${hard === "true" ? "permanently" : ""} deleted successfully`);
     } catch (error: any) {
       logger.error({ error }, "Failed to delete product");
 

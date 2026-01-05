@@ -1,11 +1,12 @@
 import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Avatar, Button, Card, Flex, Form, Image, Input, Space, Typography, Upload, message } from 'antd'
-import { 
+import {
     SaveOutlined,
     PictureTwoTone
 } from '@ant-design/icons'
 import categoryService from '../../../services/categoryService.js'
+import uploadService from '../../../services/uploadService.js'
 
 const AddCategory = () => {
     const navigate = useNavigate()
@@ -18,13 +19,22 @@ const AddCategory = () => {
     const [messageApi, contextHolder] = message.useMessage()
     const [form] = Form.useForm()
 
-    const handleChange = ({ fileList: newList }) => {
-        setFileList(newList)
-        if (newList.length === 0) {
-            setImageUrl(null)
+    const handleChange = async ({ fileList: newList }) => {
+        // Handle file removal from storage
+        if (newList.length < fileList.length) {
+            const removedFile = fileList.find(f => !newList.some(nf => nf.uid === f.uid));
+            const urlToDelete = removedFile?.response?.data?.url || removedFile?.url;
+            if (urlToDelete) {
+                try {
+                    await uploadService.deleteFile(urlToDelete);
+                } catch (error) {
+                    console.error("Failed to delete file from storage:", error);
+                }
+            }
         }
+        setFileList(newList)
     }
-    
+
     const handlePreview = async (file) => {
         if (!file.url && !file.preview) {
             file.preview = await new Promise((resolve) => {
@@ -35,7 +45,7 @@ const AddCategory = () => {
         setPreviewOpen(true)
     }
 
-    const beforeUpload=(file) => {
+    const beforeUpload = (file) => {
         getBase64(file, (url) => setImageUrl(url))
         return false
     }
@@ -44,7 +54,7 @@ const AddCategory = () => {
         setSubmitting(true)
         try {
             const newCategory = {
-                imageUrl: imageUrl || null,
+                image: fileList[0]?.response?.data?.url || null,
                 name: values.name,
                 description: values.description,
             }
@@ -72,11 +82,11 @@ const AddCategory = () => {
             {contextHolder}
             <div className="title">
                 <Flex justify='space-between' align='center'>
-                    <Typography.Title>Edit Category</Typography.Title>
+                    <Typography.Title>Add Category</Typography.Title>
                     <Space className="actions">
                         <Button onClick={() => navigate('/seller/categories')}>Cancel</Button>
-                        <Button 
-                            type="primary" 
+                        <Button
+                            type="primary"
                             icon={<SaveOutlined />}
                             onClick={() => form.submit()}
                             htmlType='submit'
@@ -105,9 +115,16 @@ const AddCategory = () => {
                                         maxCount={1}
                                         fileList={fileList}
                                         onChange={handleChange}
-                                        beforeUpload={beforeUpload}
+                                        customRequest={async ({ file, onSuccess, onError }) => {
+                                            try {
+                                                const response = await uploadService.uploadFile(file);
+                                                onSuccess(response);
+                                            } catch (err) {
+                                                onError(err);
+                                            }
+                                        }}
                                         onPreview={handlePreview}
-                                        style={{width: '100%', height: '100%'}}
+                                        style={{ width: '100%', height: '100%' }}
                                     >
                                         {fileList.length >= 1 ? null : uploadButton}
                                     </Upload>
@@ -152,10 +169,10 @@ const getBase64 = (img, callback) => {
 }
 
 const uploadButton = (
-    <Flex 
-        vertical 
-        justify='center' 
-        align="center" 
+    <Flex
+        vertical
+        justify='center'
+        align="center"
         gap={8}
         style={{
             width: '100%',
