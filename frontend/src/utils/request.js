@@ -14,7 +14,9 @@ const request = async (path, options = {}) => {
 
     if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.message || 'Errors has occurred');
+        const error = new Error(errorData.message || 'Errors has occurred');
+        error.status = response.status;
+        throw error;
     }
 
     try {

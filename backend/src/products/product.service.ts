@@ -1,5 +1,6 @@
 import { prisma } from "util/db";
 import { Prisma, Product } from "@prisma/client";
+import UploadService from "../upload/upload.service";
 
 export default class ProductService {
   /**
@@ -313,7 +314,11 @@ export default class ProductService {
   /**
    * Delete a product (Seller or Admin)
    */
-  static async deleteProduct(productId: string, userContext: { userId: string; role: string; sellerId?: string }) {
+  static async deleteProduct(
+    productId: string,
+    userContext: { userId: string; role: string; sellerId?: string },
+    hard: boolean = false
+  ) {
     const product = await prisma.product.findUnique({
       where: { id: productId },
     });
@@ -322,13 +327,31 @@ export default class ProductService {
       throw new Error("Product not found");
     }
 
-    // Allow all sellers and admins to delete any product
-    await prisma.product.update({
-      where: { id: productId },
-      data: { is_deleted: true },
-    });
+    if (hard) {
+      await prisma.product.delete({
+        where: { id: productId },
+      });
 
-    return { message: "Product deleted successfully" };
+      // Clean up images from storage
+      const uploadService = new UploadService();
+      if (product.images && product.images.length > 0) {
+        for (const imageUrl of product.images) {
+          try {
+            await uploadService.delete(imageUrl);
+          } catch (error) {
+            console.error(`Failed to delete product image from storage: ${imageUrl}`, error);
+          }
+        }
+      }
+    } else {
+      // Soft delete
+      await prisma.product.update({
+        where: { id: productId },
+        data: { is_deleted: true },
+      });
+    }
+
+    return { message: `Product ${hard ? "permanently" : ""} deleted successfully` };
   }
 
   /**

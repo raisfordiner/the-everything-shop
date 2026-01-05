@@ -129,21 +129,31 @@ export default class CategoryController {
     try {
       const { id } = req.params;
       const { force } = req.query;
+      const isForce = String(force) === "true";
 
-      const result = await CategoryService.deleteCategory(id, force === "true");
+      logger.info({ id, force, isForce }, "Processing category deletion request");
+
+      const result = await CategoryService.deleteCategory(id, isForce);
 
       return Send.success(res, result, "Category deleted successfully");
     } catch (error: any) {
-      logger.error({ error }, "Failed to delete category");
+      logger.error({
+        message: error.message,
+        stack: error.stack,
+        categoryId: req.params.id
+      }, "Failed to delete category");
 
       if (error.message === "Category not found") {
+        logger.warn({ categoryId: req.params.id }, "Category not found for deletion");
         return Send.notFound(res, null, "Category not found");
       }
 
       if (error.message.includes("Cannot delete category")) {
+        logger.info({ categoryId: req.params.id, message: error.message }, "Returning BadRequest for category with products");
         return Send.badRequest(res, null, error.message);
       }
 
+      logger.error({ categoryId: req.params.id, error: error.message }, "Returning Generic Error for category deletion");
       return Send.error(res, null, "Failed to delete category");
     }
   }

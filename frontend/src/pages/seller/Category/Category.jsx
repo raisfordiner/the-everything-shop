@@ -11,6 +11,9 @@ const Category = () => {
     const [categories, setCategories] = useState([])
     const [searchText, setSearchText] = useState('')
 
+    const [isForceModalOpen, setIsForceModalOpen] = useState(false);
+    const [pendingDeleteId, setPendingDeleteId] = useState(null);
+
     const fetchCategories = async () => {
         setLoading(true)
         try {
@@ -24,24 +27,33 @@ const Category = () => {
     }
 
     const handleDelete = async (id, force = false) => {
+        console.log(`[handleDelete] id: ${id}, force: ${force}`);
         try {
-            await categoryService.deleteCategory(id, force)
+            const result = await categoryService.deleteCategory(id, force)
+            console.log("[handleDelete] Success:", result);
             message.success('Category deleted successfully')
             fetchCategories()
+            setIsForceModalOpen(false)
         } catch (error) {
-            if (error.status === 400 && error.message?.includes("existing products")) {
-                Modal.confirm({
-                    title: 'Category has existing products',
-                    content: 'This category contains products. Are you sure you want to delete this category and ALL its products? This action cannot be undone.',
-                    okText: 'Yes, delete everything',
-                    okType: 'danger',
-                    cancelText: 'No, cancel',
-                    onOk: () => handleDelete(id, true)
-                });
+            console.error("[handleDelete] Error:", error)
+
+            const statusCode = error.status;
+            const messageFromError = error.message || "";
+            const lowerMessage = messageFromError.toLowerCase();
+
+            // If it's a 400 or message includes product warning, show the force modal
+            const isExistingProductsError =
+                (statusCode == 400) ||
+                lowerMessage.includes("existing products") ||
+                lowerMessage.includes("cannot delete category");
+
+            if (isExistingProductsError && !force) {
+                console.log("[handleDelete] Showing force delete modal");
+                setPendingDeleteId(id);
+                setIsForceModalOpen(true);
             } else {
-                message.error(error.message || "Failed to delete category!")
+                message.error(messageFromError || "Failed to delete category!")
             }
-            console.error(error)
         }
     }
 
@@ -50,7 +62,7 @@ const Category = () => {
     }, [])
 
 
-    const colums = [
+    const columns = [
         {
             title: 'Category',
             // dataIndex: 'name',
@@ -74,12 +86,17 @@ const Category = () => {
                         onClick={() => navigate(`edit-category/${record.id}`)} />
                     <Popconfirm
                         title="Delete Category"
-                        description="Are you sure to delete this category?"
+                        description="Are you sure you want to delete this category?"
                         onConfirm={() => handleDelete(record.id)}
                         okText="Yes"
                         cancelText="No"
+                        okButtonProps={{ danger: true }}
                     >
-                        <Button icon={<DeleteOutlined />} size="small" danger></Button>
+                        <Button
+                            icon={<DeleteOutlined />}
+                            size="small"
+                            danger
+                        />
                     </Popconfirm>
                 </Space>
             )
@@ -101,9 +118,24 @@ const Category = () => {
                 </Space>
             </Flex>
             <AdminTable
-                columnsTemplate={colums}
+                columnsTemplate={columns}
                 dataSource={categories}
             />
+
+            {/* Force Delete Confirmation Modal */}
+            <Modal
+                title="Category has existing products"
+                open={isForceModalOpen}
+                onOk={() => handleDelete(pendingDeleteId, true)}
+                onCancel={() => setIsForceModalOpen(false)}
+                okText="Yes, delete everything"
+                cancelText="No, cancel"
+                okButtonProps={{ danger: true }}
+                maskClosable={false}
+            >
+                <p>This category contains products. Are you sure you want to delete this category and <b>ALL</b> its products?</p>
+                <p style={{ color: '#ff4d4f' }}>This action cannot be undone.</p>
+            </Modal>
         </>
     )
 }

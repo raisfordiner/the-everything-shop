@@ -197,10 +197,30 @@ export default class CategoryService {
 
     await prisma.$transaction(async (tx) => {
       if (force && category.products.length > 0) {
-        // Delete all products in this category
+        // Fetch products to get their images for cleanup
+        const productsToDelete = await tx.product.findMany({
+          where: { categoryId: categoryId },
+          select: { images: true, id: true }
+        });
+
+        // Delete all products in this category physically
         await tx.product.deleteMany({
           where: { categoryId: categoryId },
         });
+
+        // Clean up images from storage after DB deletion is successful
+        const uploadService = new UploadService();
+        for (const product of productsToDelete) {
+          if (product.images && product.images.length > 0) {
+            for (const imageUrl of product.images) {
+              try {
+                await uploadService.delete(imageUrl);
+              } catch (error) {
+                console.error(`Failed to delete product image from storage: ${imageUrl}`, error);
+              }
+            }
+          }
+        }
       }
 
       await tx.category.delete({
@@ -258,6 +278,6 @@ export default class CategoryService {
       },
     });
 
-    return categories;
+    return categories as any;
   }
 }
