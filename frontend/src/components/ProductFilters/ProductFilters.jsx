@@ -11,7 +11,7 @@ const ProductFilters = ({ onFilterChange, initialFilters = {} }) => {
     const [sortBy, setSortBy] = useState(initialFilters.sortBy || 'name');
     const [sortOrder, setSortOrder] = useState(initialFilters.sortOrder || 'asc');
 
-    // Sync with initialFilters if they change (e.g. from parent)
+    // Sync with initialFilters if they change
     useEffect(() => {
         if (initialFilters.priceRange) setPriceRange(initialFilters.priceRange);
         if (initialFilters.minRating !== undefined) setMinRating(initialFilters.minRating);

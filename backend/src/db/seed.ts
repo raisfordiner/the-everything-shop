@@ -759,18 +759,44 @@ async function main() {
     },
   });
 
+  // ============ MEMBERSHIPS ============
+  await prisma.membership.create({
+    data: {
+      customerId: customer1.id,
+      membership: 'GOLD',
+      spent: 500,
+    },
+  });
+
+  await prisma.membership.create({
+    data: {
+      customerId: customer2.id,
+      membership: 'SILVER',
+      spent: 150,
+    },
+  });
+
+  await prisma.membership.create({
+    data: {
+      customerId: customer3.id,
+      membership: 'BRONZE',
+      spent: 50,
+    },
+  });
+
   console.log('✅ Seeding finished successfully!');
   console.log('📊 Seeded data:');
-  console.log(`  - 2 Admins, 2 Sellers, 2 Customers`);
-  console.log(`  - 3 Addresses`);
-  console.log(`  - 3 Categories with 4 Products`);
-  console.log(`  - 5 Product Variants`);
-  console.log(`  - 2 Orders with 3 Order Items`);
-  console.log(`  - 2 Payments & 2 Reviews`);
+  console.log(`  - 2 Admins, 3 Sellers, 5 Customers`);
+  console.log(`  - 4 Addresses`);
+  console.log(`  - 6 Categories with 7 Products`);
+  console.log(`  - 7 Product Variants`);
+  console.log(`  - 4 Orders with 4 Order Items`);
+  console.log(`  - 3 Payments & 2 Reviews`);
   console.log(`  - 2 Promotions with Coupons & Clearance Events`);
   console.log(`  - 2 Notifications & 1 Report`);
   console.log(`  - 1 Return & 1 Cancellation`);
   console.log(`  - 2 System Parameters`);
+  console.log(`  - 3 Memberships (USD)`);
 }
 
 main()

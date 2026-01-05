@@ -47,6 +47,10 @@ const getSellerProductsBySellerId = (sellerId) => {
     return get(`/products/seller/${sellerId}`);
 };
 
+const getProductReviews = (productId) => {
+    return get(`/reviews?productId=${productId}`);
+};
+
 const productService = {
     getAllProducts,
     getProductById,
@@ -56,6 +60,7 @@ const productService = {
     deleteProduct,
     getSellerProducts,
     getSellerProductsBySellerId,
+    getProductReviews,
 };
 
 export default productService;

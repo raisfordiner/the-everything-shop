@@ -2,8 +2,8 @@ import { Statistic, Row, Col, Card } from 'antd';
 import { DollarOutlined, ShoppingCartOutlined, StockOutlined } from '@ant-design/icons';
 
 export default function ProductStats({ products }) {
-  const totalRevenue = products.reduce((sum, p) => sum + (p.price * (p.sold || 0)), 0);
-  const totalSold = products.reduce((sum, p) => sum + (p.sold || 0), 0);
+  const totalRevenue = products.reduce((sum, p) => sum + (p.price * (p.soldCount || 0)), 0);
+  const totalSold = products.reduce((sum, p) => sum + (p.soldCount || 0), 0);
   const totalStock = products.reduce((sum, p) => sum + (p.stockQuantity || 0), 0);
 
   return (
@@ -14,7 +14,7 @@ export default function ProductStats({ products }) {
             title="Total Revenue"
             value={totalRevenue}
             prefix={<DollarOutlined />}
-            formatter={(value) => `₫${value.toLocaleString()}`}
+            formatter={(value) => `$${value.toLocaleString()}`}
           />
         </Card>
       </Col>

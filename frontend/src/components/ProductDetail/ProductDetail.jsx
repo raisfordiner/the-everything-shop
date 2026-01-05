@@ -6,22 +6,23 @@ import ProductGallery from "./MainSection/ProductGallery/ProductGallery.jsx"
 import ProductInfo from "./MainSection/ProductInfo/ProductInfo.jsx"
 import "./ProductDetail.css"
 import ProductDescriptionTemplate from "./SubSection/ProductDescriptionTemplate/ProductDescriptionTemplate"
+import ProductReviews from "./SubSection/ProductReviews/ProductReviews.jsx"
 
 const { Title } = Typography
 
-const tabItems = [
-    { key: '1', label: 'Description', children: <ProductDescriptionTemplate/> },
-    { key: '2', label: 'Reviews', children: <p>Nothing here yet</p>}
-]
-
 const ProductDetail = () => {
+    const { productId } = useParams()
     const [isLoading, setIsLoading] = useState(true)
     const [productData, setProductData] = useState(null)
-    const { productId } = useParams()
     const [selectedProductVariant, setSelectedProductVariant] = useState(null)
     const [selectedImage, setSelectedImage] = useState(null)
     const [selectedAttributes, setSelectedAttributes] = useState({})
     const [amount, setAmount] = useState(1)
+
+    const tabItems = [
+        { key: '1', label: 'Description', children: <ProductDescriptionTemplate /> },
+        { key: '2', label: 'Reviews', children: <ProductReviews productId={productId} /> }
+    ]
 
     // --- Load sản phẩm ---
     useEffect(() => {
@@ -35,7 +36,7 @@ const ProductDetail = () => {
                 const defaultVariant = data.data?.productVariants?.[0] || null
                 console.log("Default variant:", defaultVariant)
                 console.log("Default variant attributes:", defaultVariant?.variantAttributes)
-                
+
                 if (defaultVariant?.variantAttributes) {
                     // Normalize the attributes to lowercase keys
                     const normalizedAttributes = {}
@@ -45,7 +46,7 @@ const ProductDetail = () => {
                     console.log("Normalized attributes:", normalizedAttributes)
                     setSelectedAttributes(normalizedAttributes)
                 }
-                
+
                 setSelectedProductVariant(defaultVariant)
                 setSelectedImage(defaultVariant?.images?.[0] || data.data?.images?.[0] || null)
             } catch (error) {
@@ -86,24 +87,24 @@ const ProductDetail = () => {
                             images={selectedProductVariant?.images || productData.images}
                             selectedImage={selectedImage}
                             onSelectImage={setSelectedImage}
-                            // style={{
-                            //     width: '50%'
-                            // }}
+                        // style={{
+                        //     width: '50%'
+                        // }}
                         />
 
-                        <div className="sub" style={{background: 'white', borderRadius: '10px'}}>
-                            <Tabs items={tabItems} style={{padding: '0 20px'}}/>
+                        <div className="sub" style={{ background: 'white', borderRadius: '10px' }}>
+                            <Tabs items={tabItems} style={{ padding: '0 20px' }} />
                         </div>
                     </Flex>
                 </Col>
 
-                <Col 
-                    span={10} 
+                <Col
+                    span={10}
                     style={{
-                        background: 'white', 
+                        background: 'white',
                         borderRadius: '10px',
-                        padding: '16px', 
-                        alignSelf: 'flex-start'  
+                        padding: '16px',
+                        alignSelf: 'flex-start'
                     }}
                 >
                     <ProductInfo

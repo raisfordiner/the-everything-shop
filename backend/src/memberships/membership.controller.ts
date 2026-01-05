@@ -24,6 +24,29 @@ export default class MembershipController {
     }
   }
 
+  static async getMyMembership(req: Request, res: Response) {
+    try {
+      const user = (req as any).user;
+      const userId = user?.id || user?.userId;
+
+      if (!userId) {
+        return Send.unauthorized(res, null, "User not authenticated");
+      }
+
+      const membership = await MembershipService.findByUserId(userId);
+
+      return Send.success(res, { membership });
+    } catch (error: any) {
+      logger.error({
+        msg: "Error fetching my membership",
+        errorName: error.name,
+        errorMessage: error.message,
+        errorStack: error.stack
+      });
+      return Send.error(res, {}, "Internal server error");
+    }
+  }
+
   static async createMembership(req: Request, res: Response) {
     try {
       const { customerId, spent } = req.body;
