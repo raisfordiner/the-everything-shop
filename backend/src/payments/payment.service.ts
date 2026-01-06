@@ -1,4 +1,5 @@
 import { prisma } from "util/db";
+import { PaymentStatus } from "@prisma/client";
 
 export default class PaymentService {
   static async updatePaymentStatus(orderId: string) {
@@ -68,6 +69,77 @@ export default class PaymentService {
           message: 'Payment is pending or was cancelled',
         };
       }
+    } catch (error: any) {
+      throw new Error(`Failed to update payment status: ${error.message}`);
+    }
+  }
+
+  /**
+   * Confirm COD payment (for sellers/admins when payment is received)
+   */
+  static async confirmCODPayment(paymentId: string) {
+    try {
+      const payment = await prisma.payment.findUnique({
+        where: { id: paymentId },
+      });
+
+      if (!payment) {
+        throw new Error('Payment not found');
+      }
+
+      if (payment.method !== 'COD') {
+        throw new Error('This endpoint is only for COD payments');
+      }
+
+      if (payment.status === 'SUCCESS') {
+        return {
+          success: true,
+          message: 'Payment already confirmed',
+          payment,
+        };
+      }
+
+      const updatedPayment = await prisma.payment.update({
+        where: { id: paymentId },
+        data: { status: 'SUCCESS' },
+      });
+
+      return {
+        success: true,
+        message: 'COD payment confirmed successfully',
+        payment: updatedPayment,
+      };
+    } catch (error: any) {
+      throw new Error(`Failed to confirm COD payment: ${error.message}`);
+    }
+  }
+
+  /**
+   * Manually update payment status (for sellers/admins)
+   */
+  static async updatePaymentStatusManually(
+    paymentId: string,
+    newStatus: PaymentStatus
+  ) {
+    try {
+      const payment = await prisma.payment.findUnique({
+        where: { id: paymentId },
+      });
+
+      if (!payment) {
+        throw new Error('Payment not found');
+      }
+
+      const updatedPayment = await prisma.payment.update({
+        where: { id: paymentId },
+        data: { status: newStatus },
+      });
+
+      return {
+        success: true,
+        message: `Payment status updated to ${newStatus}`,
+        payment: updatedPayment,
+      };
     } catch (error: any) {
       throw new Error(`Failed to update payment status: ${error.message}`);
     }
