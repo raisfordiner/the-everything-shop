@@ -268,11 +268,11 @@ export const routes = [
                 element: <Category />
             },
             {
-                path: "categories/add-category",
+                path: "categories/new",
                 element: <AddCategory />
             },
             {
-                path: "categories/edit-category/:id",
+                path: "categories/:id",
                 element: <EditCategory />
             },
             {

@@ -107,6 +107,19 @@ const SellerOrders = () => {
         }
     };
 
+    const handlePaymentStatusChange = async (orderId, newPaymentStatus) => {
+        try {
+            console.log('Updating payment status:', { orderId, newPaymentStatus });
+            // You'll need to implement this in your orderService
+            await orderService.updatePaymentStatus(orderId, newPaymentStatus);
+            message.success('Payment status updated successfully');
+            fetchOrders();
+        } catch (error) {
+            console.error('Error updating payment status:', error);
+            message.error('Failed to update payment status');
+        }
+    };
+
     const handleBulkStatusChange = async (newStatus) => {
         if (selectedRowKeys.length === 0) {
             message.warning('Please select at least one order');
@@ -259,11 +272,23 @@ const SellerOrders = () => {
             render: (_, record) => (
                 record.payment ? (
                     <div>
-                        <Tag color={getPaymentStatusColor(record.payment.status)}>
-                            {record.payment.status}
-                        </Tag>
-                        <br />
-                        <Text type="secondary" style={{ fontSize: '11px' }}>
+                        <Select
+                            value={record.payment.status}
+                            onChange={(value) => handlePaymentStatusChange(record.id, value)}
+                            style={{ width: '100%' }}
+                            size="small"
+                        >
+                            <Option value="PENDING">
+                                <Tag color="orange">Pending</Tag>
+                            </Option>
+                            <Option value="SUCCESS">
+                                <Tag color="green">Success</Tag>
+                            </Option>
+                            <Option value="FAILED">
+                                <Tag color="red">Failed</Tag>
+                            </Option>
+                        </Select>
+                        <Text type="secondary" style={{ fontSize: '11px', display: 'block', marginTop: '4px' }}>
                             {record.payment.method}
                         </Text>
                     </div>
