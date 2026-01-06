@@ -130,6 +130,7 @@ export default class PromotionService {
   static async createPromotion(
     name: string,
     description: string | undefined,
+    image: string | undefined,
     startDate: Date,
     endDate: Date,
     adminId: string,
@@ -174,6 +175,7 @@ export default class PromotionService {
       data: {
         name,
         description,
+        image,
         startDate: new Date(startDate),
         endDate: new Date(endDate),
         createdBy: adminId,
@@ -230,6 +232,7 @@ export default class PromotionService {
     updateData: {
       name?: string;
       description?: string;
+      image?: string;
       startDate?: Date;
       endDate?: Date;
       status?: PromotionStatus;

@@ -1,4 +1,4 @@
-import {del, get, post, put} from '../utils/request';
+import { del, get, post, put } from '../utils/request';
 
 const getAllPromotions = (params) => {
     return get('/promotions', params);
@@ -21,19 +21,23 @@ const addPromotion = (data) => {
 }
 
 const addProductsToPromotion = (id, productIds) => {
-    return post(`/promotions/${id}/products`, {productIds});
+    return post(`/promotions/${id}/products`, { productIds });
 };
 
 const removeProductsFromPromotion = (id, productIds) => {
-    return del(`/promotions/${id}/products`, {productIds});
+    return del(`/promotions/${id}/products`, { productIds });
 };
 
 const addCategoriesToPromotion = (id, categoryIds) => {
-    return post(`/promotions/${id}/categories`, {categoryIds});
+    return post(`/promotions/${id}/categories`, { categoryIds });
 };
 
 const removeCategoriesFromPromotion = (id, categoryIds) => {
-    return del(`/promotions/${id}/categories/`, {categoryIds});
+    return del(`/promotions/${id}/categories/`, { categoryIds });
+};
+
+const getActivePromotions = (params) => {
+    return get('/promotions/active', params);
 };
 
 const promotionService = {
@@ -46,6 +50,7 @@ const promotionService = {
     removeProductsFromPromotion,
     addCategoriesToPromotion,
     removeCategoriesFromPromotion,
+    getActivePromotions,
 };
 
 export default promotionService;
