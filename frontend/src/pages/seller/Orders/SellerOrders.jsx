@@ -26,6 +26,7 @@ import {
 } from '@ant-design/icons';
 import dayjs from 'dayjs';
 import orderService from '../../../services/orderService';
+import paymentService from '../../../services/paymentService';
 import TablePagination from '../../../components/common/TablePagination/TablePagination';
 
 const { Option } = Select;
@@ -107,11 +108,11 @@ const SellerOrders = () => {
         }
     };
 
-    const handlePaymentStatusChange = async (orderId, newPaymentStatus) => {
+    const handlePaymentStatusChange = async (paymentId, newPaymentStatus) => {
         try {
-            console.log('Updating payment status:', { orderId, newPaymentStatus });
+            console.log('Updating payment status:', { paymentId, newPaymentStatus });
             // You'll need to implement this in your orderService
-            await orderService.updatePaymentStatus(orderId, newPaymentStatus);
+            await paymentService.putPaymentStatus(paymentId, newPaymentStatus);
             message.success('Payment status updated successfully');
             fetchOrders();
         } catch (error) {
@@ -274,7 +275,7 @@ const SellerOrders = () => {
                     <div>
                         <Select
                             value={record.payment.status}
-                            onChange={(value) => handlePaymentStatusChange(record.id, value)}
+                            onChange={(value) => handlePaymentStatusChange(record.payment.id, value)}
                             style={{ width: '100%' }}
                             size="small"
                         >
