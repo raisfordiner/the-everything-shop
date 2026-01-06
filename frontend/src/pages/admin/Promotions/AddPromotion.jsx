@@ -6,6 +6,7 @@ import categoryService from "../../../services/categoryService.js";
 import promotionService from "../../../services/promotionService.js";
 import uploadService from "../../../services/uploadService.js";
 import { PlusOutlined, PictureTwoTone } from "@ant-design/icons";
+import './PromotionImage.css';
 
 const { Title, Text } = Typography;
 const { RangePicker } = DatePicker;
@@ -221,44 +222,36 @@ const AddPromotion = () => {
 
                             <Typography.Text>Banner Image</Typography.Text>
                             <Form.Item name="thumbnail" valuePropName="fileList">
-                                <div
+                                <Upload
+                                    listType="picture-card"
+                                    maxCount={1}
+                                    fileList={fileList}
+                                    onChange={handleChange}
+                                    customRequest={async ({ file, onSuccess, onError }) => {
+                                        try {
+                                            const response = await uploadService.uploadFile(file);
+                                            onSuccess(response);
+                                        } catch (err) {
+                                            onError(err);
+                                        }
+                                    }}
+                                    onPreview={handlePreview}
                                     style={{
                                         width: '100%',
-                                        aspectRatio: '16 / 9',
-                                        display: 'flex',
-                                        justifyContent: 'center',
-                                        alignItems: 'center',
-                                        marginTop: 8
                                     }}
+                                    className="promotion-image-upload"
                                 >
-                                    <Upload
-                                        listType="picture-card"
-                                        maxCount={1}
-                                        fileList={fileList}
-                                        onChange={handleChange}
-                                        customRequest={async ({ file, onSuccess, onError }) => {
-                                            try {
-                                                const response = await uploadService.uploadFile(file);
-                                                onSuccess(response);
-                                            } catch (err) {
-                                                onError(err);
-                                            }
-                                        }}
-                                        onPreview={handlePreview}
-                                        style={{ width: '100%', height: '100%' }}
-                                    >
-                                        {fileList.length >= 1 ? null : uploadButton}
-                                    </Upload>
+                                    {fileList.length >= 1 ? null : uploadButton}
+                                </Upload>
 
-                                    <Image
-                                        preview={{
-                                            visible: previewOpen,
-                                            onVisibleChange: (v) => setPreviewOpen(v),
-                                        }}
-                                        src={previewImage}
-                                        style={{ display: "none" }}
-                                    />
-                                </div>
+                                <Image
+                                    preview={{
+                                        visible: previewOpen,
+                                        onVisibleChange: (v) => setPreviewOpen(v),
+                                    }}
+                                    src={previewImage}
+                                    style={{ display: "none" }}
+                                />
                             </Form.Item>
                         </Card>
                     </Col>
