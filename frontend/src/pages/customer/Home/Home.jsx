@@ -2,6 +2,7 @@ import React, { use, useEffect, useState } from 'react'
 import { useNavigate } from 'react-router'
 import CategoryListing from '../../../components/Category/CategoryListing'
 import ProductSection from '../../../components/Product/ProductSection'
+import PromotionFlag from '../../../components/PromotionFlag/PromotionFlag'
 import { setProducts } from '../../../redux/actions/productAction.js'
 import { useDispatch, useSelector } from 'react-redux'
 import { get } from '../../../utils/request'
@@ -45,6 +46,7 @@ const Home = () => {
 
   return (
     <div>
+      <PromotionFlag />
       <CategoryListing />
       {allCategories.slice(0, 3).map(category => (
         <ProductSection
@@ -52,7 +54,7 @@ const Home = () => {
           title={category.name}
           products={allProducts.filter(p => p.categoryId === category.id)}
           categoryId={category.id}
-        />  
+        />
       ))}
       {/* <ProductSection
         title='test'

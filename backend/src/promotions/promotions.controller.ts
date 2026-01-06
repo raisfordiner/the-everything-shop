@@ -87,6 +87,7 @@ export default class PromotionController {
       const {
         name,
         description,
+        image,
         startDate,
         endDate,
         status,
@@ -111,6 +112,7 @@ export default class PromotionController {
       const promotion = await PromotionService.createPromotion(
         name,
         description,
+        image,
         new Date(startDate),
         new Date(endDate),
         admin.id,
