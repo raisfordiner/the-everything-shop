@@ -100,10 +100,10 @@ export default function DescriptionEditor({ value, onChange, onUploadedImages })
     const newSections = sections.map((section) =>
       section.id === editingSectionId
         ? {
-            ...section,
-            title: editingSectionData.title,
-            content: editingSectionData.content,
-          }
+          ...section,
+          title: editingSectionData.title,
+          content: editingSectionData.content,
+        }
         : section
     );
     setSections(newSections);
@@ -128,10 +128,10 @@ export default function DescriptionEditor({ value, onChange, onUploadedImages })
     const newSections = sections.map((section) =>
       section.id === editingSectionId
         ? {
-            ...section,
-            title: updatedEditingData.title,
-            content: updatedEditingData.content,
-          }
+          ...section,
+          title: updatedEditingData.title,
+          content: updatedEditingData.content,
+        }
         : section
     );
     setSections(newSections);
@@ -229,7 +229,14 @@ export default function DescriptionEditor({ value, onChange, onUploadedImages })
                         type="primary"
                         size="small"
                         onClick={() => {
-                          // Just close the editor, content is already auto-saved
+                          // Save the title and content before closing
+                          const newSections = sections.map((section) =>
+                            section.id === editingSectionId
+                              ? { ...section, title: editingSectionData.title, content: editingSectionData.content }
+                              : section
+                          );
+                          setSections(newSections);
+                          onChange(JSON.stringify({ type: 'sections', sections: newSections }));
                           setEditingSectionId(null);
                           setEditingSectionData({ title: '', content: '' });
                         }}
