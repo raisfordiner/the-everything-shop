@@ -71,11 +71,7 @@ enum ReportType {
   ORDERS
 }
 
-enum Variants {
-  SIZE
-  COLOR
-  MATERIAL
-}
+
 
 model User {
   id            String         @id @default(cuid())
@@ -151,7 +147,6 @@ model Product {
   id              String           @id @default(cuid())
   name            String
   description     String
-  stockQuantity   Int
   images          String[]
   createdBy       String
   price           Float
@@ -159,7 +154,7 @@ model Product {
   promotions      Promotion[]      @relation("PromotionProducts")
   categoryId      String
   category        Category         @relation(fields: [categoryId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-  variantTypes    Variants[]
+  variantTypes    String[]
   variantOptions  Json
   productVariants ProductVariant[]
   is_deleted      Boolean          @default(false)
