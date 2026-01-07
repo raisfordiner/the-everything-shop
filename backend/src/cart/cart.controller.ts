@@ -120,23 +120,35 @@ export default class CartController {
   static async checkout(req: Request, res: Response) {
     try {
       const { customerId } = req.params;
-      const { cartItemIds, addressId, paymentMethod } = req.body;
+      const {
+        cartItemIds,
+        addressId,
+        paymentMethod,
+        couponCode,
+        couponDiscount,
+        membershipDiscount,
+        membershipTier
+      } = req.body;
 
       const order = await CartService.checkout({
         customerId,
         cartItemIds,
         addressId,
         paymentMethod,
+        couponCode,
+        couponDiscount,
+        membershipDiscount,
+        membershipTier,
       });
 
       return Send.success(res, { order }, "Checkout successful");
     } catch (error: any) {
       logger.error({ error }, "Error during checkout");
-      
+
       if (error.message.includes("not found") || error.message.includes("do not belong")) {
         return Send.badRequest(res, {}, error.message);
       }
-      
+
       return Send.error(res, {}, "Internal server error");
     }
   }

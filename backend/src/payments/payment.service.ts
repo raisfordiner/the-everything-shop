@@ -23,10 +23,13 @@ export default class PaymentService {
         };
       }
 
-      // For Stripe, get the order to find session from metadata
+      // Get the order with order items
       const order = await prisma.order.findUnique({
         where: { id: orderId },
-        include: { payment: true },
+        include: {
+          payment: true,
+          orderItems: true,
+        },
       });
 
       if (!order) {
@@ -43,15 +46,28 @@ export default class PaymentService {
         };
       }
 
-      // For Stripe payments, we'll mark as success when user returns from Stripe
-      // In a real scenario, you'd verify with Stripe here if needed
+      // For Stripe sandbox, we trust the return from Stripe checkout
+      // In production, you'd verify with Stripe API here
       const isSuccess = true;
 
       if (isSuccess) {
-        // Update payment status to COMPLETED
-        await prisma.payment.updateMany({
-          where: { orderId: orderId },
-          data: { status: 'SUCCESS' },
+        // Use transaction to update payment and decrement stock atomically
+        await prisma.$transaction(async (tx) => {
+          // Update payment status to SUCCESS
+          await tx.payment.updateMany({
+            where: { orderId: orderId },
+            data: { status: 'SUCCESS' },
+          });
+
+          // Decrement stock for each order item
+          for (const orderItem of order.orderItems) {
+            await tx.productVariant.update({
+              where: { id: orderItem.productVariantId },
+              data: {
+                quantity: { decrement: orderItem.quantity },
+              },
+            });
+          }
         });
 
         return {
@@ -145,3 +161,4 @@ export default class PaymentService {
     }
   }
 }
+

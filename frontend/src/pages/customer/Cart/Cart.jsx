@@ -18,9 +18,11 @@ import {
     Divider,
     Image,
 } from 'antd';
-import { DeleteOutlined, ShoppingCartOutlined } from '@ant-design/icons';
+import { DeleteOutlined, ShoppingCartOutlined, TagOutlined, GiftOutlined } from '@ant-design/icons';
 import cartService from '../../../services/cartService';
 import addressService from '../../../services/addressService';
+import couponService from '../../../services/couponService';
+import membershipService from '../../../services/membershipService';
 
 const { Title, Text } = Typography;
 
@@ -36,25 +38,53 @@ const Cart = () => {
     const [paymentMethod, setPaymentMethod] = useState('COD');
     const [checkingOut, setCheckingOut] = useState(false);
 
+    // Coupon state
+    const [couponCode, setCouponCode] = useState('');
+    const [appliedCoupon, setAppliedCoupon] = useState(null);
+    const [availableCoupons, setAvailableCoupons] = useState([]);
+    const [couponLoading, setCouponLoading] = useState(false);
+
+    // Membership state
+    const [membership, setMembership] = useState(null);
+
+    // Membership discount percentages by tier
+    const MEMBERSHIP_DISCOUNTS = {
+        BRONZE: 0,
+        SILVER: 5,
+        GOLD: 10,
+    };
+
     useEffect(() => {
         console.log('Cart - User:', user);
         console.log('Cart - isAuthenticated:', isAuthenticated);
-        
+
         if (!isAuthenticated) {
             message.error('Please login to view your cart');
             navigate('/login');
             return;
         }
-        
+
         if (!user?.customer?.id) {
             console.error('User customer ID not found:', user);
             message.error('Customer information not available');
             setLoading(false);
             return;
         }
-        
+
         fetchCart();
+        fetchMembership();
     }, [user, isAuthenticated, navigate]);
+
+    const fetchMembership = async () => {
+        try {
+            const response = await membershipService.getMyMembership();
+            if (response?.data?.membership) {
+                setMembership(response.data.membership);
+            }
+        } catch (error) {
+            console.error('Error fetching membership:', error);
+        }
+    };
 
     const fetchCart = async () => {
         try {
@@ -62,7 +92,7 @@ const Cart = () => {
             console.log('Fetching cart for customer ID:', user.customer.id);
             const response = await cartService.getCarts(user.customer.id);
             console.log('Cart response:', response);
-            
+
             // Handle response structure: response.data.carts
             if (response && response.data && response.data.carts && response.data.carts.length > 0) {
                 setCart(response.data.carts[0]);
@@ -84,7 +114,7 @@ const Cart = () => {
             console.log('Fetching addresses...');
             const response = await addressService.getAddresses();
             console.log('Addresses response:', response);
-            
+
             // Handle response structure
             const addressData = response?.data?.addresses || response?.addresses || [];
             if (addressData.length > 0) {
@@ -146,14 +176,97 @@ const Cart = () => {
 
     const calculateTotal = () => {
         if (!cart || !cart.cartItems) return 0;
-        return cart.cartItems
+        const subtotal = cart.cartItems
             .filter((item) => selectedItems.includes(item.id))
             .reduce((total, item) => {
                 const basePrice = item.productVariant.product.price;
                 const finalPrice = basePrice + item.productVariant.priceAdjustment;
                 return total + finalPrice * item.quantity;
             }, 0);
+        return subtotal;
     };
+
+    const calculateDiscount = () => {
+        if (!appliedCoupon) return 0;
+        return calculateTotal() * (appliedCoupon.discountPercentage / 100);
+    };
+
+    const calculateMembershipDiscount = () => {
+        if (!membership) return 0;
+        const discountPercent = MEMBERSHIP_DISCOUNTS[membership.membership] || 0;
+        // Apply membership discount after coupon discount
+        const afterCoupon = calculateTotal() - calculateDiscount();
+        return afterCoupon * (discountPercent / 100);
+    };
+
+    const getMembershipDiscountPercent = () => {
+        if (!membership) return 0;
+        return MEMBERSHIP_DISCOUNTS[membership.membership] || 0;
+    };
+
+    const calculateFinalTotal = () => {
+        return calculateTotal() - calculateDiscount() - calculateMembershipDiscount();
+    };
+
+    const fetchAvailableCoupons = async () => {
+        if (selectedItems.length === 0) {
+            setAvailableCoupons([]);
+            return;
+        }
+
+        try {
+            setCouponLoading(true);
+            const productVariantIds = cart.cartItems
+                .filter((item) => selectedItems.includes(item.id))
+                .map((item) => item.productVariant.id);
+
+            const response = await couponService.getAvailableCoupons(productVariantIds);
+            setAvailableCoupons(response?.data?.coupons || []);
+        } catch (error) {
+            console.error('Error fetching available coupons:', error);
+            setAvailableCoupons([]);
+        } finally {
+            setCouponLoading(false);
+        }
+    };
+
+    const handleApplyCoupon = async (code) => {
+        if (!code) {
+            message.warning('Please enter a coupon code');
+            return;
+        }
+
+        try {
+            setCouponLoading(true);
+            const productVariantIds = cart.cartItems
+                .filter((item) => selectedItems.includes(item.id))
+                .map((item) => item.productVariant.id);
+
+            const response = await couponService.validateCoupon(code, productVariantIds);
+
+            if (response?.data?.valid) {
+                setAppliedCoupon(response.data.coupon);
+                message.success(`Coupon "${code}" applied! ${response.data.coupon.discountPercentage}% off`);
+            }
+        } catch (error) {
+            message.error(error.response?.data?.message || 'Invalid coupon code');
+        } finally {
+            setCouponLoading(false);
+        }
+    };
+
+    const handleRemoveCoupon = () => {
+        setAppliedCoupon(null);
+        setCouponCode('');
+        message.info('Coupon removed');
+    };
+
+    // Fetch available coupons when selected items change
+    useEffect(() => {
+        if (cart && selectedItems.length > 0) {
+            fetchAvailableCoupons();
+        }
+    }, [selectedItems]);
 
     const handleCheckoutClick = async () => {
         if (selectedItems.length === 0) {
@@ -172,25 +285,36 @@ const Cart = () => {
 
         try {
             setCheckingOut(true);
+
+            // Prepare discount info
+            const discountInfo = {
+                couponCode: appliedCoupon?.code || null,
+                couponDiscount: calculateDiscount(),
+                membershipDiscount: calculateMembershipDiscount(),
+                membershipTier: membership?.membership || null,
+            };
+
             console.log('Processing checkout:', {
                 customerId: user.customer.id,
                 selectedItems,
                 selectedAddress,
-                paymentMethod
+                paymentMethod,
+                discountInfo
             });
-            
+
             const response = await cartService.checkout(
                 user.customer.id,
                 selectedItems,
                 selectedAddress,
-                paymentMethod
+                paymentMethod,
+                discountInfo
             );
-            
+
             console.log('Checkout response:', response);
-            
+
             if (response && (response.ok || response.data)) {
                 const orderData = response.data?.order || response.data;
-                
+
                 // Check if Stripe session URL exists
                 if (orderData?.stripeSessionUrl) {
                     message.success('Redirecting to Stripe checkout...');
@@ -198,7 +322,7 @@ const Cart = () => {
                     window.location.href = orderData.stripeSessionUrl;
                     return;
                 }
-                
+
                 message.success('Order placed successfully!');
                 setCheckoutModalVisible(false);
                 setSelectedItems([]);
@@ -339,14 +463,124 @@ const Cart = () => {
 
                 <Divider />
 
+                {/* Coupon Section */}
+                <Card size="small" style={{ marginBottom: 16, background: '#fafafa' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', marginBottom: 12 }}>
+                        <TagOutlined style={{ marginRight: 8, color: '#1677ff' }} />
+                        <Text strong>Coupons</Text>
+                    </div>
+
+                    {/* Applied Coupon */}
+                    {appliedCoupon ? (
+                        <div style={{
+                            display: 'flex',
+                            justifyContent: 'space-between',
+                            alignItems: 'center',
+                            padding: '8px 12px',
+                            background: '#f6ffed',
+                            border: '1px solid #b7eb8f',
+                            borderRadius: 6,
+                            marginBottom: 12
+                        }}>
+                            <div>
+                                <Text strong style={{ color: '#52c41a' }}>
+                                    <GiftOutlined /> {appliedCoupon.code}
+                                </Text>
+                                <Text type="secondary" style={{ marginLeft: 8 }}>
+                                    {appliedCoupon.discountPercentage}% off
+                                </Text>
+                            </div>
+                            <Button type="link" danger size="small" onClick={handleRemoveCoupon}>
+                                Remove
+                            </Button>
+                        </div>
+                    ) : (
+                        /* Coupon Input */
+                        <Space.Compact style={{ width: '100%', marginBottom: 12 }}>
+                            <input
+                                placeholder="Enter coupon code"
+                                value={couponCode}
+                                onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
+                                style={{
+                                    flex: 1,
+                                    padding: '8px 12px',
+                                    border: '1px solid #d9d9d9',
+                                    borderRadius: '6px 0 0 6px',
+                                    outline: 'none'
+                                }}
+                            />
+                            <Button
+                                type="primary"
+                                onClick={() => handleApplyCoupon(couponCode)}
+                                loading={couponLoading}
+                                disabled={selectedItems.length === 0}
+                            >
+                                Apply
+                            </Button>
+                        </Space.Compact>
+                    )}
+
+                    {/* Available Coupons */}
+                    {!appliedCoupon && (
+                        <div>
+                            <Text type="secondary" style={{ fontSize: 12 }}>Available Coupons:</Text>
+                            {couponLoading ? (
+                                <Spin size="small" style={{ marginLeft: 8 }} />
+                            ) : availableCoupons.length > 0 ? (
+                                <div style={{ marginTop: 8, display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+                                    {availableCoupons.map((coupon) => (
+                                        <Button
+                                            key={coupon.id}
+                                            size="small"
+                                            onClick={() => handleApplyCoupon(coupon.code)}
+                                            style={{ borderStyle: 'dashed' }}
+                                        >
+                                            {coupon.code} ({coupon.discountPercentage}% off)
+                                        </Button>
+                                    ))}
+                                </div>
+                            ) : (
+                                <Text type="secondary" style={{ display: 'block', marginTop: 4, fontStyle: 'italic' }}>
+                                    No coupons available for selected items
+                                </Text>
+                            )}
+                        </div>
+                    )}
+                </Card>
+
+                {/* Total Section */}
                 <div style={{ textAlign: 'right' }}>
-                    <Space size="large">
-                        <Text strong style={{ fontSize: '18px' }}>
-                            Total ({selectedItems.length} items):
-                        </Text>
-                        <Text strong style={{ fontSize: '24px', color: '#ff4d4f' }}>
-                            ${calculateTotal().toFixed(2)}
-                        </Text>
+                    <Space direction="vertical" align="end">
+                        <div>
+                            <Text style={{ fontSize: '14px' }}>Subtotal ({selectedItems.length} items): </Text>
+                            <Text style={{ fontSize: '14px' }}>${calculateTotal().toFixed(2)}</Text>
+                        </div>
+                        {appliedCoupon && (
+                            <div>
+                                <Text style={{ fontSize: '14px', color: '#52c41a' }}>
+                                    Coupon Discount ({appliedCoupon.discountPercentage}%):
+                                </Text>
+                                <Text style={{ fontSize: '14px', color: '#52c41a' }}>
+                                    -${calculateDiscount().toFixed(2)}
+                                </Text>
+                            </div>
+                        )}
+                        {membership && getMembershipDiscountPercent() > 0 && (
+                            <div>
+                                <Text style={{ fontSize: '14px', color: '#ffc107' }}>
+                                    {membership.membership} Member Discount ({getMembershipDiscountPercent()}%):
+                                </Text>
+                                <Text style={{ fontSize: '14px', color: '#ffc107' }}>
+                                    -${calculateMembershipDiscount().toFixed(2)}
+                                </Text>
+                            </div>
+                        )}
+                        <div>
+                            <Text strong style={{ fontSize: '18px' }}>Total: </Text>
+                            <Text strong style={{ fontSize: '24px', color: '#ff4d4f' }}>
+                                ${calculateFinalTotal().toFixed(2)}
+                            </Text>
+                        </div>
                         <Button
                             type="primary"
                             size="large"
@@ -412,7 +646,7 @@ const Cart = () => {
                     >
                         <Space direction="vertical">
                             <Radio value="COD">Cash on Delivery (COD)</Radio>
-                            <Radio value="VNPAY">VNPay</Radio>
+                            <Radio value="VNPAY" disabled>VNPay <Text type="secondary">(in maintenance)</Text></Radio>
                             <Radio value="STRIPE">Stripe</Radio>
                         </Space>
                     </Radio.Group>
@@ -421,12 +655,32 @@ const Cart = () => {
                 <Divider />
 
                 <div style={{ textAlign: 'right' }}>
-                    <Text strong style={{ fontSize: '18px' }}>
-                        Total Amount:{' '}
-                    </Text>
-                    <Text strong style={{ fontSize: '24px', color: '#ff4d4f' }}>
-                        ${calculateTotal().toFixed(2)}
-                    </Text>
+                    <Space direction="vertical" align="end" size="small">
+                        <div>
+                            <Text style={{ fontSize: '14px' }}>Subtotal: </Text>
+                            <Text style={{ fontSize: '14px' }}>${calculateTotal().toFixed(2)}</Text>
+                        </div>
+                        {appliedCoupon && (
+                            <div>
+                                <Text style={{ fontSize: '14px', color: '#52c41a' }}>
+                                    Coupon ({appliedCoupon.discountPercentage}%): -${calculateDiscount().toFixed(2)}
+                                </Text>
+                            </div>
+                        )}
+                        {membership && getMembershipDiscountPercent() > 0 && (
+                            <div>
+                                <Text style={{ fontSize: '14px', color: '#ffc107' }}>
+                                    {membership.membership} ({getMembershipDiscountPercent()}%): -${calculateMembershipDiscount().toFixed(2)}
+                                </Text>
+                            </div>
+                        )}
+                        <div>
+                            <Text strong style={{ fontSize: '18px' }}>Total Amount: </Text>
+                            <Text strong style={{ fontSize: '24px', color: '#ff4d4f' }}>
+                                ${calculateFinalTotal().toFixed(2)}
+                            </Text>
+                        </div>
+                    </Space>
                 </div>
             </Modal>
         </div>
