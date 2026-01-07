@@ -7,12 +7,12 @@ import cartService from "../../../../services/cartService"
 import orderService from "../../../../services/orderService"
 import './ActionButtons.css'
 
-const ActionButtons = ({ selectedProductVariant, amount, productData }) => {
+const ActionButtons = ({ selectedProductVariant, amount, productData, isAuthenticated }) => {
     const [loading, setLoading] = useState(false)
     const [buyNowLoading, setBuyNowLoading] = useState(false)
     const [showAddressModal, setShowAddressModal] = useState(false)
     const [selectedAddress, setSelectedAddress] = useState(null)
-    const { isAuthenticated, user } = useSelector(state => state.authReducer || { isAuthenticated: false, user: {} })
+    const { user } = useSelector(state => state.authReducer || { user: {} })
     const navigate = useNavigate()
 
     // Debug logging
@@ -73,19 +73,19 @@ const ActionButtons = ({ selectedProductVariant, amount, productData }) => {
 
         try {
             setLoading(true)
-            
+
             // Get or create cart for the user
             console.log("User from Redux:", user)
             console.log("User ID for cart creation:", user.id)
             console.log("Customer data:", user.customer)
-            
+
             if (!user.customer) {
                 throw new Error("Customer information not found")
             }
-            
+
             const customerId = user.customer.id
             console.log("Customer ID for cart:", customerId)
-            
+
             let cart = null
             try {
                 const cartsResponse = await cartService.getCarts(customerId)
@@ -114,7 +114,7 @@ const ActionButtons = ({ selectedProductVariant, amount, productData }) => {
             // Add item to cart
             const variantId = effectiveVariant.id || selectedProductVariant?.id
             await cartService.addCartItem(cart.id, variantId, amount)
-            
+
             // Show success notification
             notification.success({
                 message: "Added to Cart Successfully",
@@ -143,7 +143,7 @@ const ActionButtons = ({ selectedProductVariant, amount, productData }) => {
             })
             return
         }
-        
+
         if (isVariantRequired) {
             notification.warning({
                 message: "Variant Not Selected",
@@ -201,7 +201,7 @@ const ActionButtons = ({ selectedProductVariant, amount, productData }) => {
             const variantId = effectiveVariant.id || selectedProductVariant?.id
 
             const response = await orderService.createDirectOrder(selectedAddress, variantId, amount)
-            
+
             notification.success({
                 message: "Order Created Successfully",
                 description: `Your order for ${amount} ${productData.name} has been placed`,
@@ -236,41 +236,41 @@ const ActionButtons = ({ selectedProductVariant, amount, productData }) => {
                     loading={loading}
                     disabled={isVariantRequired || isOutOfStock || loading}
                     title={
-                        isVariantRequired 
+                        isVariantRequired
                             ? "Please select a product variant"
                             : isOutOfStock
-                            ? "Product out of stock"
-                            : loading
-                            ? "Processing..."
-                            : "Add to cart"
+                                ? "Product out of stock"
+                                : loading
+                                    ? "Processing..."
+                                    : "Add to cart"
                     }
                 >
-                    {isVariantRequired 
-                        ? "Select Variant" 
-                        : isOutOfStock 
-                        ? "Out of Stock" 
-                        : "Add to Cart"
+                    {isVariantRequired
+                        ? "Select Variant"
+                        : isOutOfStock
+                            ? "Out of Stock"
+                            : "Add to Cart"
                     }
                 </Button>
-                <Button 
-                    type="primary" 
-                    size="large" 
+                <Button
+                    type="primary"
+                    size="large"
                     className="action__buy-now"
                     onClick={handleBuyNow}
                     disabled={isVariantRequired || isOutOfStock}
                     title={
-                        isVariantRequired 
+                        isVariantRequired
                             ? "Please select a product variant"
                             : isOutOfStock
-                            ? "Product out of stock"
-                            : "Buy now"
+                                ? "Product out of stock"
+                                : "Buy now"
                     }
                 >
-                    {isVariantRequired 
-                        ? "Select Variant" 
-                        : isOutOfStock 
-                        ? "Out of Stock" 
-                        : "Buy Now"
+                    {isVariantRequired
+                        ? "Select Variant"
+                        : isOutOfStock
+                            ? "Out of Stock"
+                            : "Buy Now"
                     }
                 </Button>
             </div>

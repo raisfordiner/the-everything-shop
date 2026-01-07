@@ -35,13 +35,17 @@ const VariantSelector = ({
                         <Text strong>{type}:</Text>
                         <div className="variant-options">
                             {options.map((option) => {
-                                const isValid = productVariants.some((v) =>
-                                    Object.entries(selectedAttributes).every(
+                                const isValid = productVariants.some((v) => {
+                                    // Build attributes excluding the current type being evaluated
+                                    const otherAttributes = Object.entries(selectedAttributes)
+                                        .filter(([key]) => key.toLowerCase() !== type.toLowerCase())
+
+                                    // Check if variant matches other attributes AND has this option
+                                    return otherAttributes.every(
                                         ([attrKey, attrValue]) =>
                                             v.variantAttributes[attrKey.toLowerCase()] === attrValue
-                                    ) &&
-                                    v.variantAttributes[type.toLowerCase()] === option
-                                )
+                                    ) && v.variantAttributes[type.toLowerCase()] === option
+                                })
 
                                 const isSelected = selectedAttributes[type.toLowerCase()] === option
 
@@ -53,11 +57,13 @@ const VariantSelector = ({
                                         onClick={() => {
                                             setSelectedAttributes((prev) => {
                                                 const key = type.toLowerCase()
+                                                // If clicking the already selected option, deselect it
                                                 if (prev[key] === option) {
                                                     const updated = { ...prev }
                                                     delete updated[key]
                                                     return updated
                                                 }
+                                                // Otherwise, select the new option (direct switching)
                                                 return { ...prev, [key]: option }
                                             })
                                         }}
