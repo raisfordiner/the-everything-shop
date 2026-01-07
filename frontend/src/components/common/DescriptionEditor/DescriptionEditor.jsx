@@ -3,12 +3,11 @@ import {
   Button,
   Card,
   Input,
-  Tabs,
   Space,
   Popconfirm,
   Empty,
-  Row,
-  Col,
+  Typography,
+  Divider,
 } from 'antd';
 import {
   PlusOutlined,
@@ -18,8 +17,9 @@ import {
 import TinyMCEEditor from '../TextEditor/TextEditor';
 import './DescriptionEditor.css';
 
+const { Title, Text } = Typography;
+
 export default function DescriptionEditor({ value, onChange, onUploadedImages }) {
-  const [descriptionMode, setDescriptionMode] = useState('simple'); // 'simple' or 'sections'
   const [simpleText, setSimpleText] = useState('');
   const [sections, setSections] = useState([]);
   const [editingSectionId, setEditingSectionId] = useState(null);
@@ -30,47 +30,40 @@ export default function DescriptionEditor({ value, onChange, onUploadedImages })
     if (value) {
       try {
         const parsed = typeof value === 'string' ? JSON.parse(value) : value;
-        if (parsed.type === 'sections' && Array.isArray(parsed.sections)) {
-          setDescriptionMode('sections');
+        // Support new format with both simpleText and sections
+        if (parsed.simpleText !== undefined) {
+          setSimpleText(parsed.simpleText || '');
+          setSections(parsed.sections || []);
+        }
+        // Legacy format support
+        else if (parsed.type === 'sections' && Array.isArray(parsed.sections)) {
           setSections(parsed.sections);
+          setSimpleText('');
         } else if (parsed.type === 'simple' && typeof parsed.content === 'string') {
-          setDescriptionMode('simple');
           setSimpleText(parsed.content);
+          setSections([]);
         }
       } catch {
         // If parsing fails, treat as simple string
-        setDescriptionMode('simple');
         setSimpleText(typeof value === 'string' ? value : '');
+        setSections([]);
       }
     }
-  }, [value]);
+  }, []);
 
-  // Handle simple text change
-  const handleSimpleTextChange = (content) => {
-    setSimpleText(content);
+  // Notify parent of changes
+  const notifyChange = (newSimpleText, newSections) => {
     const descriptionData = {
-      type: 'simple',
-      content: content,
+      simpleText: newSimpleText,
+      sections: newSections,
     };
     onChange(JSON.stringify(descriptionData));
   };
 
-  // Handle mode switch
-  const handleModeChange = (newMode) => {
-    setDescriptionMode(newMode);
-    if (newMode === 'simple') {
-      const descriptionData = {
-        type: 'simple',
-        content: simpleText,
-      };
-      onChange(JSON.stringify(descriptionData));
-    } else {
-      const descriptionData = {
-        type: 'sections',
-        sections: sections,
-      };
-      onChange(JSON.stringify(descriptionData));
-    }
+  // Handle simple text change
+  const handleSimpleTextChange = (content) => {
+    setSimpleText(content);
+    notifyChange(content, sections);
   };
 
   // Add new section
@@ -82,11 +75,10 @@ export default function DescriptionEditor({ value, onChange, onUploadedImages })
     };
     const newSections = [...sections, newSection];
     setSections(newSections);
-    const descriptionData = {
-      type: 'sections',
-      sections: newSections,
-    };
-    onChange(JSON.stringify(descriptionData));
+    notifyChange(simpleText, newSections);
+    // Auto-open for editing
+    setEditingSectionId(newSection.id);
+    setEditingSectionData({ title: 'New Section', content: '' });
   };
 
   // Start editing section
@@ -107,11 +99,7 @@ export default function DescriptionEditor({ value, onChange, onUploadedImages })
         : section
     );
     setSections(newSections);
-    const descriptionData = {
-      type: 'sections',
-      sections: newSections,
-    };
-    onChange(JSON.stringify(descriptionData));
+    notifyChange(simpleText, newSections);
     setEditingSectionId(null);
     setEditingSectionData({ title: '', content: '' });
   };
@@ -135,76 +123,73 @@ export default function DescriptionEditor({ value, onChange, onUploadedImages })
         : section
     );
     setSections(newSections);
-    const descriptionData = {
-      type: 'sections',
-      sections: newSections,
-    };
-    onChange(JSON.stringify(descriptionData));
+    notifyChange(simpleText, newSections);
   };
 
   // Delete section
   const handleDeleteSection = (id) => {
     const newSections = sections.filter((section) => section.id !== id);
     setSections(newSections);
-    const descriptionData = {
-      type: 'sections',
-      sections: newSections,
-    };
-    onChange(JSON.stringify(descriptionData));
+    notifyChange(simpleText, newSections);
   };
 
   // Cancel editing
   const handleCancelEdit = () => {
+    // If it's a new section with default title and no content, remove it
+    const section = sections.find(s => s.id === editingSectionId);
+    if (section && section.title === 'New Section' && !section.content) {
+      handleDeleteSection(editingSectionId);
+    }
     setEditingSectionId(null);
     setEditingSectionData({ title: '', content: '' });
   };
 
-  const simpleTab = {
-    key: 'simple',
-    label: 'Simple Text',
-    children: (
-      <div className="description-tab-content">
-        <p className="section-hint">
-          Use a simple text editor for basic product descriptions.
-        </p>
+  return (
+    <div className="description-editor">
+      {/* Simple Text Description - Required */}
+      <div className="description-section">
+        <Title level={5}>
+          Product Description <Text type="danger">*</Text>
+        </Title>
+        <Text type="secondary" style={{ display: 'block', marginBottom: 12 }}>
+          Write a compelling description for your product. This is required.
+        </Text>
         <TinyMCEEditor
           value={simpleText}
           onChange={handleSimpleTextChange}
           onUploadedImages={onUploadedImages}
         />
       </div>
-    ),
-  };
 
-  const sectionsTab = {
-    key: 'sections',
-    label: 'Sections',
-    children: (
-      <div className="description-tab-content">
-        <p className="section-hint">
-          Organize your description into multiple sections with headers and rich content.
-        </p>
+      <Divider />
+
+      {/* Sections - Optional */}
+      <div className="description-section">
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+          <div>
+            <Title level={5} style={{ marginBottom: 0 }}>Additional Sections</Title>
+            <Text type="secondary">Optional: Add detailed sections like Features, Specifications, etc.</Text>
+          </div>
+          <Button
+            type="dashed"
+            icon={<PlusOutlined />}
+            onClick={handleAddSection}
+            disabled={editingSectionId !== null}
+          >
+            Add Section
+          </Button>
+        </div>
 
         {sections.length === 0 ? (
-          <Empty
-            description="No sections yet"
-            style={{ marginTop: '40px', marginBottom: '40px' }}
-          >
-            <Button
-              type="primary"
-              icon={<PlusOutlined />}
-              onClick={handleAddSection}
-            >
-              Create First Section
-            </Button>
-          </Empty>
+          <div style={{ padding: 24, background: '#fafafa', borderRadius: 8, textAlign: 'center' }}>
+            <Text type="secondary">No additional sections. Click "Add Section" to create one.</Text>
+          </div>
         ) : (
-          <div className="sections-list">
+          <div className="sections-list" style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
             {sections.map((section) => (
               <Card
                 key={section.id}
-                className="section-card"
-                style={{ marginBottom: '16px' }}
+                size="small"
                 title={
                   editingSectionId === section.id ? (
                     <Input
@@ -228,18 +213,7 @@ export default function DescriptionEditor({ value, onChange, onUploadedImages })
                       <Button
                         type="primary"
                         size="small"
-                        onClick={() => {
-                          // Save the title and content before closing
-                          const newSections = sections.map((section) =>
-                            section.id === editingSectionId
-                              ? { ...section, title: editingSectionData.title, content: editingSectionData.content }
-                              : section
-                          );
-                          setSections(newSections);
-                          onChange(JSON.stringify({ type: 'sections', sections: newSections }));
-                          setEditingSectionId(null);
-                          setEditingSectionData({ title: '', content: '' });
-                        }}
+                        onClick={handleSaveSection}
                       >
                         Done
                       </Button>
@@ -253,8 +227,6 @@ export default function DescriptionEditor({ value, onChange, onUploadedImages })
                   ) : (
                     <Space size="small">
                       <Button
-                        type="primary"
-                        ghost
                         size="small"
                         icon={<EditOutlined />}
                         onClick={() => handleEditSection(section)}
@@ -270,7 +242,6 @@ export default function DescriptionEditor({ value, onChange, onUploadedImages })
                       >
                         <Button
                           danger
-                          ghost
                           size="small"
                           icon={<DeleteOutlined />}
                         >
@@ -292,35 +263,14 @@ export default function DescriptionEditor({ value, onChange, onUploadedImages })
                 ) : (
                   <div
                     className="section-content-preview"
-                    dangerouslySetInnerHTML={{ __html: section.content }}
+                    dangerouslySetInnerHTML={{ __html: section.content || '<em>No content yet</em>' }}
                   />
                 )}
               </Card>
             ))}
-
-            <Button
-              block
-              type="dashed"
-              icon={<PlusOutlined />}
-              onClick={handleAddSection}
-              style={{ marginTop: '16px' }}
-            >
-              Add Another Section
-            </Button>
           </div>
         )}
       </div>
-    ),
-  };
-
-  return (
-    <div className="description-editor">
-      <Tabs
-        activeKey={descriptionMode}
-        onChange={handleModeChange}
-        items={[simpleTab, sectionsTab]}
-        className="description-tabs"
-      />
     </div>
   );
 }

@@ -4,6 +4,14 @@ import './VariantSelector.css'
 
 const { Text } = Typography
 
+// Helper to get attribute value case-insensitively
+const getAttrValue = (attrs, key) => {
+    if (!attrs) return undefined
+    const lowerKey = key.toLowerCase()
+    const foundKey = Object.keys(attrs).find(k => k.toLowerCase() === lowerKey)
+    return foundKey ? attrs[foundKey] : undefined
+}
+
 const findMatchingKey = (variantOptions, type) => {
     const lowerType = type.toLowerCase()
     const keys = Object.keys(variantOptions)
@@ -43,8 +51,8 @@ const VariantSelector = ({
                                     // Check if variant matches other attributes AND has this option
                                     return otherAttributes.every(
                                         ([attrKey, attrValue]) =>
-                                            v.variantAttributes[attrKey.toLowerCase()] === attrValue
-                                    ) && v.variantAttributes[type.toLowerCase()] === option
+                                            getAttrValue(v.variantAttributes, attrKey) === attrValue
+                                    ) && getAttrValue(v.variantAttributes, type) === option
                                 })
 
                                 const isSelected = selectedAttributes[type.toLowerCase()] === option
@@ -52,7 +60,6 @@ const VariantSelector = ({
                                 return (
                                     <Button
                                         key={option}
-                                        // type={isSelected ? "primary" : "default"}
                                         disabled={!isValid}
                                         onClick={() => {
                                             setSelectedAttributes((prev) => {
@@ -82,3 +89,4 @@ const VariantSelector = ({
 }
 
 export default VariantSelector
+

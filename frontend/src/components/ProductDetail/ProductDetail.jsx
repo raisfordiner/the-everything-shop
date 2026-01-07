@@ -50,15 +50,25 @@ const ProductDetail = () => {
     useEffect(() => {
         if (!productData || !selectedAttributes) return
 
+        // Helper to get attribute value case-insensitively
+        const getAttrValue = (attrs, key) => {
+            const lowerKey = key.toLowerCase()
+            const foundKey = Object.keys(attrs || {}).find(k => k.toLowerCase() === lowerKey)
+            return foundKey ? attrs[foundKey] : undefined
+        }
+
         const matchedVariant = productData.productVariants?.find((v) =>
             Object.entries(selectedAttributes).every(
-                ([key, val]) => v.variantAttributes[key.toLowerCase()] === val
+                ([key, val]) => getAttrValue(v.variantAttributes, key) === val
             )
         )
 
         setSelectedProductVariant(matchedVariant || null)
+
+        // Use variant images if variant selected AND has images, otherwise use product images
+        const variantImages = matchedVariant?.images?.length > 0 ? matchedVariant.images : null
         setSelectedImage(
-            matchedVariant?.images?.[0] || productData.images?.[0] || null
+            variantImages?.[0] || productData.images?.[0] || null
         )
     }, [selectedAttributes, productData])
 
@@ -71,12 +81,13 @@ const ProductDetail = () => {
                 <Col span={14}>
                     <Flex vertical gap={'16px'}>
                         <ProductGallery
-                            images={selectedProductVariant?.images || productData.images}
+                            images={
+                                (selectedProductVariant?.images?.length > 0)
+                                    ? selectedProductVariant.images
+                                    : productData.images
+                            }
                             selectedImage={selectedImage}
                             onSelectImage={setSelectedImage}
-                        // style={{
-                        //     width: '50%'
-                        // }}
                         />
 
                         <div className="sub" style={{ background: 'white', borderRadius: '10px' }}>

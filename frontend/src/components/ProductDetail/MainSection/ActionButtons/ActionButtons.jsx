@@ -18,7 +18,7 @@ const ActionButtons = ({ selectedProductVariant, amount, productData, isAuthenti
     // Debug logging
     console.log("ActionButtons props:", { selectedProductVariant, amount, productData })
     console.log("selectedProductVariant:", selectedProductVariant)
-    console.log("selectedProductVariant stockQuantity:", selectedProductVariant?.stockQuantity)
+    console.log("selectedProductVariant quantity:", selectedProductVariant?.quantity)
 
     // Check if product has variants
     const hasVariants = productData?.variantTypes?.length > 0
@@ -34,7 +34,7 @@ const ActionButtons = ({ selectedProductVariant, amount, productData, isAuthenti
     console.log("effectiveVariant:", effectiveVariant)
 
     const isVariantRequired = hasVariants && !selectedProductVariant
-    const isOutOfStock = effectiveVariant && effectiveVariant.stockQuantity <= 0
+    const isOutOfStock = effectiveVariant && effectiveVariant.quantity <= 0
 
     console.log("isVariantRequired:", isVariantRequired)
     console.log("isOutOfStock:", isOutOfStock)
@@ -69,10 +69,10 @@ const ActionButtons = ({ selectedProductVariant, amount, productData, isAuthenti
         }
 
         // Check stock availability
-        if (effectiveVariant.stockQuantity < amount) {
+        if (effectiveVariant.quantity < amount) {
             notification.warning({
                 message: "Insufficient Stock",
-                description: `Only ${effectiveVariant.stockQuantity} items available in stock`,
+                description: `Only ${effectiveVariant.quantity} items available in stock`,
                 placement: "topRight"
             })
             return
@@ -178,10 +178,10 @@ const ActionButtons = ({ selectedProductVariant, amount, productData, isAuthenti
             return
         }
 
-        if (effectiveVariant.stockQuantity < amount) {
+        if (effectiveVariant.quantity < amount) {
             notification.warning({
                 message: "Insufficient Stock",
-                description: `Only ${effectiveVariant.stockQuantity} items available in stock`,
+                description: `Only ${effectiveVariant.quantity} items available in stock`,
                 placement: "topRight"
             })
             return
