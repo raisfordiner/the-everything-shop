@@ -1,4 +1,4 @@
-import { PrismaClient, Variants } from '@prisma/client';
+import { PrismaClient } from '@prisma/client';
 import bcrypt from 'bcryptjs';
 import { hashPassword } from '../util/hash';
 
@@ -338,12 +338,11 @@ async function main() {
     data: {
       name: 'Wireless Earbuds Pro',
       description: 'Premium wireless earbuds with noise cancellation',
-      stockQuantity: 150,
       images: ['https://cdnv2.tgdd.vn/mwg-static/tgdd/Products/Images/54/333561/tai-nghe-tws-xiaomi-redmi-buds-6-den-3-638707208403801581-750x500.jpg', 'https://cdnv2.tgdd.vn/mwg-static/tgdd/Products/Images/54/333561/tai-nghe-tws-xiaomi-redmi-buds-6-den-10-638707208456038532-750x500.jpg'],
       createdBy: seller1.id,
       price: 199.99,
       categoryId: electronics.id,
-      variantTypes: [Variants.COLOR],
+      variantTypes: ['Color'],
       variantOptions: { colors: ['Black', 'White', 'Blue'] },
     },
   });
@@ -352,12 +351,11 @@ async function main() {
     data: {
       name: 'Smartphone X',
       description: '5G smartphone with 128GB storage',
-      stockQuantity: 50,
       images: ['https://cdnv2.tgdd.vn/mwg-static/tgdd/Products/Images/42/341837/tecno-spark-go-2-xanh-thumb-638899027806878098-600x600.jpg', 'https://cdnv2.tgdd.vn/mwg-static/tgdd/Products/Images/42/341837/tecno-spark-go-2-black-4-638925101014228510-750x500.jpg'],
       createdBy: seller1.id,
       price: 899.99,
       categoryId: electronics.id,
-      variantTypes: [Variants.COLOR, Variants.SIZE],
+      variantTypes: ['Color', 'Size'],
       variantOptions: { colors: ['Black', 'Silver', 'Gold'], sizes: ['64GB', '128GB', '256GB'] },
     },
   });
@@ -366,12 +364,11 @@ async function main() {
     data: {
       name: 'Casual T-Shirt',
       description: '100% cotton comfortable t-shirt',
-      stockQuantity: 200,
       images: ["https://d3design.vn/uploads/tshirt'p.jpg"],
       createdBy: seller2.id,
       price: 29.99,
       categoryId: fashion.id,
-      variantTypes: [Variants.SIZE, Variants.COLOR],
+      variantTypes: ['Size', 'Color'],
       variantOptions: { sizes: ['S', 'M', 'L', 'XL'], colors: ['Red', 'Blue', 'Green'] },
     },
   });
@@ -380,7 +377,6 @@ async function main() {
     data: {
       name: 'Coffee Maker',
       description: 'Automatic coffee maker with timer',
-      stockQuantity: 80,
       images: ['https://i5.walmartimages.com/seo/Mainstays-Black-5-Cup-Drip-Coffee-Maker-New_16f77040-27ab-4008-9852-59c900d7a7d9_1.c524f1d9c465e122596bf65f939c8d26.jpeg'],
       createdBy: seller2.id,
       price: 79.99,
@@ -394,12 +390,11 @@ async function main() {
     data: {
       name: 'Yoga Mat',
       description: 'Premium non-slip yoga mat',
-      stockQuantity: 100,
       images: ['https://images.unsplash.com/photo-1601925260368-ae2f83cf8b7f?q=80&w=2680&auto=format&fit=crop'],
       createdBy: seller3.id,
       price: 25.00,
       categoryId: sports.id,
-      variantTypes: [Variants.COLOR],
+      variantTypes: ['Color'],
       variantOptions: { colors: ['Pink', 'Purple'] },
     },
   });
@@ -408,7 +403,6 @@ async function main() {
     data: {
       name: 'Clean Code',
       description: 'A Handbook of Agile Software Craftsmanship',
-      stockQuantity: 200,
       images: ['https://m.media-amazon.com/images/I/41jEbK-jG+L._SX258_BO1,204,203,200_.jpg'],
       createdBy: seller1.id,
       price: 40.00,
@@ -422,7 +416,6 @@ async function main() {
     data: {
       name: 'LEGO Star Wars',
       description: 'Millennium Falcon building kit',
-      stockQuantity: 15,
       images: ['https://images.unsplash.com/photo-1585366119957-e9730b6d0f60?q=80&w=2071&auto=format&fit=crop'],
       createdBy: seller3.id,
       price: 159.99,

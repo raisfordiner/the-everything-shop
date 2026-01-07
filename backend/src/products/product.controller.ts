@@ -87,8 +87,8 @@ export default class ProductController {
         return Send.validationErrors(res, errors);
       }
 
-      const { name, description, price, stockQuantity, categoryId, images, variantTypes, variantOptions } =
-        bodyValidation.data as CreateProductRequest;
+      const { name, description, price, categoryId, images, variantTypes, variantOptions, variants } =
+        bodyValidation.data as CreateProductRequest & { variants?: any[] };
 
       // Get userId from token (already validated by sellerGuard middleware)
       const { userId } = ProductController.getTokenData(req);
@@ -106,12 +106,12 @@ export default class ProductController {
         name,
         description,
         price,
-        stockQuantity,
         categoryId,
         seller.id,
         images,
         variantTypes,
-        variantOptions
+        variantOptions,
+        variants
       );
 
       return Send.success(res, product, "Product created successfully");

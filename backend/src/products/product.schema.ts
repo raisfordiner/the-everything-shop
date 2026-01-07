@@ -1,5 +1,4 @@
 import { z } from "zod";
-import { Variants } from "@prisma/client";
 
 /**
  * Product name validation
@@ -29,14 +28,6 @@ const priceSchema = z
   .max(999999999.99, "Price must not exceed 999999999.99");
 
 /**
- * Stock quantity validation
- */
-const stockQuantitySchema = z
-  .number()
-  .int("Stock quantity must be an integer")
-  .min(0, "Stock quantity must be 0 or greater");
-
-/**
  * Category ID validation
  */
 const categoryIdSchema = z
@@ -57,7 +48,7 @@ const imagesSchema = z
  * Variant types validation
  */
 const variantTypesSchema = z
-  .array(z.nativeEnum(Variants))
+  .array(z.string())
   .optional()
   .default([]);
 
@@ -70,17 +61,35 @@ const variantOptionsSchema = z
   .default({});
 
 /**
+ * Single variant validation
+ */
+const variantSchema = z.object({
+  variantAttributes: z.record(z.string(), z.any()).optional().default({}),
+  quantity: z.number().int().min(0).default(0),
+  priceAdjustment: z.number().default(0),
+  images: z.array(z.string()).optional().default([]),
+});
+
+/**
+ * Variants array validation
+ */
+const variantsSchema = z
+  .array(variantSchema)
+  .optional()
+  .default([]);
+
+/**
  * Create product schema
  */
 const createProduct = z.object({
   name: productNameSchema,
   description: productDescriptionSchema,
   price: priceSchema,
-  stockQuantity: stockQuantitySchema,
   categoryId: categoryIdSchema,
   images: imagesSchema,
   variantTypes: variantTypesSchema,
   variantOptions: variantOptionsSchema,
+  variants: variantsSchema,
 });
 
 /**
@@ -91,10 +100,10 @@ const updateProduct = z
     name: productNameSchema.optional(),
     description: productDescriptionSchema.optional(),
     price: priceSchema.optional(),
-    stockQuantity: stockQuantitySchema.optional(),
     images: imagesSchema,
     variantTypes: variantTypesSchema,
     variantOptions: variantOptionsSchema,
+    variants: variantsSchema,
   })
   .refine((data) => Object.keys(data).length > 0, {
     message: "At least one field must be provided for update",
