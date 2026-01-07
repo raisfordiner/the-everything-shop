@@ -19,6 +19,8 @@ import {
   Typography,
   Tag,
   Tooltip,
+  Switch,
+  AutoComplete,
 } from 'antd';
 import {
   UploadOutlined,
@@ -87,7 +89,9 @@ export default function ProductDetail() {
       }
     }
 
-    const hasStock = variants.some(v => v.quantity > 0);
+    // Only enabled variants count for stock validation
+    const enabledVariants = variants.filter(v => v.enabled !== false);
+    const hasStock = enabledVariants.some(v => v.quantity > 0);
 
     return hasName && hasCategory && hasPrice && hasImages && hasDescription && hasStock;
   }, [formValues, productImages, description, variants]);
@@ -126,7 +130,7 @@ export default function ProductDetail() {
 
     generate(0, {});
 
-    // Map combinations to variant objects, preserving existing data
+    // Map combinations to variant objects, preserving existing data and enabled state
     return combinations.map(attributes => {
       const key = getVariantKey(attributes);
       const existing = variants.find(v => getVariantKey(v.attributes) === key);
@@ -137,6 +141,7 @@ export default function ProductDetail() {
         quantity: 0,
         priceAdjustment: 0,
         images: [],
+        enabled: true, // New combinations are enabled by default
       };
     });
   };
@@ -148,6 +153,7 @@ export default function ProductDetail() {
     quantity: 0,
     priceAdjustment: 0,
     images: [],
+    enabled: true,
   });
 
   // Fetch categories
@@ -384,12 +390,15 @@ export default function ProductDetail() {
         images: productImages,
         variantTypes: variantTypeCards.map(c => c.name).filter(n => n.trim()),
         variantOptions: variantOptionsObj,
-        variants: variants.map(v => ({
-          variantAttributes: v.attributes,
-          quantity: v.quantity,
-          priceAdjustment: v.priceAdjustment,
-          images: v.images,
-        })),
+        // Only send enabled variants to backend
+        variants: variants
+          .filter(v => v.enabled !== false)
+          .map(v => ({
+            variantAttributes: v.attributes,
+            quantity: v.quantity,
+            priceAdjustment: v.priceAdjustment,
+            images: v.images,
+          })),
       };
 
       setLoading(true);
@@ -473,8 +482,13 @@ export default function ProductDetail() {
             rules={[{ required: true, message: 'Category is required' }]}
           >
             <Select
-              placeholder="Select a category"
+              placeholder="Type to search or select a category"
               size="large"
+              showSearch
+              optionFilterProp="label"
+              filterOption={(input, option) =>
+                (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
+              }
               options={categories.map(cat => ({ label: cat.name, value: cat.id }))}
             />
           </Form.Item>
@@ -686,65 +700,87 @@ export default function ProductDetail() {
               // Variant inventory table
               <div>
                 <Alert
-                  message={`${variants.length} variant combination(s)`}
+                  message={`${variants.filter(v => v.enabled !== false).length} of ${variants.length} variant combination(s) enabled`}
                   type="info"
                   style={{ marginBottom: 12 }}
                 />
 
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                  {variants.map(variant => (
-                    <Card key={variant.id} size="small">
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 16, flexWrap: 'wrap' }}>
-                        {/* Variant attributes */}
-                        <div style={{ flex: '1 1 200px' }}>
-                          <Space wrap>
-                            {Object.entries(variant.attributes).map(([type, value]) => (
-                              <Tag key={type} color="blue">{type}: {value}</Tag>
-                            ))}
-                          </Space>
-                        </div>
-
-                        {/* Quantity */}
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                          <Text>Qty:</Text>
-                          <InputNumber
-                            min={0}
-                            value={variant.quantity}
-                            onChange={(val) => handleVariantChange(variant.id, 'quantity', val || 0)}
-                            style={{ width: 80 }}
-                          />
-                        </div>
-
-                        {/* Price adjustment */}
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                          <Tooltip title="Price adjustment added to base price">
-                            <Text>Price +/-:</Text>
+                  {variants.map(variant => {
+                    const isEnabled = variant.enabled !== false;
+                    return (
+                      <Card
+                        key={variant.id}
+                        size="small"
+                        style={{
+                          opacity: isEnabled ? 1 : 0.6,
+                          background: isEnabled ? undefined : '#f5f5f5'
+                        }}
+                      >
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 16, flexWrap: 'wrap' }}>
+                          {/* Toggle */}
+                          <Tooltip title={isEnabled ? 'Disable this variant' : 'Enable this variant'}>
+                            <Switch
+                              checked={isEnabled}
+                              onChange={(checked) => handleVariantChange(variant.id, 'enabled', checked)}
+                              size="small"
+                            />
                           </Tooltip>
-                          <InputNumber
-                            value={variant.priceAdjustment}
-                            onChange={(val) => handleVariantChange(variant.id, 'priceAdjustment', val || 0)}
-                            style={{ width: 100 }}
-                            formatter={(v) => (v >= 0 ? `+$${v}` : `-$${Math.abs(v)}`)}
-                            parser={(v) => v.replace(/[+$-]/g, '')}
-                          />
-                        </div>
 
-                        {/* Images */}
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                          <Text type="secondary">{variant.images?.length || 0} images</Text>
-                          <Upload
-                            beforeUpload={(file) => handleImageUpload(file, (url) => {
-                              handleVariantChange(variant.id, 'images', [...(variant.images || []), url]);
-                            })}
-                            showUploadList={false}
-                            accept="image/*"
-                          >
-                            <Button size="small" icon={<UploadOutlined />} />
-                          </Upload>
+                          {/* Variant attributes */}
+                          <div style={{ flex: '1 1 200px' }}>
+                            <Space wrap>
+                              {Object.entries(variant.attributes).map(([type, value]) => (
+                                <Tag key={type} color={isEnabled ? 'blue' : 'default'}>{type}: {value}</Tag>
+                              ))}
+                            </Space>
+                          </div>
+
+                          {/* Quantity */}
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                            <Text type={isEnabled ? undefined : 'secondary'}>Qty:</Text>
+                            <InputNumber
+                              min={0}
+                              value={variant.quantity}
+                              onChange={(val) => handleVariantChange(variant.id, 'quantity', val || 0)}
+                              style={{ width: 80 }}
+                              disabled={!isEnabled}
+                            />
+                          </div>
+
+                          {/* Price adjustment */}
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                            <Tooltip title="Price adjustment added to base price">
+                              <Text type={isEnabled ? undefined : 'secondary'}>Price +/-:</Text>
+                            </Tooltip>
+                            <InputNumber
+                              value={variant.priceAdjustment}
+                              onChange={(val) => handleVariantChange(variant.id, 'priceAdjustment', val || 0)}
+                              style={{ width: 100 }}
+                              formatter={(v) => (v >= 0 ? `+$${v}` : `-$${Math.abs(v)}`)}
+                              parser={(v) => v.replace(/[+$-]/g, '')}
+                              disabled={!isEnabled}
+                            />
+                          </div>
+
+                          {/* Images */}
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                            <Text type="secondary">{variant.images?.length || 0} images</Text>
+                            <Upload
+                              beforeUpload={(file) => handleImageUpload(file, (url) => {
+                                handleVariantChange(variant.id, 'images', [...(variant.images || []), url]);
+                              })}
+                              showUploadList={false}
+                              accept="image/*"
+                              disabled={!isEnabled}
+                            >
+                              <Button size="small" icon={<UploadOutlined />} disabled={!isEnabled} />
+                            </Upload>
+                          </div>
                         </div>
-                      </div>
-                    </Card>
-                  ))}
+                      </Card>
+                    );
+                  })}
                 </div>
               </div>
             )}
