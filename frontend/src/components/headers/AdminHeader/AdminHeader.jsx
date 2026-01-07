@@ -50,7 +50,7 @@ const AdminHeader = () => {
         <header className="admin-header">
             {contextHolder}
 
-            <Link to="/admin/orders" className="logo">
+            <Link to="/admin" className="logo">
                 ADMIN PORTAL
             </Link>
 
