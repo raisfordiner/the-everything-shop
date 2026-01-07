@@ -20,15 +20,22 @@ const ActionButtons = ({ selectedProductVariant, amount, productData, isAuthenti
     console.log("selectedProductVariant:", selectedProductVariant)
     console.log("selectedProductVariant stockQuantity:", selectedProductVariant?.stockQuantity)
 
-    // If product doesn't have variants, treat the product itself as the variant
-    const effectiveVariant = selectedProductVariant || productData
+    // Check if product has variants
     const hasVariants = productData?.variantTypes?.length > 0
+
+    // For products without variants, use the first (default) product variant
+    const defaultVariant = !hasVariants && productData?.productVariants?.[0] ? productData.productVariants[0] : null
+
+    // effectiveVariant is the selected variant, or default variant for no-variant products
+    const effectiveVariant = selectedProductVariant || defaultVariant
+
     console.log("hasVariants:", hasVariants)
+    console.log("defaultVariant:", defaultVariant)
+    console.log("effectiveVariant:", effectiveVariant)
+
     const isVariantRequired = hasVariants && !selectedProductVariant
     const isOutOfStock = effectiveVariant && effectiveVariant.stockQuantity <= 0
 
-    console.log("effectiveVariant:", effectiveVariant)
-    console.log("hasVariants:", hasVariants)
     console.log("isVariantRequired:", isVariantRequired)
     console.log("isOutOfStock:", isOutOfStock)
 
@@ -111,14 +118,23 @@ const ActionButtons = ({ selectedProductVariant, amount, productData, isAuthenti
                 }
             }
 
-            // Add item to cart
-            const variantId = effectiveVariant.id || selectedProductVariant?.id
+            // Add item to cart - use variant ID
+            const variantId = effectiveVariant?.id
+            if (!variantId) {
+                throw new Error("Product variant not found. Please refresh the page and try again.")
+            }
+            console.log("Adding to cart - variantId:", variantId, "quantity:", amount)
             await cartService.addCartItem(cart.id, variantId, amount)
 
-            // Show success notification
+            // Show success notification with View Cart button
             notification.success({
                 message: "Added to Cart Successfully",
                 description: `Added ${amount} ${productData.name} to cart`,
+                btn: (
+                    <Button type="link" size="small" onClick={() => navigate('/cart')}>
+                        View Cart
+                    </Button>
+                ),
                 placement: "topRight"
             })
 

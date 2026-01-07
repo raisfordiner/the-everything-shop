@@ -72,7 +72,7 @@ export default class CartService {
     });
     console.log("cart", cart);
     if (!cart) {
-        throw new Error("Cart not found");
+      throw new Error("Cart not found");
     }
 
     const productVariant = await prisma.productVariant.findUnique({
@@ -168,6 +168,10 @@ export default class CartService {
     cartItemIds: string[];
     addressId: string;
     paymentMethod: "COD" | "VNPAY" | "STRIPE";
+    couponCode?: string;
+    couponDiscount?: number;
+    membershipDiscount?: number;
+    membershipTier?: string;
   }) {
     // Validate cart items exist and belong to customer's cart
     const cartItems = await prisma.cartItem.findMany({
@@ -200,12 +204,17 @@ export default class CartService {
       throw new Error("Address not found or does not belong to this customer");
     }
 
-    // Calculate total amount
-    const totalAmount = cartItems.reduce((sum, item) => {
+    // Calculate subtotal amount
+    const subtotalAmount = cartItems.reduce((sum, item) => {
       const basePrice = item.productVariant.product.price;
       const finalPrice = basePrice + item.productVariant.priceAdjustment;
       return sum + finalPrice * item.quantity;
     }, 0);
+
+    // Apply discounts
+    const couponDiscount = data.couponDiscount || 0;
+    const membershipDiscount = data.membershipDiscount || 0;
+    const totalAmount = Math.max(0, subtotalAmount - couponDiscount - membershipDiscount);
 
     // Create order with order items and payment in a transaction
     const order = await prisma.$transaction(async (tx) => {
@@ -247,17 +256,20 @@ export default class CartService {
         },
       });
 
-      // Subtract stock quantities
-      await Promise.all(
-        cartItems.map((cartItem) =>
-          tx.productVariant.update({
-            where: { id: cartItem.productVariantId },
-            data: {
-              quantity: { decrement: cartItem.quantity },
-            },
-          })
-        )
-      );
+      // Only subtract stock quantities immediately for COD orders
+      // For Stripe, stock will be decremented after payment confirmation via webhook
+      if (data.paymentMethod === "COD") {
+        await Promise.all(
+          cartItems.map((cartItem) =>
+            tx.productVariant.update({
+              where: { id: cartItem.productVariantId },
+              data: {
+                quantity: { decrement: cartItem.quantity },
+              },
+            })
+          )
+        );
+      }
 
       // Delete the cart items that were checked out
       await tx.cartItem.deleteMany({
@@ -268,6 +280,11 @@ export default class CartService {
 
       if (data.paymentMethod === "STRIPE") {
         const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "");
+
+        const frontendUrl = process.env.FE_URL || "http://localhost:3000";
+        const successUrl = `${frontendUrl}/loading?orderId=${newOrder.id}`;
+        const cancelUrl = `${frontendUrl}/cart`;
+
         const session = await stripe.checkout.sessions.create({
           payment_method_types: ['card'],
           line_items: [{
@@ -282,8 +299,8 @@ export default class CartService {
           }],
           expires_at: Math.floor(Date.now() / 1000) + 30 * 60, // 30 minutes from now
           mode: 'payment',
-          success_url: `${process.env.FRONTEND_URL}/loading?orderId=${newOrder.id}`,
-          cancel_url: `${process.env.FRONTEND_URL}/cart`,
+          success_url: successUrl,
+          cancel_url: cancelUrl,
           metadata: {
             orderIds: newOrder.id,
             userId: data.customerId,
@@ -299,8 +316,6 @@ export default class CartService {
         payment,
       };
     });
-
-
 
     // Return the complete order with details
     const orderId = 'session' in order ? order.orderId : order.id;

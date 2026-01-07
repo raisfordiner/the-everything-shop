@@ -212,6 +212,20 @@ class CouponsRouter extends BaseRouter {
     const checkIfAdminSeller = [authGuard, adminOrSellerGuard];
 
     return [
+      // Customer-facing routes (authenticated users)
+      {
+        path: "/available",
+        method: "post",
+        middlewares: [authGuard],
+        controller: CouponsController.getAvailableCoupons,
+      },
+      {
+        path: "/validate",
+        method: "post",
+        middlewares: [authGuard],
+        controller: CouponsController.validateCoupon,
+      },
+      // Admin routes
       {
         path: "/",
         method: "get",

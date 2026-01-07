@@ -32,11 +32,15 @@ const deleteCartItem = (cartId, itemId) => {
     return del(`/carts/${cartId}/items/${itemId}`);
 };
 
-const checkout = (customerId, cartItemIds, addressId, paymentMethod) => {
+const checkout = (customerId, cartItemIds, addressId, paymentMethod, discountInfo = {}) => {
     return post(`/carts/${customerId}/checkout`, {
         cartItemIds,
         addressId,
         paymentMethod,
+        couponCode: discountInfo.couponCode,
+        couponDiscount: discountInfo.couponDiscount,
+        membershipDiscount: discountInfo.membershipDiscount,
+        membershipTier: discountInfo.membershipTier,
     });
 };
 

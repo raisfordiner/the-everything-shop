@@ -146,6 +146,11 @@ const Orders = () => {
     };
 
     const calculateOrderTotal = (order) => {
+        // Use payment amount which includes discounts
+        if (order?.payment?.amount !== undefined) {
+            return order.payment.amount;
+        }
+        // Fallback to calculating from items (for orders without payment info)
         if (!order?.orderItems) return 0;
         return order.orderItems.reduce((total, item) => {
             const itemPrice = getItemPrice(item);
