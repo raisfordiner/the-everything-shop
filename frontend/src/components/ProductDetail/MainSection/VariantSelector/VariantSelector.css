@@ -22,13 +22,15 @@
 .variant-option {
     padding: 6px 12px;
     border-radius: 6px;
-    border: 1px solid #d9d9d9;
+    border: 2px solid #d9d9d9;
     cursor: pointer;
-    background: #fafafa;
+    background: #ffffff;
+    color: #262626;
+    font-weight: 500;
     transition: all 0.2s ease;
 }
 
-.variant-option:hover {
+.variant-option:hover:not(:disabled) {
     border-color: #1677ff;
     color: #1677ff;
 }
@@ -37,4 +39,19 @@
     border-color: #1677ff;
     background-color: #e6f0ff;
     color: #1677ff;
+    font-weight: 600;
+}
+
+/* Disabled/unavailable variants */
+.variant-option:disabled {
+    background: #f5f5f5;
+    border-color: #e0e0e0;
+    color: #bfbfbf;
+    cursor: not-allowed;
+    opacity: 0.5;
+}
+
+.variant-option:disabled:hover {
+    border-color: #e0e0e0;
+    color: #bfbfbf;
 }
