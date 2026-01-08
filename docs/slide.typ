@@ -17,10 +17,8 @@
 = Tổng quan đề tài
 *Giới thiệu:*
 - Trang web thương mại điện tử
-- Áp dụng lý thuyết kỹ thuật phần mềm xây dựng hệ thống MVC hoàn chỉnh
 
 *Vấn đề giải quyết:*
-- Thu hẹp khoảng cách giữa lý thuyết và thực hành
 - Hiểu kiến trúc ứng dụng web, quản lý trạng thái, mô hình CSDL quan hệ
 - Nắm vững mẫu thiết kế cốt lõi thay vì dùng công cụ có sẵn
 
@@ -32,7 +30,7 @@
 = Kiến trúc & Công nghệ
 *Kiến trúc 3 tầng (MVC):*
 - *Tầng View*: React SPA + Redux
-- *Tầng Controller*: Node.js/Express API + JWT
+- *Tầng Controller*: Node.js/Express API
 - *Tầng Model*: PostgreSQL + Prisma ORM
 
 *Stack công nghệ (PERN):*
@@ -74,9 +72,9 @@
 - On-premise, khả năng phục hồi thấp
 
 *Bài học:*
-- MVC separation, type safety quan trọng
-- Thách thức: tích hợp frontend-backend, quản lý trạng thái
+- Kĩ thuật tách thành MVC, đề cao type safety
+- Thách thức: kết nối frontend-backend, quản lý state ở frontend
 - Docker đảm bảo môi trường nhất quán
-- Prisma đơn giản hóa DB
+- Prisma đơn giản hóa thao tác với DB
 
-*Hướng phát triển:* tiểu dịch vụ, cổng thanh toán thật, tối ưu hiệu suất, triển khai công cộng lên cloud bằng VPS.
+*Hướng phát triển:* chia nhỏ tiểu dịch vụ, cổng thanh toán thật, tối ưu hiệu suất, triển khai lên cloud bằng VPS.
