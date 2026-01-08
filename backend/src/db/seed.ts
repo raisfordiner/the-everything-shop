@@ -342,8 +342,8 @@ async function main() {
       createdBy: seller1.id,
       price: 199.99,
       categoryId: electronics.id,
-      variantTypes: ['Color'],
-      variantOptions: { colors: ['Black', 'White', 'Blue'] },
+      variantTypes: ["Color"],
+      variantOptions: { "Color": ['Black', 'White', 'Blue'] },
     },
   });
 
@@ -356,7 +356,7 @@ async function main() {
       price: 899.99,
       categoryId: electronics.id,
       variantTypes: ['Color', 'Size'],
-      variantOptions: { colors: ['Black', 'Silver', 'Gold'], sizes: ['64GB', '128GB', '256GB'] },
+      variantOptions: { "Color": ['Black', 'Silver', 'Gold'], "Size": ['64GB', '128GB', '256GB'] },
     },
   });
 
@@ -369,7 +369,7 @@ async function main() {
       price: 29.99,
       categoryId: fashion.id,
       variantTypes: ['Size', 'Color'],
-      variantOptions: { sizes: ['S', 'M', 'L', 'XL'], colors: ['Red', 'Blue', 'Green'] },
+      variantOptions: { "Size": ['S', 'M', 'L', 'XL'], "Color": ['Red', 'Blue', 'Green'] },
     },
   });
 
@@ -381,8 +381,8 @@ async function main() {
       createdBy: seller2.id,
       price: 79.99,
       categoryId: homeGoods.id,
-      variantTypes: [],
-      variantOptions: {},
+      variantTypes: ['Condition'],
+      variantOptions: {'Condition': ['New Seal']},
     },
   });
 
@@ -395,7 +395,7 @@ async function main() {
       price: 25.00,
       categoryId: sports.id,
       variantTypes: ['Color'],
-      variantOptions: { colors: ['Pink', 'Purple'] },
+      variantOptions: { 'Color': ['Pink', 'Purple'] },
     },
   });
 
@@ -407,8 +407,8 @@ async function main() {
       createdBy: seller1.id,
       price: 40.00,
       categoryId: books.id,
-      variantTypes: [],
-      variantOptions: {},
+      variantTypes: ['Condition'],
+      variantOptions: {'Condition': ['New Seal']},
     },
   });
 
@@ -420,8 +420,8 @@ async function main() {
       createdBy: seller3.id,
       price: 159.99,
       categoryId: toys.id,
-      variantTypes: [],
-      variantOptions: {},
+      variantTypes: ['Condition'],
+      variantOptions: {'Condition': ['New Seal']},
     },
   });
 
@@ -429,7 +429,7 @@ async function main() {
   const variant1 = await prisma.productVariant.create({
     data: {
       quantity: 50,
-      variantAttributes: { color: 'Black' },
+      variantAttributes: { "Color": 'Black' },
       productId: product1.id,
       images: ['https://cdnv2.tgdd.vn/mwg-static/tgdd/Products/Images/54/333561/tai-nghe-tws-xiaomi-redmi-buds-6-den-10-638707208456038532-750x500.jpg'],
       priceAdjustment: 0,
@@ -439,7 +439,7 @@ async function main() {
   const variant2 = await prisma.productVariant.create({
     data: {
       quantity: 40,
-      variantAttributes: { color: 'White' },
+      variantAttributes: { "Color": 'White' },
       productId: product1.id,
       images: ['https://cdnv2.tgdd.vn/mwg-static/tgdd/Products/Images/54/333561/tai-nghe-tws-xiaomi-redmi-buds-6-trang-10-638708270681754635-750x500.jpg'],
       priceAdjustment: 0,
@@ -449,7 +449,7 @@ async function main() {
   const variant3 = await prisma.productVariant.create({
     data: {
       quantity: 30,
-      variantAttributes: { color: 'Black', size: '128GB' },
+      variantAttributes: { "Color": 'Black', "Size": '128GB' },
       productId: product2.id,
       images: ['https://cdnv2.tgdd.vn/mwg-static/tgdd/Products/Images/42/341837/tecno-spark-go-2-black-1-638925101036906076-750x500.jpg'],
       priceAdjustment: 0,
@@ -459,7 +459,7 @@ async function main() {
   const variant4 = await prisma.productVariant.create({
     data: {
       quantity: 25,
-      variantAttributes: { color: 'Silver', size: '256GB' },
+      variantAttributes: { "Color": 'Silver', "Size": '256GB' },
       productId: product2.id,
       images: ['https://cdnv2.tgdd.vn/mwg-static/tgdd/Products/Images/42/341837/tecno-spark-go-2-xam-1-638925124442876676-750x500.jpg'],
       priceAdjustment: 49.99,
@@ -469,7 +469,7 @@ async function main() {
   const variant5 = await prisma.productVariant.create({
     data: {
       quantity: 60,
-      variantAttributes: { size: 'M', color: 'Blue' },
+      variantAttributes: { "Size": 'M', "Color": 'Blue' },
       productId: product3.id,
       images: ['https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTmkpQEgj50rjwfk2YGaDHxfhyb37RmeOJQqw&s'],
       priceAdjustment: 0,
@@ -479,7 +479,7 @@ async function main() {
   const variant6 = await prisma.productVariant.create({
     data: {
       quantity: 50,
-      variantAttributes: { color: 'Pink' },
+      variantAttributes: { "Color": 'Pink' },
       productId: product5.id,
       images: ['https://images.unsplash.com/photo-1601925260368-ae2f83cf8b7f?q=80&w=2680&auto=format&fit=crop'],
       priceAdjustment: 0,
@@ -489,7 +489,7 @@ async function main() {
   const variant7 = await prisma.productVariant.create({
     data: {
       quantity: 50,
-      variantAttributes: { color: 'Purple' },
+      variantAttributes: { "Color": 'Purple' },
       productId: product5.id,
       images: ['https://images.unsplash.com/photo-1599447421405-0c1a1141d005?q=80&w=2515&auto=format&fit=crop'],
       priceAdjustment: 0,
