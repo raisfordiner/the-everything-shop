@@ -1,31 +1,82 @@
 #import "@preview/diatypst:0.8.0": *
 
 #show: slides.with(
-  title: "ECP-Mobile",
-  subtitle: "SE358.Q11 - Quản lý Dự án Phần mềm",
+  title: "The Everything Shop",
+  subtitle: "SE100 - Object-Oriented Analysis and Design",
   date: datetime.today().display(),
   authors: "Nhóm 2",
 
   ratio: 4 / 3,
   layout: "small",
-  title-color: fuchsia,
+  title-color: navy,
   toc: true,
   theme: "full",
   count: "number",
 )
 
-= Giới thiệu đề tài
+= Tổng quan đề tài
+*Giới thiệu:*
+- Trang web thương mại điện tử
+- Áp dụng lý thuyết kỹ thuật phần mềm xây dựng hệ thống MVC hoàn chỉnh
 
-= Kiến trúc
+*Vấn đề giải quyết:*
+- Thu hẹp khoảng cách giữa lý thuyết và thực hành
+- Hiểu kiến trúc ứng dụng web, quản lý trạng thái, mô hình CSDL quan hệ
+- Nắm vững mẫu thiết kế cốt lõi thay vì dùng công cụ có sẵn
 
-= Công nghệ
+*Mục tiêu chính:*
+- Quản lý sản phẩm, user authentication (JWT)
+- Trải nghiệm mua sắm: duyệt, giỏ hàng, thanh toán
+- Tích hợp full-stack (React + Express + PostgreSQL)
 
-= Công cụ
+= Kiến trúc & Công nghệ
+*Kiến trúc 3 tầng (MVC):*
+- *Tầng View*: React SPA + Redux
+- *Tầng Controller*: Node.js/Express API + JWT
+- *Tầng Model*: PostgreSQL + Prisma ORM
 
-= Các user chính với chức năng quan trọng nhất
-- liệt kê ra 3 user của app
-- Có thể làm gì trên cái app này
+*Stack công nghệ (PERN):*
+- *Frontend*: React, Redux, CSS
+- *Backend*: Node.js, Express, TypeScript, Prisma, JWT
+- *Infrastructure*: PostgreSQL, Docker
 
-= Kết quả đạt đc & hạn chế
+= Actors & Chức năng
+*4 Actor chính:*
+1. *Guest*: Duyệt/tìm sản phẩm, đăng ký
+2. *Customer*: Quản lý giỏ hàng, đặt hàng, lịch sử đơn
+3. *Seller*: Tạo/quản lý sản phẩm, cập nhật đơn hàng
+4. *Admin*: Quản lý user/danh mục, báo cáo hệ thống
 
-= Bài học
+*Chức năng:*
+- User: Đăng ký/đăng nhập
+- Sản phẩm: CRUD
+- Đặt hàng: Duyệt/lọc, cart → order, thanh toán, coupon
+- Khác: Trả hàng, dashboard, báo cáo
+
+= Kết quả & Demo
+*Đã triển khai:*
+- ✓ Trang web E-Commerce hoàn chỉnh với luồng MVC đầy đủ
+- ✓ Docker hóa: App + DB + Mailhog + MinIO
+- ✓ Đăng ký/đăng nhập/mua hàng hoạt động
+- ✓ Phân quyền truy cập các tính năng
+
+*Giá trị đạt được:*
+- Thành thạo PERN stack
+- Áp dụng design patterns
+- Bảo mật với JWT
+- Hiểu quan hệ đối tượng thực tế
+
+= Hạn chế & Bài học
+*Hạn chế:*
+- Danh mục cứng nhắc, quản lý kho đơn giản
+- Không có cổng thanh toán/vận chuyển thật
+- Frontend chậm, lỗi chung chung
+- On-premise, khả năng phục hồi thấp
+
+*Bài học:*
+- MVC separation, type safety quan trọng
+- Thách thức: tích hợp frontend-backend, quản lý trạng thái
+- Docker đảm bảo môi trường nhất quán
+- Prisma đơn giản hóa DB
+
+*Hướng phát triển:* tiểu dịch vụ, cổng thanh toán thật, tối ưu hiệu suất, triển khai công cộng lên cloud bằng VPS.
