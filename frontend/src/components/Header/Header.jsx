@@ -6,19 +6,37 @@ import { useNavigate } from "react-router";
 import { useDispatch, useSelector } from "react-redux";
 import authService from "../../services/authService.js";
 import { setLogout } from "../../redux/actions/authAction.js";
-import { useEffect } from "react";
+import { useEffect, useState, useRef } from "react";
 import categoryService from "../../services/categoryService.js";
 import { setCategories } from "../../redux/actions/categoryAction.js";
+import SearchSuggestion from './SearchSuggestion.jsx';
 const { Search } = Input;
 
 const Header = () => {
     const navigate = useNavigate();
     const dispatch = useDispatch();
     const [messageApi, contextHolder] = message.useMessage();
+    const [searchValue, setSearchValue] = useState('');
+    const [showSuggestions, setShowSuggestions] = useState(false);
+    const searchContainerRef = useRef(null);
 
     const { isAuthenticated, user } = useSelector((state) => state.authReducer);
 
     const categories = useSelector((state) => state.allCategories.categories);
+
+    // Handle click outside to close suggestions
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (searchContainerRef.current && !searchContainerRef.current.contains(event.target)) {
+                setShowSuggestions(false);
+            }
+        };
+
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+        };
+    }, []);
 
     useEffect(() => {
         const fetchCategories = async () => {
@@ -50,6 +68,26 @@ const Header = () => {
             });
         }
     }
+
+    const handleSearch = (value) => {
+        if (value.trim()) {
+            navigate(`/search?key=${encodeURIComponent(value.trim())}`);
+            setSearchValue('');
+            setShowSuggestions(false);
+        }
+    };
+
+    const handleSearchInputChange = (e) => {
+        const value = e.target.value;
+        setSearchValue(value);
+        setShowSuggestions(value.length >= 2);
+    };
+
+    const handleSearchFocus = () => {
+        if (searchValue.length >= 2) {
+            setShowSuggestions(true);
+        }
+    };
 
     const userMenu = {
         items: [
@@ -104,11 +142,23 @@ const Header = () => {
                     </Link>
                 </Col>
                 <Col xs={24} sm={24} md={12} lg={12}>
-                    <Search placeholder="Search essentials, groceries and more..." enterButton onSearch={(value) => {
-                        if (value.trim()) {
-                            navigate(`/search?key=${encodeURIComponent(value.trim())}`);
-                        }
-                    }} />
+                    <div className="search-wrapper" ref={searchContainerRef}>
+                        <Search 
+                            placeholder="Search essentials, groceries and more..." 
+                            enterButton 
+                            value={searchValue}
+                            onChange={handleSearchInputChange}
+                            onFocus={handleSearchFocus}
+                            onSearch={handleSearch}
+                        />
+                        {showSuggestions && (
+                            <SearchSuggestion 
+                                searchValue={searchValue}
+                                onSearch={handleSearch}
+                                onClose={() => setShowSuggestions(false)}
+                            />
+                        )}
+                    </div>
                 </Col>
                 <Col xs={24} sm={24} md={6} lg={6}>
                     <div className="middle__right">
