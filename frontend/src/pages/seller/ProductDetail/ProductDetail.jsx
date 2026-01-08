@@ -105,7 +105,7 @@ export default function ProductDetail() {
   };
 
   // Generate all possible variant combinations from type cards
-  const generateVariantsFromCards = (cards) => {
+  const generateVariantsFromCards = (cards, existingVariants = []) => {
     const typesWithOptions = cards.filter(c => c.options.length > 0);
 
     if (typesWithOptions.length === 0) {
@@ -130,18 +130,83 @@ export default function ProductDetail() {
 
     generate(0, {});
 
-    // Map combinations to variant objects, preserving existing data and enabled state
+    // Map combinations to variant objects
+    // Use existingVariants if provided, otherwise use current variants state
+    const variantsToCheck = existingVariants.length > 0 ? existingVariants : variants;
+
     return combinations.map(attributes => {
       const key = getVariantKey(attributes);
-      const existing = variants.find(v => getVariantKey(v.attributes) === key);
+      const existing = variantsToCheck.find(v => getVariantKey(v.attributes) === key);
 
-      return existing || {
+      if (existing) {
+        // Preserve existing data and enabled state (defaults to true if not set)
+        return {
+          ...existing,
+          enabled: existing.enabled !== false,
+        };
+      }
+
+      // New combination - disabled by default when loading existing product, enabled for new products
+      return {
         id: `temp-${Date.now()}-${Math.random()}`,
         attributes,
         quantity: 0,
         priceAdjustment: 0,
         images: [],
-        enabled: true, // New combinations are enabled by default
+        enabled: existingVariants.length === 0, // Enabled for new products, disabled for existing
+      };
+    });
+  };
+
+  // Generate FULL board of all combinations, merging with DB data
+  // Existing variants from DB are marked enabled, non-existing are disabled
+  const generateFullBoard = (cards, dbVariants) => {
+    const typesWithOptions = cards.filter(c => c.options.length > 0);
+
+    if (typesWithOptions.length === 0) {
+      // No variant types - use default variant if exists, or create new
+      if (dbVariants.length > 0) {
+        return dbVariants.map(v => ({ ...v, enabled: true }));
+      }
+      return [createDefaultVariant()];
+    }
+
+    // Generate all possible combinations
+    const combinations = [];
+    const generate = (index, current) => {
+      if (index === typesWithOptions.length) {
+        combinations.push({ ...current });
+        return;
+      }
+      const card = typesWithOptions[index];
+      for (const option of card.options) {
+        current[card.name] = option;
+        generate(index + 1, { ...current });
+      }
+    };
+    generate(0, {});
+
+    // Map to variant objects, merging with DB data
+    return combinations.map(attributes => {
+      const key = getVariantKey(attributes);
+      const existing = dbVariants.find(v => getVariantKey(v.attributes) === key);
+
+      if (existing) {
+        // Variant exists in DB - mark as enabled with its data
+        return {
+          ...existing,
+          enabled: true,
+        };
+      }
+
+      // Variant doesn't exist in DB - mark as disabled with default data
+      return {
+        id: `temp-${Date.now()}-${Math.random()}`,
+        attributes,
+        quantity: 0,
+        priceAdjustment: 0,
+        images: [],
+        enabled: false,
       };
     });
   };
@@ -207,15 +272,19 @@ export default function ProductDetail() {
           setVariantTypeCards(cards);
           setVariantTypes(productData.variantTypes || []);
 
-          // Map existing productVariants
-          const existingVariants = (productData.productVariants || []).map(v => ({
+          // Map existing productVariants from DB
+          const existingDbVariants = (productData.productVariants || []).map(v => ({
             id: v.id,
             attributes: v.variantAttributes || {},
             quantity: v.quantity || 0,
             priceAdjustment: v.priceAdjustment || 0,
             images: v.images || [],
           }));
-          setVariants(existingVariants.length > 0 ? existingVariants : [createDefaultVariant()]);
+
+          // Generate FULL board of all combinations, merging with existing DB data
+          // Existing variants are enabled, non-existing are disabled but visible
+          const fullBoard = generateFullBoard(cards, existingDbVariants);
+          setVariants(fullBoard);
 
           setFormReady(true);
           setTimeout(() => {
@@ -750,16 +819,15 @@ export default function ProductDetail() {
 
                           {/* Price adjustment */}
                           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                            <Tooltip title="Price adjustment added to base price">
-                              <Text type={isEnabled ? undefined : 'secondary'}>Price +/-:</Text>
+                            <Tooltip title="Price adjustment added to base price (use negative for discount)">
+                              <Text type={isEnabled ? undefined : 'secondary'}>$</Text>
                             </Tooltip>
                             <InputNumber
                               value={variant.priceAdjustment}
-                              onChange={(val) => handleVariantChange(variant.id, 'priceAdjustment', val || 0)}
-                              style={{ width: 100 }}
-                              formatter={(v) => (v >= 0 ? `+$${v}` : `-$${Math.abs(v)}`)}
-                              parser={(v) => v.replace(/[+$-]/g, '')}
+                              onChange={(val) => handleVariantChange(variant.id, 'priceAdjustment', val ?? 0)}
+                              style={{ width: 90 }}
                               disabled={!isEnabled}
+                              placeholder="0"
                             />
                           </div>
 
