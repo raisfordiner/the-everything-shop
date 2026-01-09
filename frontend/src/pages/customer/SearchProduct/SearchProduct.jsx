@@ -1,35 +1,83 @@
-import React from 'react'
+import React, {useState} from 'react'
 import { useSearchParams } from 'react-router'
 import { useEffect } from 'react'
 import productService from '../../../services/productService'
-import ProductGrid from '../../../components/Product/ProductGrid'
-import { Flex, Typography, Pagination } from 'antd'
+import {Flex, Typography, Pagination, Layout, Spin, Row, Col, Empty} from 'antd'
 import { FrownOutlined } from '@ant-design/icons'
+import ProductFilters from "../../../components/ProductFilters/ProductFilters.jsx";
+import ProductCard from "../../../components/Product/ProductCard.jsx";
+
+const { Sider, Content } = Layout;
 
 const SearchProduct = () => {
     const [searchParam] = useSearchParams();
     const key = searchParam.get('key');
     const [productsByName, setProductsByName] = React.useState([])
-    const [currentPage, setCurrentPage] = React.useState(1)
+    const [loading, setLoading] = useState(true);
+    const [filters, setFilters] = useState({});
 
-    const fetchAllProductsByName = async () => {
-        const products = await productService.getAllProducts(key)
-        setProductsByName(products.data.products)
-    }
-
-    const handlePageChange = (page) => {
-        setCurrentPage(page)
-        window.scrollTo({ top: 0, behavior: 'smooth' })
-    }
+    const handleFilterChange = (key, value) => {
+        setFilters(prevFilters => ({
+            ...prevFilters,
+            [key]: value,
+        }));
+    };
 
     useEffect(() => {
+        const fetchAllProductsByName = async () => {
+            setLoading(true);
+            try {
+                const response = await productService.getAllProducts({
+                    search: key,
+                    ...filters
+                })
+
+                if (response?.data?.products) {
+                    setProductsByName(response.data.products);
+                } else {
+                    setProductsByName([]);
+                }
+            }
+            catch (error) {
+                console.error("Error searching products:", error);
+                setProductsByName([]);
+            }
+            finally {
+                setLoading(false);
+            }
+        }
         fetchAllProductsByName()
-    }, [key])
+    }, [key, filters])
+
+    const renderEmptyState = () => {
+        if (Object.keys(filters).length > 0) {
+            return <Empty description="No products found matching these filters." />;
+        }
+        return <NoProductsFound />;
+    };
 
     return (
-        <div>
-            {productsByName.length === 0 ? <NoProductsFound /> : <ProductsFound products={productsByName} currentPage={currentPage} handlePageChange={handlePageChange} />}
-        </div>
+        <Layout style={{ background: 'transparent' }}>
+            <Sider width={300} style={{ background: 'transparent', paddingRight: '24px', marginTop: '24px' }}>
+                <ProductFilters onFilterChange={handleFilterChange} initialFilters={filters} />
+            </Sider>
+
+            <Content style={{ padding: '24px', background: '#fff', borderRadius: '8px', marginTop: '24px' }}>
+                <Spin spinning={loading}>
+                    {productsByName.length > 0 ? (
+                        <Row gutter={[16, 16]}>
+                            {productsByName.map(product => (
+                                <Col key={product.id} xs={24} sm={12} md={8} lg={6}>
+                                    <ProductCard product={product} />
+                                </Col>
+                            ))}
+                        </Row>
+                    ) : (
+                        !loading && renderEmptyState()
+                    )}
+                </Spin>
+            </Content>
+        </Layout>
     )
 }
 
@@ -49,19 +97,5 @@ const NoProductsFound = () => {
                 </ul>
             </Typography.Paragraph>
         </Flex>
-    )
-}
-
-const ProductsFound = ({ products, currentPage, handlePageChange }) => {
-    return (
-        <>
-            <ProductGrid products={products} from={(currentPage - 1) * 24} end={currentPage * 24} />
-            <Pagination 
-                style={{marginTop: '16px'}} 
-                current={currentPage} 
-                total={products.length} 
-                pageSize={24} 
-                onChange={handlePageChange} />
-        </>
     )
 }
