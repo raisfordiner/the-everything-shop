@@ -51,6 +51,7 @@ import SellerCancellations from "../pages/seller/Cancellations/Cancellations.jsx
 import AdminReturns from "../pages/admin/Returns/Returns.jsx";
 import SellerReturns from "../pages/seller/Returns/Returns.jsx";
 import { Navigate } from "react-router-dom";
+import PromotionProducts from "../pages/customer/PromotionProducts/PromotionProducts.jsx";
 
 export const routes = [
     {
@@ -154,6 +155,10 @@ export const routes = [
             {
                 path: '/orders/:orderId/review',
                 element: <LeaveReview />,
+            },
+            {
+                path: '/promotion/:id',
+                element: <PromotionProducts/>
             }
         ]
     },
