@@ -1,7 +1,14 @@
+import Stripe from "stripe";
 import { prisma } from "util/db";
 
 export default class OrderService {
-  static async createDirectOrder(customerId: string, addressId: string, productVariantId: string, quantity: number) {
+  static async createDirectOrder(
+    customerId: string, 
+    addressId: string, 
+    productVariantId: string, 
+    quantity: number,
+    paymentMethod: 'COD' | 'VNPAY' | 'STRIPE' = 'COD'
+  ) {
     // Validate product variant and stock
     const productVariant = await prisma.productVariant.findUnique({
       where: { id: productVariantId },
@@ -18,8 +25,24 @@ export default class OrderService {
       throw new Error(`Insufficient stock. Only ${productVariant.quantity} items available`);
     }
 
+    // Validate address belongs to customer
+    const address = await prisma.address.findFirst({
+      where: {
+        id: addressId,
+        customerId: customerId,
+      },
+    });
+
+    if (!address) {
+      throw new Error("Address not found or does not belong to this customer");
+    }
+
+    // Calculate total amount
+    const basePrice = productVariant.product.price;
+    const totalAmount = (basePrice + productVariant.priceAdjustment) * quantity;
+
     // Create order directly without cart
-    const order = await prisma.$transaction(async (tx) => {
+    const result = await prisma.$transaction(async (tx) => {
       // Decrease product variant quantity
       await tx.productVariant.update({
         where: { id: productVariantId },
@@ -31,10 +54,11 @@ export default class OrderService {
       });
 
       // Create order with order item
-      return await tx.order.create({
+      const newOrder = await tx.order.create({
         data: {
           customerId,
           addressId,
+          status: "PENDING",
           orderItems: {
             create: [{
               productVariantId,
@@ -42,22 +66,82 @@ export default class OrderService {
             }],
           },
         } as any,
-        include: {
-          orderItems: {
-            include: {
-              productVariant: {
-                include: {
-                  product: true,
-                },
+      });
+
+      // Create payment
+      const payment = await tx.payment.create({
+        data: {
+          order: {
+            connect: { id: newOrder.id },
+          },
+          amount: totalAmount,
+          method: paymentMethod as any,
+          status: paymentMethod === "COD" ? "PENDING" : "PENDING",
+        },
+      });
+
+      // Handle Stripe payment
+      if (paymentMethod === "STRIPE") {
+        const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "");
+        const session = await stripe.checkout.sessions.create({
+          payment_method_types: ['card'],
+          line_items: [{
+            price_data: {
+              currency: 'usd',
+              product_data: {
+                name: productVariant.product.name,
+              },
+              unit_amount: Math.round((basePrice + productVariant.priceAdjustment) * 100),
+            },
+            quantity: quantity,
+          }],
+          expires_at: Math.floor(Date.now() / 1000) + 30 * 60, // 30 minutes from now
+          mode: 'payment',
+          success_url: `${process.env.FRONTEND_URL}/loading?orderId=${newOrder.id}`,
+          cancel_url: `${process.env.FRONTEND_URL}/products/${productVariant.product.id}`,
+          metadata: {
+            orderIds: newOrder.id,
+            userId: customerId,
+            appId: 'the-everything-shop',
+          }
+        });
+        return { session, orderId: newOrder.id };
+      }
+
+      return {
+        ...newOrder,
+        payment,
+      };
+    });
+
+    // Return the complete order with details
+    const orderId = 'session' in result ? result.orderId : result.id;
+    const fullOrder = await prisma.order.findUnique({
+      where: { id: orderId },
+      include: {
+        orderItems: {
+          include: {
+            productVariant: {
+              include: {
+                product: true,
               },
             },
           },
-          address: true,
         },
-      });
+        address: true,
+        payment: true,
+      },
     });
 
-    return order;
+    // If Stripe session exists, return it with the order
+    if ('session' in result) {
+      return {
+        ...fullOrder,
+        stripeSessionUrl: result.session.url,
+      };
+    }
+
+    return fullOrder;
   }
 
   static async create(customerId: string, addressId: string) {

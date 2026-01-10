@@ -12,8 +12,8 @@ const getOrderById = async (orderId) => {
     return await get(`/orders/${orderId}`);
 };
 
-const createDirectOrder = async (addressId, productVariantId, quantity) => {
-    return await post('/orders/direct', { addressId, productVariantId, quantity });
+const createDirectOrder = async (addressId, productVariantId, quantity, paymentMethod = 'COD') => {
+    return await post('/orders/direct', { addressId, productVariantId, quantity, paymentMethod });
 };
 
 const updateOrderStatus = async (orderId, status) => {

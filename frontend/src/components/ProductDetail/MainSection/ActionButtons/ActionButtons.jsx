@@ -1,5 +1,5 @@
 import React, { useState } from "react"
-import { Button, message, notification, Modal, Select } from "antd"
+import { Button, message, notification, Modal, Select, Radio, Space, Typography, Divider } from "antd"
 import { ShoppingCartOutlined } from "@ant-design/icons"
 import { useSelector } from "react-redux"
 import { useNavigate } from "react-router-dom"
@@ -7,11 +7,14 @@ import cartService from "../../../../services/cartService"
 import orderService from "../../../../services/orderService"
 import './ActionButtons.css'
 
+const { Text } = Typography
+
 const ActionButtons = ({ selectedProductVariant, amount, productData }) => {
     const [loading, setLoading] = useState(false)
     const [buyNowLoading, setBuyNowLoading] = useState(false)
     const [showAddressModal, setShowAddressModal] = useState(false)
     const [selectedAddress, setSelectedAddress] = useState(null)
+    const [paymentMethod, setPaymentMethod] = useState('COD')
     const { isAuthenticated, user } = useSelector(state => state.authReducer || { isAuthenticated: false, user: {} })
     const navigate = useNavigate()
 
@@ -200,7 +203,24 @@ const ActionButtons = ({ selectedProductVariant, amount, productData }) => {
             setBuyNowLoading(true)
             const variantId = effectiveVariant.id || selectedProductVariant?.id
 
-            const response = await orderService.createDirectOrder(selectedAddress, variantId, amount)
+            const response = await orderService.createDirectOrder(
+                selectedAddress, 
+                variantId, 
+                amount, 
+                paymentMethod
+            )
+            
+            // Check if Stripe session URL exists
+            if (response.data?.stripeSessionUrl) {
+                notification.success({
+                    message: "Redirecting to Payment",
+                    description: "Redirecting to Stripe checkout...",
+                    placement: "topRight"
+                })
+                // Redirect to Stripe checkout page
+                window.location.href = response.data.stripeSessionUrl
+                return
+            }
             
             notification.success({
                 message: "Order Created Successfully",
@@ -276,35 +296,73 @@ const ActionButtons = ({ selectedProductVariant, amount, productData }) => {
             </div>
 
             <Modal
-                title="Select Delivery Address"
+                title="Checkout - Buy Now"
                 open={showAddressModal}
                 onOk={handleConfirmBuyNow}
                 onCancel={() => setShowAddressModal(false)}
                 confirmLoading={buyNowLoading}
-                okText="Confirm Order"
+                okText="Place Order"
                 cancelText="Cancel"
+                width={600}
             >
-                <div style={{ marginBottom: 16 }}>
-                    <p>Select a delivery address for your order:</p>
-                    <Select
-                        style={{ width: '100%' }}
-                        placeholder="Select address"
-                        value={selectedAddress}
-                        onChange={setSelectedAddress}
-                    >
-                        {user.customer?.addresses?.map(address => (
-                            <Select.Option key={address.id} value={address.id}>
-                                {address.phoneNumber}
-                                {address.address}
-                            </Select.Option>
-                        ))}
-                    </Select>
+                <div style={{ marginBottom: 24 }}>
+                    <Text strong style={{ fontSize: 16 }}>Select Delivery Address</Text>
+                    <div style={{ marginTop: 12 }}>
+                        <Select
+                            style={{ width: '100%' }}
+                            placeholder="Select address"
+                            value={selectedAddress}
+                            onChange={setSelectedAddress}
+                        >
+                            {user.customer?.addresses?.map(address => (
+                                <Select.Option key={address.id} value={address.id}>
+                                    <div>
+                                        <Text strong>{address.recipientName || 'Recipient'}</Text>
+                                        <br />
+                                        <Text type="secondary">
+                                            {address.phoneNumber} - {address.address}
+                                        </Text>
+                                    </div>
+                                </Select.Option>
+                            ))}
+                        </Select>
+                    </div>
                 </div>
-                <div style={{ marginTop: 16, padding: 12, background: '#f5f5f5', borderRadius: 4 }}>
-                    <p style={{ margin: 0, fontWeight: 500 }}>Order Summary:</p>
-                    <p style={{ margin: '8px 0 0 0' }}>
-                        {productData.name} × {amount}
-                    </p>
+
+                <Divider />
+
+                <div style={{ marginBottom: 24 }}>
+                    <Text strong style={{ fontSize: 16 }}>Payment Method</Text>
+                    <div style={{ marginTop: 12 }}>
+                        <Radio.Group
+                            value={paymentMethod}
+                            onChange={(e) => setPaymentMethod(e.target.value)}
+                        >
+                            <Space direction="vertical">
+                                <Radio value="COD">Cash on Delivery (COD)</Radio>
+                                <Radio value="VNPAY">VNPay</Radio>
+                                <Radio value="STRIPE">Stripe</Radio>
+                            </Space>
+                        </Radio.Group>
+                    </div>
+                </div>
+
+                <Divider />
+
+                <div style={{ padding: 12, background: '#f5f5f5', borderRadius: 4 }}>
+                    <Text strong style={{ fontSize: 16 }}>Order Summary</Text>
+                    <div style={{ marginTop: 8 }}>
+                        <Text>{productData.name}</Text>
+                        <br />
+                        <Text type="secondary">Quantity: {amount}</Text>
+                        <br />
+                        <div style={{ marginTop: 8, textAlign: 'right' }}>
+                            <Text strong style={{ fontSize: 18 }}>Total: </Text>
+                            <Text strong style={{ fontSize: 20, color: '#ff4d4f' }}>
+                                {((productData.price + (selectedProductVariant?.priceAdjustment || 0)) * amount).toLocaleString()}₫
+                            </Text>
+                        </div>
+                    </div>
                 </div>
             </Modal>
         </>
