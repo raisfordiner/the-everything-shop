@@ -1,0 +1,3 @@
+- Mở rộng chức năng
+- Cải thiện hiệu năng
+- Khả năng ứng dụng thực tế

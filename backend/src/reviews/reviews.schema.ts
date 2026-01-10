@@ -16,6 +16,7 @@ const update = z.object({
 const search = z.object({
   q: z.string().optional(),
   customerId: z.string().optional(),
+  productId: z.string().optional(),
   minRating: z.number().int().min(1).max(5).optional(),
   maxRating: z.number().int().min(1).max(5).optional(),
 });

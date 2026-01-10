@@ -1,19 +1,40 @@
 import React from "react";
-import { Card, Rate, Typography, Tag } from "antd";
+import { Card, Rate, Typography, Tag, Space, Image, Flex } from "antd";
 import { StarFilled } from "@ant-design/icons";
-import "./ProductCard.css";
-
-const { Text } = Typography;
+import { Link } from "react-router-dom";
+// import "./ProductCard.css";
 
 const ProductCard = ({ product }) => {
-    // Assumption: product.originalPrice and product.sold
-    // Assumed original price: 250, quantity sold: 1540
-    const originalPrice = product.originalPrice || 250; 
-    const soldCount = product.sold || 1540; // Assumed quantity sold
+    const soldCount = product.soldCount || 0;
 
-    const discountPercent = Math.round(
-        ((originalPrice - product.price) / originalPrice) * 100
-    );
+    // Calculate the highest discount percentage from all available coupons
+    const getMaxDiscountPercentage = () => {
+        if (!product.promotions || product.promotions.length === 0) {
+            return 0;
+        }
+
+        const now = new Date();
+        let maxDiscount = 0;
+
+        product.promotions.forEach(promotion => {
+            // Check if promotion is active and within valid date range
+            const isActive = promotion.status === 'ACTIVE';
+            const isInDateRange = new Date(promotion.startDate) <= now && new Date(promotion.endDate) >= now;
+            
+            if (isActive && isInDateRange && promotion.coupons) {
+                // Find the highest discount percentage among all coupons in this promotion
+                promotion.coupons.forEach(coupon => {
+                    if (coupon.discountPercentage > maxDiscount && coupon.usageCount < coupon.maxUsage) {
+                        maxDiscount = coupon.discountPercentage;
+                    }
+                });
+            }
+        });
+
+        return Math.round(maxDiscount);
+    };
+
+    const discountPercent = getMaxDiscountPercentage();
 
     const formatSoldCount = (count) => {
         if (count < 1000) {
@@ -25,49 +46,89 @@ const ProductCard = ({ product }) => {
     };
 
     return (
-        <Card
-            hoverable
-            cover={
-                <div className="product-image-container">
-                    <img
-                        alt={product.name}
-                        src={product.images && product.images.length > 0 ? product.images[0] : ''} // Get first image
-                        style={{ height: 200, objectFit: "contain" }}
-                    />
+        <Link to={`/products/${product.id}`} style={{ textDecoration: 'none' }}>
+            <Card hoverable className="product-card">
+                <Space direction="vertical" size="small" className="product-image-container" style={{ width: '100%' }}>
+                    <div style={{ height: 24, marginBottom: 4 }}>
+                        {discountPercent > 0 && (
+                            <Tag color="red" className="discount-tag">
+                                -{discountPercent}%
+                            </Tag>
+                        )}
+                    </div>
+                    <div
+                        className="product-image-wrapper"
+                        style={{
+                            height: 200,
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            overflow: 'hidden',
+                            transition: 'transform 0.3s ease'
+                        }}
+                    >
+                        <Image
+                            alt={product.name}
+                            src={product.images && product.images.length > 0 ? product.images[0] : ''} // Get first image
+                            preview={false}
+                            height={200}
+                            style={{
+                                objectFit: 'contain',
+                                width: '100%',
+                            }}
+                        />
+                    </div>
+                    <Space direction="vertical" className="product-info" style={{ width: '100%' }}>
+                        <Typography.Title
+                            level={4}
+                            strong
+                            ellipsis={{ tooltip: product.name }}
+                            className="product-name"
+                            style={{ transition: 'color 0.3s ease' }}
+                        >
+                            {product.name}
+                        </Typography.Title>
 
-                    {discountPercent > 0 && (
-                        <Tag color="red" className="discount-tag">
-                            -{discountPercent}%
-                        </Tag>
-                    )}
-                </div>
-            }
-            className="product-card"
-        >
-            <div className="product-info">
-                <Text strong ellipsis={{ tooltip: product.name }} className="product-name">
-                    {product.name}
-                </Text>
+                        <Typography.Paragraph
+                            className="product-description"
+                            ellipsis={{ rows: 2, tooltip: product.description }}
+                            style={{ marginBottom: 8, wordBreak: 'break-word' }}
+                        >
+                            {product.description}
+                        </Typography.Paragraph>
 
-                // Can be added in the future if needed
-                {/* <div className="price-and-original">
-                    <Text delete type="secondary" className="product-original">
-                        {originalPrice.toLocaleString()}₫
-                    </Text>
-                </div> */}
+                        <Flex justify="space-between" align="center" className="product-bottom-bar" style={{ width: '100%' }}>
+                            <Typography.Text className="product-sale-price" type="danger" strong>
+                                ${product.price.toLocaleString()}
+                            </Typography.Text>
 
-                <div className="product-bottom-bar">
-                    <Text className="product-sale-price" type="danger" strong>
-                        {product.price.toLocaleString()}₫
-                    </Text>
-
-                    <Text type="secondary" className="sold-count">
-                        {formatSoldCount(soldCount)}
-                    </Text>
-                </div>
-            </div>
-        </Card>
+                            <Typography.Text type="secondary" className="sold-count">
+                                {formatSoldCount(soldCount)}
+                            </Typography.Text>
+                        </Flex>
+                    </Space>
+                </Space>
+            </Card>
+        </Link>
     );
 };
+
+// Add global styles for hover effects
+if (typeof document !== 'undefined') {
+    const styleId = 'product-card-hover-styles';
+    if (!document.getElementById(styleId)) {
+        const style = document.createElement('style');
+        style.id = styleId;
+        style.textContent = `
+            .product-card:hover .product-image-wrapper {
+                transform: translateY(-8px);
+            }
+            .product-card:hover .product-name {
+                color: #1890ff !important;
+            }
+        `;
+        document.head.appendChild(style);
+    }
+}
 
 export default ProductCard;

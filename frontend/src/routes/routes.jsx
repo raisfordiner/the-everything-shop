@@ -9,17 +9,17 @@ import Profile from "../components/layouts/Profile/Profile.jsx";
 import AccountInfo from "../pages/customer/AccountInfo/AccountInfo.jsx";
 import Address from "../pages/customer/Address/Address.jsx";
 import AddressEdit from "../pages/customer/Address/AddressEdit.jsx";
-import MyOrder from "../pages/customer/MyOrder/MyOrder.jsx";
 import ChangePassword from "../pages/customer/ChangePassword/ChangePassword.jsx";
+import Membership from "../pages/customer/Membership/Membership.jsx";
 import FilteredProducts from "../pages/customer/FilteredProducts/FilteredProducts.jsx";
 import CustomerProductDetail from "../components/ProductDetail/ProductDetail.jsx";
 import SellerProductDetail from "../pages/seller/ProductDetail/ProductDetail.jsx";
 import Confirmation from "../pages/customer/Confirmation/Confirmation.jsx";
 import ForgotPassword from "../pages/customer/ForgotPassword/ForgotPassword.jsx";
 import ResetPassword from "../pages/public/ResetPassword/ResetPassword.jsx";
-import Category from '../pages/admin/Category/Category.jsx';
-import AddCategory from '../pages/admin/Category/AddCategory.jsx';
-import EditCategory from '../pages/admin/Category/EditCategory.jsx';
+import Category from '../pages/seller/Category/Category.jsx';
+import AddCategory from '../pages/seller/Category/AddCategory.jsx';
+import EditCategory from '../pages/seller/Category/EditCategory.jsx';
 import Order from '../pages/admin/Order/Order.jsx';
 import Customers from "../pages/admin/Customers/Customers.jsx";
 import EditCustomer from "../pages/admin/Customers/EditCustomer.jsx";
@@ -34,11 +34,23 @@ import AccessRestricted from "../pages/public/AccessRestricted/AccessRestricted.
 import Cart from '../pages/customer/Cart/Cart.jsx';
 import Orders from '../pages/customer/Orders/Orders.jsx';
 import OrderDetail from '../pages/customer/Orders/OrderDetail.jsx';
+import LeaveReview from '../pages/customer/Orders/LeaveReview.jsx';
 import Loading from '../pages/customer/Loading/Loading.jsx';
 import SellerOrders from '../pages/seller/Orders/SellerOrders.jsx';
 import Staffs from "../pages/admin/Staffs/Staffs.jsx";
 import EditStaff from "../pages/admin/Staffs/EditStaff.jsx";
 import AddStaff from "../pages/admin/Staffs/AddStaff.jsx";
+import AllProducts from '../pages/customer/AllProducts/AllProducts.jsx';
+import SearchProduct from '../pages/customer/SearchProduct/SearchProduct.jsx';
+import AdminReports from "../pages/admin/Reports/Reports.jsx";
+import Promotions from "../pages/admin/Promotions/Promotions.jsx";
+import EditPromotion from "../pages/admin/Promotions/EditPromotion.jsx";
+import AddPromotion from "../pages/admin/Promotions/AddPromotion.jsx";
+import AdminCancellations from "../pages/admin/Cancellations/Cancellations.jsx";
+import SellerCancellations from "../pages/seller/Cancellations/Cancellations.jsx";
+import AdminReturns from "../pages/admin/Returns/Returns.jsx";
+import SellerReturns from "../pages/seller/Returns/Returns.jsx";
+import { Navigate } from "react-router-dom";
 
 export const routes = [
     {
@@ -60,6 +72,14 @@ export const routes = [
             {
                 path: '/auth/verify',
                 element: <VerifyEmail />,
+            },
+            {
+                path: '/products',
+                element: <AllProducts />
+            },
+            {
+                path: '/search',
+                element: <SearchProduct />
             },
             {
                 path: '/products/:productId',
@@ -87,7 +107,7 @@ export const routes = [
             },
             {
                 path: '/cart',
-                element: <Cart/>,
+                element: <Cart />,
             },
             {
                 path: '/loading',
@@ -106,8 +126,8 @@ export const routes = [
                         element: <Address />,
                     },
                     {
-                        path: 'my-order',
-                        element: <MyOrder />,
+                        path: 'membership',
+                        element: <Membership />,
                     },
                     {
                         path: 'my-address/new',
@@ -130,6 +150,10 @@ export const routes = [
             {
                 path: '/orders/:orderId',
                 element: <OrderDetail />,
+            },
+            {
+                path: '/orders/:orderId/review',
+                element: <LeaveReview />,
             }
         ]
     },
@@ -139,28 +163,31 @@ export const routes = [
             <ProtectedRoute allowedRoles={['ADMIN']}>
                 <AdminLayout />
             </ProtectedRoute>
-            // <AdminLayout /> 
         ),
         children: [
+            // {
+            //     path: "dashboard",
+            //     element: <DashBoard />
+            // },
+            // {
+            //     path: "categories",
+            //     element: <Category />
+            // },
+            // {
+            //     path: "categories/add-category",
+            //     element: <AddCategory />
+            // },
+            // {
+            //     path: "categories/edit-category/:id",
+            //     element: <EditCategory />
+            // },
+            // {
+            //     path: "orders",
+            //     element: <Order />,
+            // },
             {
-                path: "dashboard",
-                element: <DashBoard />
-            },
-            {
-                path: "categories",
-                element: <Category />
-            },
-            {
-                path: "categories/add-category",
-                element: <AddCategory />
-            },
-            {
-                path: "categories/edit-category/:id",
-                element: <EditCategory />
-            },
-            {
-                path: "orders",
-                element: <Order />,
+                index: true,
+                element: <Navigate to="customers" replace />
             },
             {
                 path: "staffs",
@@ -187,6 +214,18 @@ export const routes = [
                 element: <AddCustomer />
             },
             {
+                path: "promotions",
+                element: <Promotions />,
+            },
+            {
+                path: "promotions/edit-promotion/:id",
+                element: <EditPromotion />,
+            },
+            {
+                path: "promotions/add-promotion",
+                element: <AddPromotion />,
+            },
+            {
                 path: "coupons",
                 element: <Coupons />,
             },
@@ -197,6 +236,18 @@ export const routes = [
             {
                 path: "coupons/add-coupon",
                 element: <AddCoupon />
+            },
+            {
+                path: "cancellations",
+                element: <AdminCancellations />,
+            },
+            {
+                path: "returns",
+                element: <AdminReturns />,
+            },
+            {
+                path: "reports",
+                element: <AdminReports />,
             }
         ]
     },
@@ -213,6 +264,18 @@ export const routes = [
                 element: <SellerProducts />
             },
             {
+                path: "categories",
+                element: <Category />
+            },
+            {
+                path: "categories/new",
+                element: <AddCategory />
+            },
+            {
+                path: "categories/:id",
+                element: <EditCategory />
+            },
+            {
                 path: "products/new",
                 element: <SellerProductDetail />
             },
@@ -223,7 +286,15 @@ export const routes = [
             {
                 path: "orders",
                 element: <SellerOrders />,
-            }
+            },
+            {
+                path: "cancellations",
+                element: <SellerCancellations />,
+            },
+            {
+                path: "returns",
+                element: <SellerReturns />,
+            },
         ]
     }
 ]

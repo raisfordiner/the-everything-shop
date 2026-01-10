@@ -1,0 +1,130 @@
+services:
+  traefik:
+    build:
+      context: ./traefik
+      dockerfile: Dockerfile
+    command:
+      - "--api.insecure=true"
+      - "--providers.file.filename=/etc/traefik/dynamic.yml"
+      # Entrypoints
+      # Entrypoints
+      - "--entrypoints.web.address=:80"
+      # ACME / Let's Encrypt - Disabled for Dev
+      #- "--certificatesresolvers.myresolver.acme.httpchallenge=true"
+      #- "--certificatesresolvers.myresolver.acme.httpchallenge.entrypoint=web"
+      #- "--certificatesresolvers.myresolver.acme.email=${ACME_EMAIL:-someone@example.me}"
+      #- "--certificatesresolvers.myresolver.acme.storage=/letsencrypt/acme.json"
+    ports:
+      - "80:80"
+      - "443:443"
+      - "8080:8080"
+    volumes:
+      - "traefik_certificates:/letsencrypt"
+    networks:
+      - tes-net
+
+  db:
+    image: postgres:15-alpine
+    restart: unless-stopped
+    env_file: ./backend/.env
+    environment:
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_DB: ${POSTGRES_DB}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - tes-net
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 2s
+      retries: 20
+
+  app:
+    build: 
+      context: .
+      dockerfile: dev.Dockerfile
+    image: the-everything-shop-monolith
+    restart: unless-stopped
+    env_file: ./backend/.env
+    # Auto-start both services in parallel.
+    command: >
+      sh -c "
+      cd /workspaces/the-everything-shop &&
+      npm run db:dev --prefix backend &&\
+      npm run db:seed --prefix backend &&\
+      npm run dev --prefix backend &
+      npm run dev --prefix frontend -- --host 0.0.0.0 &
+      wait
+      "
+    depends_on:
+      db:
+        condition: service_healthy
+      s3:
+        condition: service_started
+    networks:
+      - tes-net
+
+  mailhog:
+    image: mailhog/mailhog:latest
+    networks:
+      - tes-net
+
+
+  s3:
+    image: minio/minio
+    command: server /data --console-address ":9001"
+    environment:
+      - MINIO_ROOT_USER=admin
+      - MINIO_ROOT_PASSWORD=adminpass
+    networks:
+      - tes-net
+    volumes:
+      - s3_data:/data
+
+
+  mc:
+    image: minio/mc
+    depends_on:
+      - s3
+    networks:
+      - tes-net
+    entrypoint: >
+      sh -c "
+      until (/usr/bin/mc alias set tess3 http://s3:9000 admin adminpass --insecure); do
+      echo 'Waiting for S3...';
+      sleep 2;
+      done &&
+      echo 'Creating bucket if not exists...' &&
+      /usr/bin/mc mb --ignore-existing tess3/tes &&
+      echo 'Enable anonymous download...' &&
+      /usr/bin/mc anonymous set download tess3/tes &&
+      echo 'Done.' &&
+      exit 0
+      "
+
+  prisma-studio:
+    image: the-everything-shop-monolith
+    command: npx prisma studio --port 5555 --browser none
+    working_dir: /workspaces/the-everything-shop/backend
+    environment:
+      - PRISMA_CLI_QUERY_ENGINE_TYPE=binary
+      - PRISMA_CLIENT_ENGINE_TYPE=binary
+    env_file:
+      - ./backend/.env
+    networks:
+      - tes-net
+    depends_on:
+      - db
+      - app
+
+
+volumes:
+  traefik_certificates:
+  postgres_data:
+  s3_data:
+
+networks:
+  tes-net:
+    name: tes-net

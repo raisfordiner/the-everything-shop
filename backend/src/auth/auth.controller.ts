@@ -206,6 +206,9 @@ export default class AuthController {
 
       return Send.success(res, completeUser);
     } catch (error: any) {
+      if (error.message === "Invalid email or password.") {
+        return Send.unauthorized(res, null, error.message);
+      }
       logger.error({ error }, "Login Failed");
       return Send.error(res, null, error.message || "Login failed.");
     }

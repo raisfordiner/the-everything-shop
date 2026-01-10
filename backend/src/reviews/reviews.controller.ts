@@ -7,14 +7,15 @@ export default class ReviewsController {
   static async getReviews(req: Request, res: Response) {
     try {
       const { id } = req.params;
-      const { q, customerId, minRating, maxRating } = req.query;
+      const { q, customerId, productId, minRating, maxRating } = req.query;
 
       const result = await ReviewsService.find(
         id,
         q as string,
         customerId as string,
         minRating ? Number(minRating) : undefined,
-        maxRating ? Number(maxRating) : undefined
+        maxRating ? Number(maxRating) : undefined,
+        productId as string
       );
 
       if (!result) {

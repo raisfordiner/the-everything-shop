@@ -1,9 +1,12 @@
 import {useNavigate} from "react-router";
-import {useEffect, useState} from "react";
+import React, {useEffect, useState} from "react";
 import couponService from "../../../services/couponService.js";
-import {Button, Card, Col, Input, message, Popconfirm, Row, Space, Table, Tag} from "antd";
+import {Button, Card, Col, Input, message, Popconfirm, Row, Space, Table, Tag, Typography} from "antd";
 import {DeleteOutlined, EditOutlined, ExportOutlined, GiftOutlined, PlusOutlined, SearchOutlined} from "@ant-design/icons";
 import dayjs from "dayjs";
+import promotionService from "../../../services/promotionService.js";
+const { Title, Text } = Typography;
+
 
 const Coupons = () => {
     const navigate = useNavigate();
@@ -17,7 +20,23 @@ const Coupons = () => {
         try {
             const response = await couponService.getAllCoupons();
             const data = response.data.coupons;
-            setCoupons(data);
+
+            const newCoupons = await Promise.all(data.map(async (coupon) => {
+                if (!coupon.promotionId) return { ...coupon, promotionStatus: 'N/A' };
+
+                try {
+                    const promoRes = await promotionService.getPromotionById(coupon.promotionId);
+                    return {
+                        ...coupon,
+                        promotionStatus: promoRes?.data?.status || 'N/A'
+                    };
+                } catch (err) {
+                    console.error(`Failed to fetch promotion for coupon ${coupon.id}`, err);
+                    return { ...coupon, promotionStatus: 'ERROR' };
+                }
+            }));
+
+            setCoupons(newCoupons);
         }
         catch (error) {
             console.error("Failed to fetch coupons:", error);
@@ -55,8 +74,8 @@ const Coupons = () => {
             key: 'code',
             render: (text) => (
                 <Space>
-                    <GiftOutlined style={{ color: '#008ECC' }} />
-                    <span style={{ fontWeight: 600, fontFamily: 'monospace', fontSize: '14px' }}>{text}</span>
+                    <GiftOutlined style={{ color: '#008ECC', fontSize: 16 }} />
+                    <Text strong style={{ fontSize: 16 }}>{text}</Text>,
                 </Space>
             ),
             sorter: (a, b) => a.code.localeCompare(b.code)
@@ -73,26 +92,20 @@ const Coupons = () => {
             title: 'Usage Limit',
             dataIndex: 'maxUsage',
             key: 'maxUsage',
-            render: (limit) => limit ? `${limit} times` : 'Unlimited',
-        },
-        {
-            title: 'Expiration Date',
-            dataIndex: 'expiresAt',
-            key: 'expiresAt',
-            render: (date) => date ? dayjs(date).format('DD/MM/YYYY') : 'Never',
-            sorter: (a, b) => new Date(a.expiresAt) - new Date(b.expiresAt),
+            render: (limit) => <Text strong type="secondary" style={{ fontSize: 16 , color: '#595959' }}>{limit ? `${limit} times` : "Unlimited"}</Text>,
         },
         {
             title: 'Status',
             key: 'status',
             render: (_, record) => {
-                const isExpired = record.expiresAt && dayjs().isAfter(dayjs(record.expiresAt));
-                const isActive = record.isActive !== false;
+                const status = record.promotionStatus;
 
-                if (isExpired) {
-                    return <Tag color="red">Expired</Tag>;
+                if (status === "ACTIVE") {
+                    return <Tag color="success">Active</Tag>;
                 }
-                return isActive ? <Tag color="success">Active</Tag> : <Tag color="default">Disabled</Tag>;
+                else {
+                    return <Tag color="default">Disabled</Tag>;
+                }
             }
         },
         {
@@ -130,11 +143,10 @@ const Coupons = () => {
         <>
             <Row justify="space-between" align="middle" style={{ marginBottom: 24 }}>
                 <Col>
-                    <h2>Coupons</h2>
+                    <Title level={2} style={{margin: 0, color: '#008ECC'}}>Coupons</Title>
                 </Col>
                 <Col>
                     <Space>
-                        <Button icon={<ExportOutlined />}>Export</Button>
                         <Button
                             type="primary"
                             icon={<PlusOutlined />}

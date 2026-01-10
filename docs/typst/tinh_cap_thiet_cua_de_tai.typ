@@ -1,0 +1,4 @@
+- Bối cảnh thực tế
+- Các vấn đề tồn tại
+- Nhu cầu ứng dụng công nghệ thông tin
+- Ý nghĩa của việc xây dựng hệ thống theo đề tài được giao

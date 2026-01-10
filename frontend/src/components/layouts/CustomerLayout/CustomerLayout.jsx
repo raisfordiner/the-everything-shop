@@ -17,7 +17,7 @@ const CustomerLayout = () => {
               <Outlet />
           </LayoutContent>
           <footer>
-              <Footer/>
+              {/* <Footer/> */}
           </footer>
       </Layout>
     </>

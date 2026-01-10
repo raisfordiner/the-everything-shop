@@ -1,0 +1,2 @@
+- Danh sách các chức năng chính
+- Mô tả chi tiết từng chức năng

@@ -1,9 +1,24 @@
 import {useNavigate, useParams} from "react-router";
-import {useEffect, useState} from "react";
+import React, {useEffect, useState} from "react";
 import userService from "../../../services/userService.js";
-import {Avatar, Button, Card, Col, DatePicker, Divider, Form, Input, message, Row, Select, Spin, Switch, Tag, Upload} from "antd";
-import dayjs from 'dayjs';
-import {UserOutlined, UploadOutlined, SaveOutlined} from "@ant-design/icons";
+import {
+    Avatar,
+    Button,
+    Card,
+    Col,
+    Divider,
+    Form,
+    Input,
+    message,
+    Row,
+    Select,
+    Spin,
+    Tag,
+    Tooltip, Typography,
+} from "antd";
+import {SaveOutlined, UndoOutlined, EditOutlined} from "@ant-design/icons";
+import {getAvatarColor} from "../../../utils/avatar.js";
+const { Title} = Typography;
 
 const EditCustomer = () => {
     const {id} = useParams();
@@ -13,25 +28,25 @@ const EditCustomer = () => {
     const [submitting, setSubmitting] = useState(false);
     const [userInfo, setUserInfo] = useState(null);
     const [messageApi, contextHolder] = message.useMessage();
+    const [isEmailEditable, setIsEmailEditable] = useState(false);
 
     useEffect(() => {
         const fetchUserDetails = async () => {
             setLoading(true);
             try {
                 const response = await userService.getUserById(id);
-                const data = response.data.user;
-                setUserInfo(data);
+
+                let data = {};
+                if (response && response?.data) {
+                    data = response.data.user;
+                    setUserInfo(data);
+                }
 
                 form.setFieldsValue({
                     username: data.username,
                     email: data.email,
                     role: data.role,
                     status: data.status || true,
-                    firstName: data.firstName || '',
-                    lastName: data.lastName || '',
-                    phone: data.phone || '',
-                    gender: data.gender || 'other',
-                    dob: data.dob ? dayjs(data.dob) : null,
                 });
             }
             catch (error) {
@@ -42,7 +57,7 @@ const EditCustomer = () => {
             }
         }
 
-        fetchUserDetails();
+        if (id) fetchUserDetails();
     }, [form])
 
     const onFinish = async (values) => {
@@ -51,6 +66,7 @@ const EditCustomer = () => {
             const updateData = {
                 role: values.role,
                 username: values.username,
+                email: values.email,
             };
 
             await userService.updateUser(id, updateData);
@@ -73,11 +89,22 @@ const EditCustomer = () => {
         }
     };
 
+    const toggleEmailEdit = () => {
+        if (isEmailEditable) {
+            form.setFieldValue('email', userInfo.email);
+            setIsEmailEditable(false);
+        } else {
+            setIsEmailEditable(true);
+        }
+    };
+
     return (
         <>
             {contextHolder}
 
-            <h2 style={{marginBottom: "24px"}}>Edit Customer</h2>
+            <div style={{marginBottom: "24px"}}>
+                <Title level={2} style={{margin: 0, color: '#008ECC'}}>Edit Customer</Title>
+            </div>
 
             <Spin spinning={loading} size="large">
                 <Form
@@ -86,7 +113,6 @@ const EditCustomer = () => {
                     initialValues={{
                         role: 'CUSTOMER',
                         status: true,
-                        gender: 'other'
                     }}
                     onFinish={onFinish}
                 >
@@ -94,37 +120,31 @@ const EditCustomer = () => {
                         <Col span={8}>
                             <Card style={{textAlign: 'center', borderRadius: 12, marginBottom: 24}}>
                                 <div style={{marginBottom: 20}}>
-                                    <Avatar size={100} icon={<UserOutlined/>} src={userInfo?.avatar}/>
-                                    <div style={{marginTop: 16}}>
-                                        <Upload showUploadList={false}>
-                                            <Button icon={<UploadOutlined/>}>Change Avatar</Button>
-                                        </Upload>
-                                    </div>
+                                    <Avatar
+                                        style={{
+                                            backgroundColor: getAvatarColor(name),
+                                            verticalAlign: 'middle',
+                                            color: '#fff',
+                                            fontWeight: 600,
+                                            fontSize: 42,
+                                            width: 120,
+                                            height: 120,
+                                        }}
+                                        size="large"
+                                    >
+                                        {userInfo?.username.charAt(0).toUpperCase() || "A"}
+                                    </Avatar>
                                 </div>
 
                                 <Divider/>
 
                                 <div style={{textAlign: 'left'}}>
-                                    <Form.Item name="status" label="Account Status" valuePropName="checked">
-                                        <Switch
-                                            checkedChildren="Active"
-                                            unCheckedChildren="Blocked"
-                                            defaultChecked
-                                        />
-                                    </Form.Item>
-
                                     <Form.Item name="role" label="User Role" rules={[{required: true}]}>
                                         <Select>
                                             <Select.Option value="CUSTOMER">Customer</Select.Option>
-                                            <Select.Option value="SELLER">Seller</Select.Option>
-                                            <Select.Option value="ADMIN">Admin</Select.Option>
                                         </Select>
                                     </Form.Item>
 
-                                    <div style={{marginTop: 24}}>
-                                        <span style={{display: 'block'}}>Joined Date</span>
-                                        <span>{userInfo?.createdAt ? dayjs(userInfo.createdAt).format('DD/MM/YYYY HH:mm') : 'N/A'}</span>
-                                    </div>
                                     <div style={{marginTop: 12}}>
                                         <span style={{display: 'block'}}>User ID</span>
                                         <Tag>{userInfo?.id}</Tag>
@@ -137,51 +157,34 @@ const EditCustomer = () => {
                             <Card title="Personal Information" style={{borderRadius: 12}}>
                                 <Row gutter={16}>
                                     <Col span={12}>
-                                        <Form.Item name="firstName" label="First Name">
-                                            <Input placeholder="Enter first name"/>
-                                        </Form.Item>
-                                    </Col>
-                                    <Col span={12}>
-                                        <Form.Item name="lastName" label="Last Name">
-                                            <Input placeholder="Enter last name"/>
-                                        </Form.Item>
-                                    </Col>
-                                </Row>
-
-                                <Row gutter={16}>
-                                    <Col span={12}>
                                         <Form.Item name="username" label="Username" rules={[{required: true}]}>
                                             <Input/>
                                         </Form.Item>
                                     </Col>
                                     <Col span={12}>
                                         <Form.Item name="email" label="Email Address">
-                                            <Input disabled style={{color: '#555'}}/>
-                                        </Form.Item>
-                                    </Col>
-                                </Row>
-
-                                <Row gutter={16}>
-                                    <Col span={12}>
-                                        <Form.Item name="phone" label="Phone Number">
-                                            <Input placeholder="+84..."/>
-                                        </Form.Item>
-                                    </Col>
-                                    <Col span={12}>
-                                        <Form.Item name="dob" label="Date of Birth">
-                                            <DatePicker style={{width: '100%'}} format="DD/MM/YYYY"/>
-                                        </Form.Item>
-                                    </Col>
-                                </Row>
-
-                                <Row gutter={16}>
-                                    <Col span={12}>
-                                        <Form.Item name="gender" label="Gender">
-                                            <Select>
-                                                <Select.Option value="male">Male</Select.Option>
-                                                <Select.Option value="female">Female</Select.Option>
-                                                <Select.Option value="other">Other</Select.Option>
-                                            </Select>
+                                            <Input
+                                                disabled={!isEmailEditable}
+                                                style={{
+                                                    color: isEmailEditable ? '#000' : '#777',
+                                                    cursor: isEmailEditable ? 'text' : 'default'
+                                                }}
+                                                suffix={
+                                                    <Tooltip title={isEmailEditable ? "Cancel edit" : "Edit email"}>
+                                                        {isEmailEditable ? (
+                                                            <UndoOutlined
+                                                                onClick={toggleEmailEdit}
+                                                                style={{color: '#ff4d4f', cursor: 'pointer'}}
+                                                            />
+                                                        ) : (
+                                                            <EditOutlined
+                                                                onClick={toggleEmailEdit}
+                                                                style={{color: '#008ECC', cursor: 'pointer'}}
+                                                            />
+                                                        )}
+                                                    </Tooltip>
+                                                }
+                                            />
                                         </Form.Item>
                                     </Col>
                                 </Row>

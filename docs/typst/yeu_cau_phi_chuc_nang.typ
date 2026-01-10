@@ -1,0 +1,4 @@
+- Hiệu năng
+- Bảo mật
+- Khả năng mở rộng
+- Tính ổn định

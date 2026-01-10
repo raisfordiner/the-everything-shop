@@ -23,6 +23,7 @@ import {
     CheckCircleOutlined,
     CloseCircleOutlined,
     CarOutlined,
+    StarFilled,
 } from '@ant-design/icons';
 import orderService from '../../../services/orderService';
 
@@ -124,7 +125,7 @@ const Orders = () => {
     };
 
     const formatDate = (dateString) => {
-        return new Date(dateString).toLocaleDateString('vi-VN', {
+        return new Date(dateString).toLocaleDateString('en-US', {
             year: 'numeric',
             month: 'long',
             day: 'numeric',
@@ -145,6 +146,11 @@ const Orders = () => {
     };
 
     const calculateOrderTotal = (order) => {
+        // Use payment amount which includes discounts
+        if (order?.payment?.amount !== undefined) {
+            return order.payment.amount;
+        }
+        // Fallback to calculating from items (for orders without payment info)
         if (!order?.orderItems) return 0;
         return order.orderItems.reduce((total, item) => {
             const itemPrice = getItemPrice(item);
@@ -187,25 +193,28 @@ const Orders = () => {
                         <Card
                             key={order.id}
                             style={{ marginBottom: '16px' }}
-                            extra={
+                            title={
                                 <Space>
-                                    {(order.status === 'PENDING' || order.status === 'SHIPPED') && (
-                                        <Popconfirm
-                                            title="Cancel Order"
-                                            description="Are you sure you want to cancel this order?"
-                                            onConfirm={() => handleCancelOrder(order.id)}
-                                            okText="Yes"
-                                            cancelText="No"
+                                    <Text type="secondary" style={{ fontWeight: 'normal', fontSize: '14px' }}>Order ID:</Text>
+                                    <Text strong>{order.id.substring(0, 8)}...</Text>
+                                </Space>
+                            }
+                            extra={
+                                <Space size="middle">
+                                    {order.status === 'DELIVERED' && order.payment?.status === 'SUCCESS' && (
+                                        <Button
+                                            type="primary"
+                                            icon={<StarFilled />}
+                                            onClick={() => navigate(`/orders/${order.id}/review`)}
                                         >
-                                            <Button type="default" danger>
-                                                Cancel Order
-                                            </Button>
-                                        </Popconfirm>
+                                            {order.orderItems.every(item => !!item.review) ? 'Edit Review' : 'Leave a Review'}
+                                        </Button>
                                     )}
                                     <Button
                                         type="link"
                                         icon={<EyeOutlined />}
                                         onClick={() => navigate(`/orders/${order.id}`)}
+                                        style={{ padding: 0 }}
                                     >
                                         View Details
                                     </Button>
@@ -213,13 +222,7 @@ const Orders = () => {
                             }
                         >
                             <div style={{ marginBottom: '16px' }}>
-                                <Space size="large">
-                                    <div>
-                                        <Text type="secondary">Order ID:</Text>
-                                        <br />
-                                        <Text strong>{order.id.substring(0, 8)}...</Text>
-                                    </div>
-                                    <Divider type="vertical" />
+                                <Space size="large" style={{ width: '100%' }}>
                                     <div>
                                         <Text type="secondary">Date:</Text>
                                         <br />
@@ -248,6 +251,24 @@ const Orders = () => {
                                             <Tag color="default">No Payment Info</Tag>
                                         )}
                                     </div>
+                                    {(order.status === 'PENDING' || order.status === 'SHIPPED') && (
+                                        <>
+                                            <Divider type="vertical" />
+                                            <div style={{ flex: 1, textAlign: 'right' }}>
+                                                <Popconfirm
+                                                    title="Cancel Order"
+                                                    description="Are you sure you want to cancel this order?"
+                                                    onConfirm={() => handleCancelOrder(order.id)}
+                                                    okText="Yes"
+                                                    cancelText="No"
+                                                >
+                                                    <Button type="default" danger>
+                                                        Cancel Order
+                                                    </Button>
+                                                </Popconfirm>
+                                            </div>
+                                        </>
+                                    )}
                                 </Space>
                             </div>
 
@@ -275,7 +296,7 @@ const Orders = () => {
                                                     description={
                                                         <>
                                                             <Text type="secondary">
-                                                                {item.productVariant?.variantAttributes && 
+                                                                {item.productVariant?.variantAttributes &&
                                                                     Object.entries(item.productVariant.variantAttributes)
                                                                         .map(([key, value]) => `${key}: ${value}`)
                                                                         .join(', ')
@@ -311,7 +332,7 @@ const Orders = () => {
                     );
                 }}
             />
-        </div>
+        </div >
     );
 };
 

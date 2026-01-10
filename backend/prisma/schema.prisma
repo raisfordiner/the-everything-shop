@@ -36,6 +36,7 @@ enum PaymentMethod {
 enum PaymentStatus {
   PENDING
   SUCCESS
+  FAILED
 }
 
 enum ReturnStatus {
@@ -94,16 +95,17 @@ model User {
 }
 
 model Customer {
-  id        String     @id @default(cuid())
-  userId    String     @unique
-  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-  image     String?
-  cart      Cart?
-  reviews   Review[]
-  addresses Address[]
-  orders    Order[]
-  createdAt DateTime   @default(now())
-  updatedAt DateTime   @updatedAt
+  id          String       @id @default(cuid())
+  userId      String       @unique
+  user        User         @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  image       String?
+  cart        Cart?
+  reviews     Review[]
+  addresses   Address[]
+  orders      Order[]
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  memberships Membership[]
 }
 
 model Seller {
@@ -169,6 +171,7 @@ model Category {
   id          String      @id @default(cuid())
   name        String      @unique
   description String?
+  image       String?
   createdAt   DateTime    @default(now())
   updatedAt   DateTime    @updatedAt
   promotions  Promotion[] @relation("PromotionCategories")
@@ -193,6 +196,7 @@ model Promotion {
   id                String           @id @default(cuid())
   name              String
   description       String?
+  image             String?
   startDate         DateTime
   endDate           DateTime
   createdBy         String
@@ -360,4 +364,20 @@ model Address {
   province    String?
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
+}
+
+enum MembershipStatus {
+  BRONZE
+  SILVER
+  GOLD
+}
+
+model Membership {
+  id         String           @id @default(cuid())
+  customerId String
+  customer   Customer         @relation(fields: [customerId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  membership MembershipStatus @default(BRONZE)
+  spent      Float
+  createdAt  DateTime         @default(now())
+  updatedAt  DateTime         @updatedAt
 }

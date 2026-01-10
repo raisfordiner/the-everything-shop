@@ -1,15 +1,17 @@
-import {useEffect, useState} from "react";
+import React, {useEffect, useState} from "react";
 import userService from "../../../services/userService.js";
-import {Button, Card, Col, Input, message, Popconfirm, Row, Space, Spin, Table} from "antd";
-import {EditOutlined, DeleteOutlined, ExportOutlined, PlusOutlined, SearchOutlined} from "@ant-design/icons";
-import dayjs from 'dayjs';
+import {Avatar, Button, Card, Col, Input, message, Popconfirm, Row, Space, Table, Typography} from "antd";
+import {EditOutlined, DeleteOutlined, PlusOutlined, SearchOutlined} from "@ant-design/icons";
 import {useNavigate} from "react-router";
+import {getAvatarColor} from "../../../utils/avatar.js";
+const { Title, Text} = Typography;
 
 const Customers = () => {
     const navigate = useNavigate();
     const [loading, setLoading] = useState(true);
     const [users, setUsers] = useState([]);
     const [searchText, setSearchText] = useState('');
+    const [messageApi, contextHolder] = message.useMessage();
 
     const fetchUsers = async () => {
         setLoading(true);
@@ -17,7 +19,11 @@ const Customers = () => {
             const response = await userService.getAllUsers();
             if (response) {
                 const data = response.data.users;
-                setUsers(data);
+
+                if (response && response?.data) {
+                    const customerUsers = data.filter(user => user.role === "CUSTOMER");
+                    setUsers(customerUsers);
+                }
             }
         }
         catch (error) {
@@ -35,31 +41,56 @@ const Customers = () => {
     const handleDelete = async (id) => {
         try {
             await userService.deleteUser(id);
+            messageApi.open({
+                type: 'success',
+                content: 'Customer deleted successfully!',
+            });
             fetchUsers();
         } catch (error) {
             console.error(error);
+            messageApi.open({
+                type: 'error',
+                content: error.message || 'Failed to delete customer!',
+            });
         }
     };
 
     const columns = [
         {
+            key: "avatar",
+            width: 80,
+            align: 'center',
+            render: (_, record) => {
+                const name = record.username || "U";
+                const firstLetter = name.charAt(0).toUpperCase();
+
+                return (
+                    <Avatar
+                        style={{
+                            backgroundColor: getAvatarColor(name),
+                            verticalAlign: 'middle',
+                            color: '#fff',
+                            fontWeight: 600
+                        }}
+                        size="large"
+                    >
+                        {firstLetter}
+                    </Avatar>
+                );
+            }
+        },
+        {
             title: "Customers Name",
             dataIndex: "username",
             key: "username",
-            render: (text) => <span style={{ fontWeight: 500 }}>{text}</span>,
+            render: (text) => <Text strong style={{ fontSize: 16 }}>{text}</Text>,
             sorter: (a, b) => a.username.localeCompare(b.username)
         },
         {
             title: "Email",
             dataIndex: "email",
-            key: "email"
-        },
-        {
-            title: 'Join Date',
-            dataIndex: 'createdAt',
-            key: 'createdAt',
-            render: (date) => dayjs(date).format('DD/MM/YYYY'),
-            sorter: (a, b) => new Date(a.createdAt) - new Date(b.createdAt)
+            key: "email",
+            render: (text) => <Text strong type="secondary" style={{ fontSize: 16 , color: '#595959' }}>{text}</Text>,
         },
         {
             title: 'Action',
@@ -93,13 +124,14 @@ const Customers = () => {
 
     return (
         <>
+            {contextHolder}
+
             <Row justify="space-between" align="middle" style={{marginBottom: 24}}>
                 <Col>
-                    <h2>Customers</h2>
+                    <Title level={2} style={{margin: 0, color: '#008ECC'}}>Customers</Title>
                 </Col>
                 <Col>
                     <Space>
-                        <Button icon={<ExportOutlined/>}>Export</Button>
                         <Button type="primary" icon={<PlusOutlined/>} style={{backgroundColor: '#008ECC'}} onClick={() => navigate('add-customer')}>
                             Add Customer
                         </Button>

@@ -279,6 +279,7 @@ async function main() {
     create: {
       name: 'Electronics',
       description: 'Electronic devices and gadgets',
+      image: 'https://images.unsplash.com/photo-1498049794561-7780e7231661?w=800&auto=format&fit=crop',
     },
   });
 
@@ -288,6 +289,7 @@ async function main() {
     create: {
       name: 'Fashion',
       description: 'Clothing and apparel',
+      image: 'https://images.unsplash.com/photo-1445205170230-053b83016050?w=800&auto=format&fit=crop',
     },
   });
 
@@ -297,6 +299,7 @@ async function main() {
     create: {
       name: 'Home & Garden',
       description: 'Home and garden products',
+      image: 'https://images.unsplash.com/photo-1484101403633-562f891dc89a?w=800&auto=format&fit=crop',
     },
   });
 
@@ -306,6 +309,7 @@ async function main() {
     create: {
       name: 'Sports & Outdoors',
       description: 'Sporting equipment and outdoor gear',
+      image: 'https://images.unsplash.com/photo-1461896836934-ffe607ba8211?w=800&auto=format&fit=crop',
     },
   });
 
@@ -315,6 +319,7 @@ async function main() {
     create: {
       name: 'Books',
       description: 'Books and literature',
+      image: 'https://images.unsplash.com/photo-1512820790803-83ca734da794?w=800&auto=format&fit=crop',
     },
   });
 
@@ -324,6 +329,7 @@ async function main() {
     create: {
       name: 'Toys & Games',
       description: 'Toys, games, and puzzles',
+      image: 'https://images.unsplash.com/photo-1545558014-8692077e9b5c?w=800&auto=format&fit=crop',
     },
   });
 
@@ -660,8 +666,9 @@ async function main() {
     data: {
       name: 'Summer Sale 2024',
       description: '20% off on electronics',
+      image: 'https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?w=1200&auto=format&fit=crop',
       startDate: new Date('2024-06-01'),
-      endDate: new Date('2024-08-31'),
+      endDate: new Date('2026-08-31'),
       createdBy: admin.id,
       status: 'ACTIVE',
       appliedProducts: {
@@ -674,6 +681,7 @@ async function main() {
     data: {
       name: 'Fashion Week',
       description: '15% off on all fashion items',
+      image: 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=1200&auto=format&fit=crop',
       startDate: new Date('2024-09-01'),
       endDate: new Date('2024-09-30'),
       createdBy: admin.id,
@@ -759,18 +767,99 @@ async function main() {
     },
   });
 
+  // ============ MEMBERSHIPS ============
+  await prisma.membership.create({
+    data: {
+      customerId: customer1.id,
+      membership: 'GOLD',
+      spent: 500,
+    },
+  });
+
+  await prisma.membership.create({
+    data: {
+      customerId: customer2.id,
+      membership: 'SILVER',
+      spent: 150,
+    },
+  });
+
+  await prisma.membership.create({
+    data: {
+      customerId: customer3.id,
+      membership: 'BRONZE',
+      spent: 50,
+    },
+  });
+
+  // ============ ADDITIONAL TEST ORDERS FOR JOHN DOE ============
+  // Order 5: Ready for review but not reviewed yet (DELIVERED + SUCCESS)
+  const order5 = await prisma.order.create({
+    data: {
+      customer: { connect: { id: customer1.id } },
+      address: { connect: { id: address1.id } },
+      status: 'DELIVERED',
+      createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000),
+    },
+  });
+
+  await prisma.orderItem.create({
+    data: {
+      orderId: order5.id,
+      productVariantId: variant2.id,
+      quantity: 1,
+    },
+  });
+
+  await prisma.payment.create({
+    data: {
+      orderId: order5.id,
+      amount: 199.99,
+      method: 'VNPAY',
+      status: 'SUCCESS',
+    },
+  });
+
+  // Order 6: Not ready for review (SHIPPED)
+  const order6 = await prisma.order.create({
+    data: {
+      customer: { connect: { id: customer1.id } },
+      address: { connect: { id: address2.id } },
+      status: 'SHIPPED',
+      createdAt: new Date(Date.now() - 1 * 60 * 60 * 1000),
+    },
+  });
+
+  await prisma.orderItem.create({
+    data: {
+      orderId: order6.id,
+      productVariantId: variant3.id,
+      quantity: 1,
+    },
+  });
+
+  await prisma.payment.create({
+    data: {
+      orderId: order6.id,
+      amount: 899.99,
+      method: 'COD',
+      status: 'SUCCESS',
+    },
+  });
+
   console.log('✅ Seeding finished successfully!');
   console.log('📊 Seeded data:');
-  console.log(`  - 2 Admins, 2 Sellers, 2 Customers`);
-  console.log(`  - 3 Addresses`);
-  console.log(`  - 3 Categories with 4 Products`);
-  console.log(`  - 5 Product Variants`);
-  console.log(`  - 2 Orders with 3 Order Items`);
-  console.log(`  - 2 Payments & 2 Reviews`);
+  console.log(`  - 2 Admins, 3 Sellers, 5 Customers`);
+  console.log(`  - 4 Addresses`);
+  console.log(`  - 6 Categories with 7 Products`);
+  console.log(`  - 7 Product Variants`);
+  console.log(`  - 4 Orders with 4 Order Items`);
+  console.log(`  - 3 Payments & 2 Reviews`);
   console.log(`  - 2 Promotions with Coupons & Clearance Events`);
   console.log(`  - 2 Notifications & 1 Report`);
   console.log(`  - 1 Return & 1 Cancellation`);
   console.log(`  - 2 System Parameters`);
+  console.log(`  - 3 Memberships (USD)`);
 }
 
 main()

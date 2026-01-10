@@ -1,0 +1,95 @@
+import Send from "util/response";
+import { Request, Response } from "express";
+import { logger } from "util/logger";
+import MembershipService from "./membership.service";
+import { MembershipStatus } from "@prisma/client";
+
+export default class MembershipController {
+  static async getMemberships(req: Request, res: Response) {
+    try {
+      const { id } = req.params;
+      const { membership } = req.query;
+
+      const result = await MembershipService.find(id, membership as MembershipStatus);
+
+      if (!result) {
+        return Send.notFound(res, {}, id ? "Membership not found" : "Memberships not found");
+      }
+
+      const response = id ? { membership: result } : { memberships: result };
+      return Send.success(res, response);
+    } catch (error) {
+      logger.error({ error }, "Error fetching memberships");
+      return Send.error(res, {}, "Internal server error");
+    }
+  }
+
+  static async getMyMembership(req: Request, res: Response) {
+    try {
+      const user = (req as any).user;
+      const userId = user?.id || user?.userId;
+
+      if (!userId) {
+        return Send.unauthorized(res, null, "User not authenticated");
+      }
+
+      const membership = await MembershipService.findByUserId(userId);
+
+      return Send.success(res, { membership });
+    } catch (error: any) {
+      logger.error({
+        msg: "Error fetching my membership",
+        errorName: error.name,
+        errorMessage: error.message,
+        errorStack: error.stack
+      });
+      return Send.error(res, {}, "Internal server error");
+    }
+  }
+
+  static async createMembership(req: Request, res: Response) {
+    try {
+      const { customerId, spent } = req.body;
+
+      const membershipRecord = await MembershipService.create({
+        customerId,
+        spent,
+      });
+
+      return Send.success(res, { membership: membershipRecord }, "Membership created successfully");
+    } catch (error: any) {
+      logger.error({ error }, "Error creating membership");
+      return Send.error(res, {}, error.message || "Internal server error");
+    }
+  }
+
+  static async updateMembership(req: Request, res: Response) {
+    try {
+      const { id } = req.params;
+      const { customerId, spent } = req.body;
+
+      const membershipRecord = await MembershipService.update(id, {
+        customerId,
+        spent,
+      });
+
+      return Send.success(res, { membership: membershipRecord }, "Membership updated successfully");
+    } catch (error: any) {
+      logger.error({ error }, "Error updating membership");
+      return Send.error(res, {}, error.message || "Internal server error");
+    }
+  }
+
+  static async deleteMembership(req: Request, res: Response) {
+    try {
+      const { id } = req.params;
+
+      await MembershipService.delete(id);
+
+      return Send.success(res, {}, "Membership deleted successfully");
+    } catch (error) {
+      logger.error({ error }, "Error deleting membership");
+      return Send.error(res, {}, "Internal server error");
+    }
+  }
+}

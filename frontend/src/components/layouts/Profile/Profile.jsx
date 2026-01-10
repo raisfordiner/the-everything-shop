@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react'
 import "./Profile.scss"
 import { Avatar, Col, Menu, Row, message, Spin } from "antd";
-import { UserOutlined, RightOutlined, ShoppingOutlined, HomeOutlined, LockOutlined, CameraOutlined } from "@ant-design/icons";
+import { UserOutlined, RightOutlined, ShoppingOutlined, HomeOutlined, LockOutlined, CameraOutlined, CrownOutlined } from "@ant-design/icons";
 import { Outlet } from "react-router-dom";
 import { Link } from "react-router-dom";
 import userService from "../../../services/userService";
@@ -31,13 +31,13 @@ const Profile = () => {
             ),
         },
         {
-            key: "my-order",
+            key: "membership",
             label: (
-                <Link to="/profile/my-order">
+                <Link to="/profile/membership">
                     <div className={"profile__menu-item"}>
                         <div className="profile__menu-item-left">
-                            <ShoppingOutlined />
-                            <span>My order</span>
+                            <CrownOutlined />
+                            <span>Membership</span>
                         </div>
                         <RightOutlined className="profile__menu-item-right" />
                     </div>

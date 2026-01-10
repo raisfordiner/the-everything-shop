@@ -1,5 +1,6 @@
 import { prisma } from "util/db";
 import { Prisma, Product } from "@prisma/client";
+import UploadService from "../upload/upload.service";
 
 export default class ProductService {
   /**
@@ -9,9 +10,14 @@ export default class ProductService {
     skip: number = 0,
     take: number = 10,
     categoryId?: string,
-    searchTerm?: string
+    searchTerm?: string,
+    sortBy: "name" | "price" | "rating" = "name",
+    sortOrder: "asc" | "desc" = "asc",
+    minPrice?: number,
+    maxPrice?: number,
+    minRating?: number
   ): Promise<{
-    products: Product[];
+    products: any[];
     pagination: {
       total: number;
       skip: number;
@@ -34,33 +40,91 @@ export default class ProductService {
       ];
     }
 
-    const [products, total] = await Promise.all([
-      prisma.product.findMany({
-        where,
-        skip,
-        take,
-        include: {
-          category: true,
-          seller: {
-            select: {
-              id: true,
-              user: {
-                select: {
-                  username: true,
-                  email: true,
-                },
+    if (minPrice !== undefined || maxPrice !== undefined) {
+      where.price = {};
+      if (minPrice !== undefined) where.price.gte = minPrice;
+      if (maxPrice !== undefined) where.price.lte = maxPrice;
+    }
+
+    const orderBy: any = {};
+    if (sortBy === "name" || sortBy === "price") {
+      orderBy[sortBy] = sortOrder;
+    }
+
+    // Since we need to calculate stats and potentially filter by rating, 
+    // we fetch matching products without skip/take initially if minRating or rating sort is used.
+    // However, to keep it simple and performant, we'll fetch all matching products (within reason),
+    // enrich them, filter by rating, sort, then apply skip/take.
+    const allMatchingProducts = await prisma.product.findMany({
+      where,
+      orderBy: sortBy !== "rating" ? [orderBy] : undefined,
+      include: {
+        category: true,
+        seller: {
+          select: {
+            id: true,
+            user: {
+              select: {
+                username: true,
+                email: true,
               },
             },
           },
-          productVariants: true,
-          promotions: true,
         },
-      }),
-      prisma.product.count({ where }),
-    ]);
+        productVariants: {
+          include: {
+            orderItems: {
+              include: {
+                order: true,
+                review: true,
+              },
+            },
+          },
+        },
+        promotions: true,
+      },
+    });
+
+    let enrichedProducts = allMatchingProducts.map(product => {
+      const allOrderItems = product.productVariants.flatMap(v => v.orderItems);
+      const soldCount = allOrderItems
+        .filter(oi => oi.order.status === "SHIPPED" || oi.order.status === "DELIVERED")
+        .reduce((sum, oi) => sum + oi.quantity, 0);
+
+      const reviews = allOrderItems
+        .map(oi => oi.review)
+        .filter(r => r !== null);
+
+      const reviewCount = reviews.length;
+      const averageRating = reviewCount > 0
+        ? reviews.reduce((sum, r) => sum + (r?.rating || 0), 0) / reviewCount
+        : 0;
+
+      return {
+        ...product,
+        soldCount,
+        reviewCount,
+        averageRating: parseFloat(averageRating.toFixed(1)),
+      };
+    });
+
+    // 2. Filter by minRating
+    if (minRating !== undefined) {
+      enrichedProducts = enrichedProducts.filter(p => p.averageRating >= minRating);
+    }
+
+    // 3. Custom sort for Rating
+    if (sortBy === "rating") {
+      enrichedProducts.sort((a, b) => {
+        return sortOrder === "asc" ? a.averageRating - b.averageRating : b.averageRating - a.averageRating;
+      });
+    }
+
+    const total = enrichedProducts.length;
+    const paginatedProducts = enrichedProducts.slice(skip, skip + take);
 
     return {
-      products,
+      products: paginatedProducts,
       pagination: {
         total,
         skip,
@@ -73,7 +137,7 @@ export default class ProductService {
   /**
    * Get a single product by ID
    */
-  static async getProductById(productId: string): Promise<Product> {
+  static async getProductById(productId: string): Promise<any> {
     const product = await prisma.product.findFirst({
       where: {
         id: productId,
@@ -94,8 +158,12 @@ export default class ProductService {
         },
         productVariants: {
           include: {
-            cartItems: true,
-            orderItems: true,
+            orderItems: {
+              include: {
+                order: true,
+                review: true,
+              },
+            },
           },
         },
         promotions: true,
@@ -106,7 +174,27 @@ export default class ProductService {
       throw new Error("Product not found or has been deleted");
     }
 
-    return product;
+    // Calculate stats
+    const allOrderItems = product.productVariants.flatMap(v => v.orderItems);
+    const soldCount = allOrderItems
+      .filter(oi => oi.order.status === "SHIPPED" || oi.order.status === "DELIVERED")
+      .reduce((sum, oi) => sum + oi.quantity, 0);
+
+    const reviews = allOrderItems
+      .map(oi => oi.review)
+      .filter(r => r !== null);
+
+    const reviewCount = reviews.length;
+    const averageRating = reviewCount > 0
+      ? reviews.reduce((sum, r) => sum + (r?.rating || 0), 0) / reviewCount
+      : 0;
+
+    return {
+      ...product,
+      soldCount,
+      reviewCount,
+      averageRating: parseFloat(averageRating.toFixed(1)),
+    };
   }
 
   /**
@@ -236,7 +324,11 @@ export default class ProductService {
   /**
    * Delete a product (Seller or Admin)
    */
-  static async deleteProduct(productId: string, userContext: { userId: string; role: string; sellerId?: string }) {
+  static async deleteProduct(
+    productId: string,
+    userContext: { userId: string; role: string; sellerId?: string },
+    hard: boolean = false
+  ) {
     const product = await prisma.product.findUnique({
       where: { id: productId },
     });
@@ -245,13 +337,31 @@ export default class ProductService {
       throw new Error("Product not found");
     }
 
-    // Allow all sellers and admins to delete any product
-    await prisma.product.update({
-      where: { id: productId },
-      data: { is_deleted: true },
-    });
+    if (hard) {
+      await prisma.product.delete({
+        where: { id: productId },
+      });
 
-    return { message: "Product deleted successfully" };
+      // Clean up images from storage
+      const uploadService = new UploadService();
+      if (product.images && product.images.length > 0) {
+        for (const imageUrl of product.images) {
+          try {
+            await uploadService.delete(imageUrl);
+          } catch (error) {
+            console.error(`Failed to delete product image from storage: ${imageUrl}`, error);
+          }
+        }
+      }
+    } else {
+      // Soft delete
+      await prisma.product.update({
+        where: { id: productId },
+        data: { is_deleted: true },
+      });
+    }
+
+    return { message: `Product ${hard ? "permanently" : ""} deleted successfully` };
   }
 
   /**

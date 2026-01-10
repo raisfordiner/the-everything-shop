@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router';
+import { useNavigate, useLocation } from 'react-router';
 import {
   Button,
   Card,
@@ -28,6 +28,7 @@ const { Text } = Typography;
 
 const Product = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [loading, setLoading] = useState(true);
   const [products, setProducts] = useState([]);
   const [searchText, setSearchText] = useState('');
@@ -42,7 +43,7 @@ const Product = () => {
     try {
       const response = await productService.getAllProducts();
       console.log('Products response:', response);
-      
+
       if (response && response.data) {
         const data = Array.isArray(response.data) ? response.data : response.data.products || [];
         console.log('Processed products data:', data);
@@ -59,6 +60,13 @@ const Product = () => {
 
   useEffect(() => {
     fetchSellerAndProducts();
+    
+    // Check if navigated from category page with search term
+    if (location.state?.searchCategory) {
+      setSearchText(location.state.searchCategory);
+      // Clear the state after using it
+      window.history.replaceState({}, document.title);
+    }
   }, []);
 
   const handleDelete = async (id) => {
@@ -80,7 +88,7 @@ const Product = () => {
 
     try {
       await Promise.all(
-        selectedRowKeys.map(productId => 
+        selectedRowKeys.map(productId =>
           productService.deleteProduct(productId)
         )
       );
@@ -136,7 +144,7 @@ const Product = () => {
       title: 'Price',
       dataIndex: 'price',
       key: 'price',
-      render: (price) => <span>₫{price?.toLocaleString() || 0}</span>,
+      render: (price) => <span>${price?.toLocaleString() || 0}</span>,
       sorter: (a, b) => a.price - b.price,
     },
     {
@@ -185,7 +193,7 @@ const Product = () => {
   return (
     <>
 
-      <Row justify="space-between" align="middle" style={{ marginBottom:  '12px'}}>
+      <Row justify="space-between" align="middle" style={{ marginBottom: '12px' }}>
         <Col>
           <h2>Products</h2>
         </Col>

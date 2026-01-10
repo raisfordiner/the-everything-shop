@@ -206,6 +206,7 @@ export default class OrderService {
               product: true,
             },
           },
+          review: true,
         },
       },
       address: true,

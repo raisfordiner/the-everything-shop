@@ -20,11 +20,16 @@ const updateOrderStatus = async (orderId, status) => {
     return await patch(`/orders/${orderId}`, { status });
 };
 
+// const updatePaymentStatus = async (orderId, paymentStatus) => {
+//     return await patch(`/orders/${orderId}`, { paymentStatus });
+// }
+
 const orderService = {
     getAllOrders,
     getOrderById,
     createDirectOrder,
     updateOrderStatus,
+    // updatePaymentStatus,
 };
 
 export default orderService;

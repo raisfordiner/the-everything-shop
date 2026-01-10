@@ -1,8 +1,24 @@
-import {Avatar, Button, Card, Col, DatePicker, Divider, Form, Input, message, Row, Select, Switch, Upload} from "antd";
+import {
+    Avatar,
+    Button,
+    Card,
+    Col,
+    DatePicker,
+    Divider,
+    Form,
+    Input,
+    message,
+    Row,
+    Select,
+    Switch,
+    Typography,
+    Upload
+} from "antd";
 import {useNavigate} from "react-router";
-import {useState} from "react";
+import React, {useState} from "react";
 import userService from "../../../services/userService.js";
-import {UserOutlined, UploadOutlined, PlusOutlined} from "@ant-design/icons";
+import {UserOutlined, PlusOutlined} from "@ant-design/icons";
+const { Title} = Typography;
 
 const AddStaff = () => {
     const navigate = useNavigate();
@@ -17,7 +33,6 @@ const AddStaff = () => {
                 username: values.username,
                 email: values.email,
                 password: values.password,
-                password_confirmation: values.confirmPassword,
                 role: values.role,
             };
 
@@ -46,7 +61,9 @@ const AddStaff = () => {
         <>
             {contextHolder}
 
-            <h2 style={{marginBottom: "24px"}}>Add New Staff</h2>
+            <div style={{marginBottom: "24px"}}>
+                <Title level={2} style={{margin: 0, color: '#008ECC'}}>Edit Staff</Title>
+            </div>
 
             <Form
                 form={form}
@@ -61,24 +78,24 @@ const AddStaff = () => {
                     <Col span={8}>
                         <Card style={{textAlign: 'center', borderRadius: 12, marginBottom: 24}}>
                             <div style={{marginBottom: 20}}>
-                                <Avatar size={100} icon={<UserOutlined/>}/>
-                                <div style={{marginTop: 16}}>
-                                    <Upload showUploadList={false}>
-                                        <Button icon={<UploadOutlined/>}>Upload Avatar</Button>
-                                    </Upload>
-                                </div>
+                                <Avatar
+                                    style={{
+                                        verticalAlign: 'middle',
+                                        color: '#fff',
+                                        fontWeight: 600,
+                                        fontSize: 42,
+                                        width: 120,
+                                        height: 120,
+                                    }}
+                                    size="large"
+                                    icon={<UserOutlined/>}
+                                >
+                                </Avatar>
                             </div>
 
                             <Divider/>
 
                             <div style={{textAlign: 'left'}}>
-                                <Form.Item name="status" label="Account Status" valuePropName="checked">
-                                    <Switch
-                                        checkedChildren="Active"
-                                        unCheckedChildren="Blocked"
-                                    />
-                                </Form.Item>
-
                                 <Form.Item name="role" label="User Role" rules={[{required: true}]}>
                                     <Select>
                                         <Select.Option value="SELLER">Seller</Select.Option>

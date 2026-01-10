@@ -1,0 +1,31 @@
+/* Custom styling for promotion image upload */
+.promotion-image-upload .ant-upload-list-item-container {
+    width: 100% !important;
+    height: auto !important;
+    aspect-ratio: 16 / 9;
+}
+
+.promotion-image-upload .ant-upload.ant-upload-select {
+    width: 100% !important;
+    height: 300px !important;
+}
+
+.promotion-image-upload .ant-upload-list-item {
+    width: 100% !important;
+    height: auto !important;
+}
+
+.promotion-image-upload .ant-upload-list-item-image {
+    object-fit: contain !important;
+    width: 100% !important;
+    height: 300px !important;
+}
+
+.promotion-image-upload .ant-upload-list-picture-card-container {
+    width: 100% !important;
+    height: 300px !important;
+}
+
+.promotion-image-upload .ant-upload-list {
+    width: 100% !important;
+}

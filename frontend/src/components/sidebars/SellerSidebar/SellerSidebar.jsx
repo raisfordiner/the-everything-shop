@@ -8,6 +8,9 @@ import {
     SettingOutlined,
     UserSwitchOutlined,
     GlobalOutlined,
+    TagsOutlined,
+    FileSyncOutlined,
+    ExceptionOutlined
 } from "@ant-design/icons";
 import { Layout, Menu } from "antd";
 import { Link, useLocation } from "react-router-dom";
@@ -29,11 +32,6 @@ const SellerSidebar = ({ onCollapse }) => {
 
     const menuItems = [
         {
-            key: "/seller/dashboard",
-            icon: <DashboardOutlined />,
-            label: <Link to="/seller/dashboard">Dashboard</Link>,
-        },
-        {
             key: "/seller/orders",
             icon: <ShoppingCartOutlined />,
             label: <Link to="/seller/orders">Orders</Link>,
@@ -44,37 +42,37 @@ const SellerSidebar = ({ onCollapse }) => {
             label: <Link to="/seller/products">Products</Link>,
         },
         {
-            key: "/seller/reports",
-            icon: <BarChartOutlined />,
-            label: <Link to="/seller/reports">Reports</Link>,
+            key: "/seller/categories",
+            icon: <TagsOutlined />,
+            label: <Link to="/seller/categories">Categories</Link>,
         },
         {
-            key: "/seller/coupons",
-            icon: <GiftOutlined />,
-            label: <Link to="/seller/coupons">Coupons</Link>,
+            key: "/seller/returns",
+            icon: <FileSyncOutlined />,
+            label: <Link to="/seller/returns">Returns</Link>,
         },
         {
-            key: "/seller/inbox",
-            icon: <InboxOutlined />,
-            label: <Link to="/seller/inbox">Inbox</Link>,
+            key: "/seller/cancellations",
+            icon: <ExceptionOutlined />,
+            label: <Link to="/seller/cancellations">Cancellations</Link>,
         },
-        {
-            key: "settings",
-            icon: <SettingOutlined />,
-            label: "Settings",
-            children: [
-                {
-                    key: "/admin/settings/personal",
-                    icon: <UserSwitchOutlined />,
-                    label: <Link to="/seller/settings/personal">Personal Setting</Link>,
-                },
-                {
-                    key: "/seller/settings/global",
-                    icon: <GlobalOutlined />,
-                    label: <Link to="/seller/settings/global">Global Setting</Link>,
-                },
-            ],
-        },
+        // {
+        //     key: "settings",
+        //     icon: <SettingOutlined />,
+        //     label: "Settings",
+        //     children: [
+        //         {
+        //             key: "/admin/settings/personal",
+        //             icon: <UserSwitchOutlined />,
+        //             label: <Link to="/seller/settings/personal">Personal Setting</Link>,
+        //         },
+        //         {
+        //             key: "/seller/settings/global",
+        //             icon: <GlobalOutlined />,
+        //             label: <Link to="/seller/settings/global">Global Setting</Link>,
+        //         },
+        //     ],
+        // },
     ];
 
     return (
@@ -94,7 +92,6 @@ const SellerSidebar = ({ onCollapse }) => {
                 left: 0,
                 top: 64,
                 bottom: 0,
-                paddingTop: '64px',
             }}
         >
             <Menu

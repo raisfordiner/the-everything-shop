@@ -1,0 +1,3 @@
+- Mức độ đáp ứng yêu cầu
+- Ưu điểm
+- Hạn chế

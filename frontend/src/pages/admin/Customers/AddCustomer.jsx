@@ -1,9 +1,9 @@
-import {Avatar, Button, Card, Col, DatePicker, Divider, Form, Input, message, Row, Select, Switch, Upload} from "antd";
+import {Avatar, Button, Card, Col, Divider, Form, Input, message, Row, Select, Typography} from "antd";
 import {useNavigate} from "react-router";
-import {useState} from "react";
+import React, {useState} from "react";
 import userService from "../../../services/userService.js";
-import {UserOutlined, UploadOutlined, PlusOutlined} from "@ant-design/icons";
-import EditCustomer from "./EditCustomer.jsx";
+import {UserOutlined, PlusOutlined} from "@ant-design/icons";
+const { Title} = Typography;
 
 const AddCustomer = () => {
     const navigate = useNavigate();
@@ -18,7 +18,6 @@ const AddCustomer = () => {
                 username: values.username,
                 email: values.email,
                 password: values.password,
-                password_confirmation: values.confirmPassword,
                 role: values.role,
             };
 
@@ -47,7 +46,9 @@ const AddCustomer = () => {
         <>
             {contextHolder}
 
-            <h2 style={{marginBottom: "24px"}}>Add New Customers</h2>
+            <div style={{marginBottom: "24px"}}>
+                <Title level={2} style={{margin: 0, color: '#008ECC'}}>Add New Customer</Title>
+            </div>
 
             <Form
                 form={form}
@@ -56,36 +57,33 @@ const AddCustomer = () => {
                 initialValues={{
                     role: 'CUSTOMER',
                     status: true,
-                    gender: 'other'
                 }}
             >
                 <Row gutter={24}>
                     <Col span={8}>
                         <Card style={{textAlign: 'center', borderRadius: 12, marginBottom: 24}}>
                             <div style={{marginBottom: 20}}>
-                                <Avatar size={100} icon={<UserOutlined/>}/>
-                                <div style={{marginTop: 16}}>
-                                    <Upload showUploadList={false}>
-                                        <Button icon={<UploadOutlined/>}>Upload Avatar</Button>
-                                    </Upload>
-                                </div>
+                                <Avatar
+                                    style={{
+                                        verticalAlign: 'middle',
+                                        color: '#fff',
+                                        fontWeight: 600,
+                                        fontSize: 42,
+                                        width: 120,
+                                        height: 120,
+                                    }}
+                                    size="large"
+                                    icon={<UserOutlined/>}
+                                >
+                                </Avatar>
                             </div>
 
                             <Divider/>
 
                             <div style={{textAlign: 'left'}}>
-                                <Form.Item name="status" label="Account Status" valuePropName="checked">
-                                    <Switch
-                                        checkedChildren="Active"
-                                        unCheckedChildren="Blocked"
-                                    />
-                                </Form.Item>
-
                                 <Form.Item name="role" label="User Role" rules={[{required: true}]}>
                                     <Select>
                                         <Select.Option value="CUSTOMER">Customers</Select.Option>
-                                        <Select.Option value="SELLER">Seller</Select.Option>
-                                        <Select.Option value="ADMIN">Admin</Select.Option>
                                     </Select>
                                 </Form.Item>
                             </div>
@@ -94,19 +92,6 @@ const AddCustomer = () => {
 
                     <Col span={16}>
                         <Card title="Customers Information" style={{borderRadius: 12}}>
-                            <Row gutter={16}>
-                                <Col span={12}>
-                                    <Form.Item name="firstName" label="First Name">
-                                        <Input placeholder="Enter first name"/>
-                                    </Form.Item>
-                                </Col>
-                                <Col span={12}>
-                                    <Form.Item name="lastName" label="Last Name">
-                                        <Input placeholder="Enter last name"/>
-                                    </Form.Item>
-                                </Col>
-                            </Row>
-
                             <Row gutter={16}>
                                 <Col span={12}>
                                     <Form.Item
@@ -162,33 +147,6 @@ const AddCustomer = () => {
                                         ]}
                                     >
                                         <Input.Password placeholder="Confirm password"/>
-                                    </Form.Item>
-                                </Col>
-                            </Row>
-
-                            <Divider orientation="left" style={{borderColor: '#f0f0f0'}}>Additional Info</Divider>
-
-                            <Row gutter={16}>
-                                <Col span={12}>
-                                    <Form.Item name="phone" label="Phone Number">
-                                        <Input placeholder="+84..."/>
-                                    </Form.Item>
-                                </Col>
-                                <Col span={12}>
-                                    <Form.Item name="dob" label="Date of Birth">
-                                        <DatePicker style={{width: '100%'}} format="DD/MM/YYYY"/>
-                                    </Form.Item>
-                                </Col>
-                            </Row>
-
-                            <Row gutter={16}>
-                                <Col span={12}>
-                                    <Form.Item name="gender" label="Gender">
-                                        <Select>
-                                            <Select.Option value="male">Male</Select.Option>
-                                            <Select.Option value="female">Female</Select.Option>
-                                            <Select.Option value="other">Other</Select.Option>
-                                        </Select>
                                     </Form.Item>
                                 </Col>
                             </Row>

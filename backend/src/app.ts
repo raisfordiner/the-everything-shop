@@ -23,16 +23,19 @@ import categoryRoute from "categories/categories.route";
 import productVariantRoute from "productVariants/productVariants.route";
 import promotionRoute from "promotions/promotions.route";
 import couponsRoute from "coupons/coupons.route";
+import cancellationRoute from "cancellations/cancellation.route";
 import eventsRoute from "events/events.route";
 import uploadRoute from "upload/upload.route";
 import cartsRoute from "cart/cart.route";
 import reviewsRoute from "reviews/reviews.route";
 import addressRoute from "addresses/address.route";
 import orderRoute from "orders/order.route";
+import membershipRoute from "memberships/membership.route";
 import paymentRoute from "payments/payment.route";
+import returnRoute from "./returns/return.route";
 
 export default class App {
-  private app: Express;
+  public app: Express;
 
   constructor() {
     this.app = express();
@@ -57,7 +60,11 @@ export default class App {
     );
 
     this.app.use(morgan("dev"));
-    this.app.use(helmet());
+    if (process.env.NODE_ENV === "production") {
+      this.app.use(helmet());
+    } else {
+      this.app.use(helmet({ hsts: false }));
+    }
     this.app.use(compression());
 
     this.app.use("/docs", swaggerUi.serve, swaggerUi.setup(specs));
@@ -72,13 +79,16 @@ export default class App {
     this.app.use("/api/promotions", promotionRoute); // /api/promotions/*
     this.app.use("/api/users", usersRoute); // /api/user/*
     this.app.use("/api/coupons", couponsRoute); // /api/coupons/*
+    this.app.use("/api/cancellations", cancellationRoute); // /api/cancellations/*
     this.app.use("/api/events", eventsRoute); // /api/events/*
     this.app.use("/api/upload", uploadRoute); // /api/upload/*
     this.app.use("/api/carts", cartsRoute);
     this.app.use("/api/reviews", reviewsRoute);
     this.app.use("/api/addresses", addressRoute);
     this.app.use("/api/orders", orderRoute);
+    this.app.use("/api/memberships", membershipRoute); // /api/memberships/*
     this.app.use("/api/payments", paymentRoute);
+    this.app.use("/api/returns", returnRoute);
 
     this.app.use("/api", healthRoute); // /api/healthcheck
 

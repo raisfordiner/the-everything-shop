@@ -1,0 +1,95 @@
+http:
+  routers:
+    backend:
+      rule: "Host(`localhost`) && PathPrefix(`/api`)"
+      service: backend
+      entryPoints:
+        - web
+
+
+    frontend:
+      rule: "Host(`localhost`)"
+      service: frontend
+      entryPoints:
+        - web
+
+
+    swagger-api:
+      rule: "Host(`swagger.localhost`) && PathPrefix(`/api`)"
+      service: backend
+      entryPoints:
+        - web
+
+
+    swagger:
+      rule: "Host(`swagger.localhost`)"
+      service: backend
+      entryPoints:
+        - web
+      middlewares:
+        - swagger-prefix
+
+
+    minio-console:
+      rule: "Host(`admin.storage.localhost`)"
+      service: minio-console
+      entryPoints:
+        - web
+
+
+    minio-api:
+      rule: "Host(`obj.storage.localhost`)"
+      service: minio-api
+      entryPoints:
+        - web
+
+
+    mailhog:
+      rule: "Host(`mail.localhost`)"
+      service: mailhog
+      entryPoints:
+        - web
+
+
+    prisma:
+      rule: "Host(`db.localhost`)"
+      service: prisma
+      entryPoints:
+        - web
+
+
+  middlewares:
+    swagger-prefix:
+      addPrefix:
+        prefix: "/docs"
+
+  services:
+    backend:
+      loadBalancer:
+        servers:
+          - url: "http://app:8000"
+    
+    frontend:
+      loadBalancer:
+        servers:
+          - url: "http://app:3000"
+
+    minio-console:
+      loadBalancer:
+        servers:
+          - url: "http://s3:9001"
+
+    minio-api:
+      loadBalancer:
+        servers:
+          - url: "http://s3:9000"
+
+    mailhog:
+      loadBalancer:
+        servers:
+          - url: "http://mailhog:8025"
+
+    prisma:
+      loadBalancer:
+        servers:
+          - url: "http://prisma-studio:5555"

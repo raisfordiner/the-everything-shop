@@ -90,6 +90,7 @@ const createPromotion = z
   .object({
     name: promotionNameSchema,
     description: promotionDescriptionSchema,
+    image: z.string().url().optional(),
     startDate: startDateSchema,
     endDate: endDateSchema,
     status: statusSchema,
@@ -110,6 +111,7 @@ const updatePromotion = z
   .object({
     name: promotionNameSchema.optional(),
     description: promotionDescriptionSchema,
+    image: z.string().url().optional(),
     startDate: startDateSchema.optional(),
     endDate: endDateSchema.optional(),
     status: statusSchema,
