@@ -96,6 +96,11 @@
     background-color: #0073b3 !important;
 }
 
+.header .header__middle .search-wrapper {
+    position: relative;
+    width: 100%;
+}
+
 .header .header__middle .middle__right {
     display: flex;
     justify-content: flex-end;

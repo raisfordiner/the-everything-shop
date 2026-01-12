@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router';
+import { useNavigate, useLocation } from 'react-router';
 import {
   Button,
   Card,
@@ -28,6 +28,7 @@ const { Text } = Typography;
 
 const Product = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [loading, setLoading] = useState(true);
   const [products, setProducts] = useState([]);
   const [searchText, setSearchText] = useState('');
@@ -59,6 +60,13 @@ const Product = () => {
 
   useEffect(() => {
     fetchSellerAndProducts();
+    
+    // Check if navigated from category page with search term
+    if (location.state?.searchCategory) {
+      setSearchText(location.state.searchCategory);
+      // Clear the state after using it
+      window.history.replaceState({}, document.title);
+    }
   }, []);
 
   const handleDelete = async (id) => {

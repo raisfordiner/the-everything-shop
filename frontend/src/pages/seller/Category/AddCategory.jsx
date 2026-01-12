@@ -70,7 +70,7 @@ const AddCategory = () => {
         } catch (error) {
             messageApi.open({
                 type: 'error',
-                content: error.message || 'Failed to create customer!'
+                content: error.message || 'Failed to create category!'
             })
         } finally {
             setSubmitting(false)

@@ -35,11 +35,11 @@ const SellerHeader = () => {
 
     const userMenu = {
         items: [
-            {
-                key: 'profile',
-                icon: <UserOutlined />,
-                label: <Link to="/seller/profile">Profile</Link>
-            },
+            // {
+            //     key: 'profile',
+            //     icon: <UserOutlined />,
+            //     label: <Link to="/seller/profile">Profile</Link>
+            // },
             {
                 key: 'logout',
                 icon: <LogoutOutlined />,

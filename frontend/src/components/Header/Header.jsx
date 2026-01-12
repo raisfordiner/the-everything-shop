@@ -20,10 +20,11 @@ import { useNavigate } from "react-router";
 import { useDispatch, useSelector } from "react-redux";
 import authService from "../../services/authService.js";
 import { setLogout } from "../../redux/actions/authAction.js";
-import {useEffect, useState} from "react";
+import productService from "../../services/productService.js";
+import { useEffect, useState, useRef } from "react";
 import categoryService from "../../services/categoryService.js";
 import { setCategories } from "../../redux/actions/categoryAction.js";
-import productService from "../../services/productService.js";
+import SearchSuggestion from './SearchSuggestion.jsx';
 const { Search } = Input;
 const { Text} = Typography;
 
@@ -31,6 +32,9 @@ const Header = () => {
     const navigate = useNavigate();
     const dispatch = useDispatch();
     const [messageApi, contextHolder] = message.useMessage();
+    const [searchValue, setSearchValue] = useState('');
+    const [showSuggestions, setShowSuggestions] = useState(false);
+    const searchContainerRef = useRef(null);
 
     const { isAuthenticated, user } = useSelector((state) => state.authReducer);
 
@@ -38,6 +42,20 @@ const Header = () => {
 
     const [options, setOptions] = useState([]);
     const [searchValue, setSearchValue] = useState("");
+  
+    // Handle click outside to close suggestions
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (searchContainerRef.current && !searchContainerRef.current.contains(event.target)) {
+                setShowSuggestions(false);
+            }
+        };
+
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+        };
+    }, []);
 
     useEffect(() => {
         const fetchCategories = async () => {
@@ -112,12 +130,32 @@ const Header = () => {
 
     const onSelect = (value, option) => {
         navigate(`/products/${option.key}`);
-        setSearchValue("");
+        ("");
     };
 
     const onSearchSubmit = (value) => {
         if (value && value.trim()) {
             navigate(`/search?key=${encodeURIComponent(value.trim())}`);
+        }
+    };
+
+    const handleSearch = (value) => {
+        if (value.trim()) {
+            navigate(`/search?key=${encodeURIComponent(value.trim())}`);
+            setSearchValue('');
+            setShowSuggestions(false);
+        }
+    };
+
+    const handleSearchInputChange = (e) => {
+        const value = e.target.value;
+        setSearchValue(value);
+        setShowSuggestions(value.length >= 2);
+    };
+
+    const handleSearchFocus = () => {
+        if (searchValue.length >= 2) {
+            setShowSuggestions(true);
         }
     };
 
