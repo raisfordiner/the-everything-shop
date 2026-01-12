@@ -52,7 +52,6 @@ import AdminReturns from "../pages/admin/Returns/Returns.jsx";
 import SellerReturns from "../pages/seller/Returns/Returns.jsx";
 import PromotionProducts from "../pages/customer/PromotionProducts/PromotionProducts.jsx";
 import { Navigate } from "react-router-dom";
-import PromotionProducts from "../pages/customer/PromotionProducts/PromotionProducts.jsx";
 
 export const routes = [
     {
