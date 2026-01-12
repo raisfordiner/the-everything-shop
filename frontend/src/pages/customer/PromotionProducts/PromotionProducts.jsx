@@ -1,214 +1,168 @@
-import { useParams } from "react-router";
-import { useEffect, useState } from "react";
-import { Col, Empty, Layout, Row, Spin, Typography, Tag, Card } from "antd";
-import { TagOutlined, CalendarOutlined } from "@ant-design/icons";
-import ProductCard from "../../../components/Product/ProductCard.jsx";
-import BreadscrumbMenu from "../../../components/BreadscrumbMenu/BreadscrumbMenu.jsx";
-import ProductFilters from "../../../components/ProductFilters/ProductFilters.jsx";
+import {useEffect, useState} from "react";
+import {useParams} from "react-router";
 import promotionService from "../../../services/promotionService.js";
 import productService from "../../../services/productService.js";
-import "./PromotionProducts.css";
+import BreadscrumbMenu from "../../../components/BreadscrumbMenu/BreadscrumbMenu.jsx";
+import {Col, Empty, Layout, Row, Spin, Typography, Image} from "antd";
+import ProductCard from "../../../components/Product/ProductCard.jsx";
+import dayjs from 'dayjs';
+import {ClockCircleOutlined, FireOutlined} from "@ant-design/icons";
+import "./PromotionProducts.css"
 
-const { Sider, Content } = Layout;
-const { Title, Text } = Typography;
+const { Content } = Layout;
+const { Title, Paragraph } = Typography;
 
 const PromotionProducts = () => {
-    const { promotionId } = useParams();
-    const [promotion, setPromotion] = useState(null);
-    const [products, setProducts] = useState([]);
+    const {id} = useParams();
     const [loading, setLoading] = useState(true);
-    const [filters, setFilters] = useState({});
+    const [products, setProducts] = useState([]);
+    const [promotion, setPromotion] = useState({});
 
-    const handleFilterChange = (key, value) => {
-        setFilters(prevFilters => ({
-            ...prevFilters,
-            [key]: value,
-        }));
-    };
-
-    // Fetch promotion details
-    useEffect(() => {
-        const fetchPromotion = async () => {
-            if (!promotionId) return;
-            try {
-                const response = await promotionService.getPromotionById(promotionId);
-                setPromotion(response.data);
-            } catch (error) {
-                console.error("Error fetching promotion:", error);
-                setPromotion(null);
-            }
-        };
-        fetchPromotion();
-    }, [promotionId]);
-
-    // Fetch products from all applied categories
-    useEffect(() => {
-        const fetchProducts = async () => {
-            if (!promotion) return;
+    useEffect( () => {
+        const fetchPromotionAndProducts = async () => {
             setLoading(true);
-            
             try {
-                const categoryIds = promotion.appliedCategories?.map(cat => cat.id) || [];
-                
-                if (categoryIds.length === 0) {
-                    // If no categories, try to get products directly applied to the promotion
-                    // For now, show empty
-                    setProducts([]);
-                    setLoading(false);
-                    return;
+                const promoRes = await promotionService.getPromotionById(id);
+
+                const promoData = promoRes.data?.promotion || promoRes.data || {};
+                setPromotion(promoData);
+
+                let fetchedProducts = [];
+
+                if (promoData) {
+                    const promises = [];
+
+                    if (promoData.appliedCategories && promoData.appliedCategories.length > 0) {
+                        promoData.appliedCategories.forEach(cat => {
+                            promises.push(
+                                productService.getAllProducts({categoryId: cat.id})
+                                    .then(res => res.data?.products || [])
+                                    .catch(err => [])
+                            );
+                        });
+                    }
+
+                    if (promoData.appliedProducts && promoData.appliedProducts.length > 0) {
+                        promoData.appliedProducts.forEach(prod => {
+                            promises.push(
+                                productService.getProductById(prod.id)
+                                    .then(res => res.data ? [res.data] : [])
+                                    .catch(err => [])
+                            );
+                        });
+                    }
+
+                    if (promises.length > 0) {
+                        const results = await Promise.all(promises);
+                        results.forEach(arr => {
+                            fetchedProducts = [...fetchedProducts, ...arr];
+                        });
+                    }
                 }
 
-                // Fetch products from all categories in parallel
-                const productPromises = categoryIds.map(categoryId => 
-                    productService.getAllProducts({
-                        categoryId,
-                        ...filters
-                    })
+                const uniqueProducts = fetchedProducts.filter((product, index, self) =>
+                    index === self.findIndex((p) => p.id === product.id)
                 );
 
-                const results = await Promise.all(productPromises);
-                
-                // Combine all products and remove duplicates by id
-                const allProducts = results.flatMap(res => res.data?.products || []);
-                const uniqueProducts = Array.from(
-                    new Map(allProducts.map(p => [p.id, p])).values()
-                );
-
-                // Apply client-side filtering for price and rating if needed
-                let filteredProducts = uniqueProducts;
-
-                if (filters.minPrice !== undefined) {
-                    filteredProducts = filteredProducts.filter(p => 
-                        (p.basePrice || p.price || 0) >= filters.minPrice
-                    );
-                }
-                if (filters.maxPrice !== undefined) {
-                    filteredProducts = filteredProducts.filter(p => 
-                        (p.basePrice || p.price || 0) <= filters.maxPrice
-                    );
-                }
-                if (filters.minRating !== undefined) {
-                    filteredProducts = filteredProducts.filter(p => 
-                        (p.rating || 0) >= filters.minRating
-                    );
-                }
-
-                // Apply sorting
-                if (filters.sortBy) {
-                    filteredProducts.sort((a, b) => {
-                        const order = filters.sortOrder === 'desc' ? -1 : 1;
-                        if (filters.sortBy === 'price') {
-                            return ((a.basePrice || a.price || 0) - (b.basePrice || b.price || 0)) * order;
-                        }
-                        if (filters.sortBy === 'name') {
-                            return a.name.localeCompare(b.name) * order;
-                        }
-                        if (filters.sortBy === 'createdAt') {
-                            return (new Date(a.createdAt) - new Date(b.createdAt)) * order;
-                        }
-                        return 0;
-                    });
-                }
-
-                setProducts(filteredProducts);
-            } catch (error) {
-                console.error("Error fetching products:", error);
+                setProducts(uniqueProducts);
+            }
+            catch (error) {
+                console.error("Error fetching promotion data:", error);
                 setProducts([]);
-            } finally {
+            }
+            finally {
                 setLoading(false);
             }
         };
 
-        fetchProducts();
-    }, [promotion, filters]);
-
-    const formatDate = (dateString) => {
-        if (!dateString) return '';
-        return new Date(dateString).toLocaleDateString('en-US', {
-            year: 'numeric',
-            month: 'short',
-            day: 'numeric'
-        });
-    };
+        if (id) {
+            fetchPromotionAndProducts();
+        }
+    }, [id]);
 
     const breadcrumbItems = [
-        { title: 'Promotions' },
-        ...(promotion ? [{ title: promotion.name }] : [])
+        { title: promotion.name}
     ];
+
+    const getDaysLeft = (endDate) => {
+        const end = dayjs(endDate);
+        const now = dayjs();
+        const diff = end.diff(now, 'day');
+        return diff > 0 ? diff : 0;
+    };
 
     return (
         <>
             <BreadscrumbMenu items={breadcrumbItems} />
 
-            {/* Promotion Header */}
             {promotion && (
-                <Card className="promotion-header-card">
-                    <div className="promotion-header">
-                        {promotion.image && (
-                            <div className="promotion-header-image">
-                                <img src={promotion.image} alt={promotion.name} />
+                <div className="promo-hero-container">
+                    <div
+                        className="promo-hero-bg"
+                        style={{ backgroundImage: `url(${promotion.image})` }}
+                    />
+
+                    <div className="promo-hero-overlay" />
+
+                    <div className="promo-hero-content">
+                        <div className="promo-tag">
+                            <FireOutlined /> Special Promotion
+                        </div>
+
+                        <Title className="promo-title">
+                            {promotion.name}
+                        </Title>
+
+                        {promotion.description && (
+                            <div className="promo-desc">
+                                {promotion.description}
                             </div>
                         )}
-                        <div className="promotion-header-info">
-                            <Title level={2} style={{ margin: 0, marginBottom: 8 }}>
-                                <TagOutlined style={{ marginRight: 8, color: '#1890ff' }} />
-                                {promotion.name}
-                            </Title>
-                            {promotion.description && (
-                                <Text type="secondary" style={{ fontSize: 16 }}>
-                                    {promotion.description}
-                                </Text>
-                            )}
-                            <div className="promotion-meta">
-                                <Tag icon={<CalendarOutlined />} color="blue">
-                                    {formatDate(promotion.startDate)} - {formatDate(promotion.endDate)}
-                                </Tag>
-                                {promotion.appliedCategories?.length > 0 && (
-                                    <div className="promotion-categories">
-                                        <Text type="secondary">Categories: </Text>
-                                        {promotion.appliedCategories.map(cat => (
-                                            <Tag key={cat.id} color="green">{cat.name}</Tag>
-                                        ))}
-                                    </div>
-                                )}
+
+                        <div className="promo-timer">
+                            <div className="timer-item">
+                                <ClockCircleOutlined style={{ fontSize: '24px', color: '#008ECC' }} />
+                            </div>
+                            <div style={{ width: 1, background: 'rgba(255,255,255,0.3)' }}></div>
+
+                            <div className="timer-item">
+                                <span className="timer-value">{getDaysLeft(promotion.endDate)}</span>
+                                <span className="timer-label">Days Left</span>
+                            </div>
+
+                            <div className="timer-item">
+                                <span className="timer-value">{dayjs(promotion.endDate).format('DD')}</span>
+                                <span className="timer-label">End Date</span>
+                            </div>
+
+                            <div className="timer-item">
+                                <span className="timer-value">{dayjs(promotion.endDate).format('MMM')}</span>
+                                <span className="timer-label">Month</span>
                             </div>
                         </div>
                     </div>
-                </Card>
+                </div>
             )}
 
             <Layout style={{ background: 'transparent' }}>
-                <Sider width={300} style={{ background: 'transparent', paddingRight: '24px', marginTop: '24px' }}>
-                    <ProductFilters onFilterChange={handleFilterChange} initialFilters={filters} />
-                </Sider>
-
                 <Content style={{ padding: '24px', background: '#fff', borderRadius: '8px', marginTop: '24px' }}>
-                    <div className="products-header">
-                        <Title level={4} style={{ margin: 0 }}>
-                            Products in this promotion
-                        </Title>
-                        <Text type="secondary">
-                            {products.length} product{products.length !== 1 ? 's' : ''} found
-                        </Text>
-                    </div>
-                    
                     <Spin spinning={loading}>
                         {products.length > 0 ? (
                             <Row gutter={[16, 16]}>
                                 {products.map(product => (
-                                    <Col key={product.id} xs={24} sm={12} md={8} lg={6}>
+                                    <Col key={product.id} xs={12} sm={12} md={8} lg={6} xl={{ flex: '20%' }} xxl={4}>
                                         <ProductCard product={product} />
                                     </Col>
                                 ))}
                             </Row>
                         ) : (
-                            !loading && <Empty description="No products found in this promotion." />
+                            !loading && <Empty description="No products found for this promotion." />
                         )}
                     </Spin>
                 </Content>
             </Layout>
         </>
-    );
-};
+    )
+}
 
 export default PromotionProducts;

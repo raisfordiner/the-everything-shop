@@ -60,9 +60,9 @@ const PromotionFlag = () => {
             >
                 {promotions.map((promotion) => (
                     <div key={promotion.id}>
-                        <div 
-                            className="promotion-banner promotion-banner-clickable"
-                            onClick={() => handlePromotionClick(promotion.id)}
+                        <div className="promotion-banner"
+                             style={{cursor: 'pointer'}}
+                             onClick={() => navigate(`/promotion/${promotion.id}`)}
                         >
                             {promotion.image ? (
                                 <img

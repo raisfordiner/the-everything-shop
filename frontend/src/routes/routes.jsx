@@ -159,6 +159,10 @@ export const routes = [
             {
                 path: '/orders/:orderId/review',
                 element: <LeaveReview />,
+            },
+            {
+                path: '/promotion/:id',
+                element: <PromotionProducts/>
             }
         ]
     },
