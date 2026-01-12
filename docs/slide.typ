@@ -34,9 +34,17 @@
 - *Tầng Model*: PostgreSQL + Prisma ORM
 
 *Stack công nghệ (PERN):*
-- *Frontend*: React, Redux, CSS
+- *Frontend*: React, Redux
 - *Backend*: Node.js, Express, TypeScript, Prisma, JWT
 - *Infrastructure*: PostgreSQL, Docker
+
+#pagebreak()
+
+#figure(
+  image("/docs/diagrams/architecture/svg/architecture.svg", height: 100%),
+)
+
+
 
 = Actors & Chức năng
 *4 Actor chính:*
@@ -50,6 +58,48 @@
 - Sản phẩm: CRUD
 - Đặt hàng: Duyệt/lọc, cart → order, thanh toán, coupon
 - Khác: Trả hàng, dashboard, báo cáo
+
+
+#figure(
+  image("/docs/diagrams/usecases/svg/01_account_session.svg", height: 90%),
+  caption: [Epic 01: Account & Session],
+)
+
+#figure(
+  image("/docs/diagrams/usecases/svg/02_product_management.svg", height: 90%),
+  caption: [Epic 02: Product Management],
+)
+
+#figure(
+  image("/docs/diagrams/usecases/svg/03_browsing_searching.svg", height: 90%),
+  caption: [Epic 03: Browsing & Searching],
+)
+
+#figure(
+  image("/docs/diagrams/usecases/svg/04_order_management.svg", height: 90%),
+  caption: [Epic 04: Order Management],
+)
+
+#figure(
+  image("/docs/diagrams/usecases/svg/05_payment.svg", height: 90%),
+  caption: [Epic 05: Payment],
+)
+
+#figure(
+  image("/docs/diagrams/usecases/svg/06_promotions.svg", width: 100%),
+  caption: [Epic 06: Promotions],
+)
+
+#figure(
+  image("/docs/diagrams/usecases/svg/07_returns.svg", width: 100%),
+  caption: [Epic 07: Returns],
+)
+
+#figure(
+  image("/docs/diagrams/usecases/svg/08_reporting.svg", height: 90%),
+  caption: [Epic 08: Reporting],
+)
+
 
 = Kết quả & Demo
 *Đã triển khai:*
