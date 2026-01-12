@@ -168,7 +168,7 @@ const OrderDetail = () => {
                 >
                     Back to Orders
                 </Button>
-                
+
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     {(order.status === 'PENDING' || order.status === 'SHIPPED') && (
                         <Popconfirm
@@ -230,7 +230,7 @@ const OrderDetail = () => {
                             {order.address.phoneNumber || order.address.phone}
                         </Descriptions.Item>
                         <Descriptions.Item label="Address">
-                            {order.address.address || 
+                            {order.address.address ||
                                 `${order.address.street}, ${order.address.ward}, ${order.address.district}, ${order.address.province}`}
                         </Descriptions.Item>
                     </Descriptions>
@@ -283,9 +283,9 @@ const OrderDetail = () => {
                         </List.Item>
                     )}
                 />
-                
+
                 <Divider />
-                
+
                 <div style={{ textAlign: 'right' }}>
                     <Space direction="vertical" align="end" size="middle">
                         <div>
@@ -294,19 +294,17 @@ const OrderDetail = () => {
                                 ${calculateOrderTotal(order).toFixed(2)}
                             </Text>
                         </div>
-                        {order.coupon && (
+                        {order.payment && order.payment.amount < calculateOrderTotal(order) && (
                             <div>
-                                <Text type="secondary">Coupon ({order.coupon.code}): </Text>
-                                <Text type="success" strong>
-                                    -{order.coupon.discountType === 'PERCENTAGE'
-                                        ? `${order.coupon.discountValue}%`
-                                        : `$${order.coupon.discountValue}`}
+                                <Text type="success" style={{ fontSize: '14px' }}>Discounts Applied: </Text>
+                                <Text type="success" strong style={{ fontSize: '14px' }}>
+                                    -${(calculateOrderTotal(order) - order.payment.amount).toFixed(2)}
                                 </Text>
                             </div>
                         )}
-                        <div style={{ 
-                            padding: '16px 24px', 
-                            background: '#fafafa', 
+                        <div style={{
+                            padding: '16px 24px',
+                            background: '#fafafa',
                             borderRadius: '8px',
                             minWidth: '300px'
                         }}>

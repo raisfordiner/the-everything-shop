@@ -73,4 +73,54 @@ export default class CouponsController {
       return Send.error(res, {}, "Internal server error");
     }
   }
+
+  /**
+   * Get available coupons for selected product variants
+   * POST /coupons/available
+   */
+  static async getAvailableCoupons(req: Request, res: Response) {
+    try {
+      const { productVariantIds } = req.body;
+
+      if (!productVariantIds || !Array.isArray(productVariantIds)) {
+        return Send.badRequest(res, {}, "productVariantIds array is required");
+      }
+
+      const coupons = await CouponsService.findAvailable(productVariantIds);
+
+      return Send.success(res, { coupons });
+    } catch (error) {
+      logger.error({ error }, "Error fetching available coupons");
+      return Send.error(res, {}, "Internal server error");
+    }
+  }
+
+  /**
+   * Validate a coupon code for selected products
+   * POST /coupons/validate
+   */
+  static async validateCoupon(req: Request, res: Response) {
+    try {
+      const { code, productVariantIds } = req.body;
+
+      if (!code) {
+        return Send.badRequest(res, {}, "Coupon code is required");
+      }
+
+      if (!productVariantIds || !Array.isArray(productVariantIds)) {
+        return Send.badRequest(res, {}, "productVariantIds array is required");
+      }
+
+      const result = await CouponsService.validateCoupon(code, productVariantIds);
+
+      if (!result.valid) {
+        return Send.badRequest(res, { valid: false }, result.error);
+      }
+
+      return Send.success(res, result);
+    } catch (error) {
+      logger.error({ error }, "Error validating coupon");
+      return Send.error(res, {}, "Internal server error");
+    }
+  }
 }

@@ -5,12 +5,36 @@ import { Link } from "react-router-dom";
 // import "./ProductCard.css";
 
 const ProductCard = ({ product }) => {
-    const originalPrice = product.price * 1.25;
     const soldCount = product.soldCount || 0;
 
-    const discountPercent = Math.round(
-        ((originalPrice - product.price) / originalPrice) * 100
-    );
+    // Calculate the highest discount percentage from all available coupons
+    const getMaxDiscountPercentage = () => {
+        if (!product.promotions || product.promotions.length === 0) {
+            return 0;
+        }
+
+        const now = new Date();
+        let maxDiscount = 0;
+
+        product.promotions.forEach(promotion => {
+            // Check if promotion is active and within valid date range
+            const isActive = promotion.status === 'ACTIVE';
+            const isInDateRange = new Date(promotion.startDate) <= now && new Date(promotion.endDate) >= now;
+            
+            if (isActive && isInDateRange && promotion.coupons) {
+                // Find the highest discount percentage among all coupons in this promotion
+                promotion.coupons.forEach(coupon => {
+                    if (coupon.discountPercentage > maxDiscount && coupon.usageCount < coupon.maxUsage) {
+                        maxDiscount = coupon.discountPercentage;
+                    }
+                });
+            }
+        });
+
+        return Math.round(maxDiscount);
+    };
+
+    const discountPercent = getMaxDiscountPercentage();
 
     const formatSoldCount = (count) => {
         if (count < 1000) {

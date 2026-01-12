@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { Carousel, Card, Typography, Skeleton, Empty } from 'antd'
+import { useNavigate } from 'react-router'
 import promotionService from '../../services/promotionService'
 import './PromotionFlag.css'
 import {useNavigate} from "react-router";
@@ -9,13 +10,14 @@ const { Title, Text } = Typography
 const PromotionFlag = () => {
     const [promotions, setPromotions] = useState([])
     const [loading, setLoading] = useState(true)
-    const navigate = useNavigate();
+    const navigate = useNavigate()
 
     useEffect(() => {
         const fetchActivePromotions = async () => {
             try {
                 setLoading(true)
                 const response = await promotionService.getActivePromotions({ take: 5 })
+                // const response = await promotionService.getAllPromotions()
 
                 if (response && response.data) {
                     const data = response.data?.promotions || response.data || []
@@ -30,6 +32,10 @@ const PromotionFlag = () => {
 
         fetchActivePromotions()
     }, [])
+
+    const handlePromotionClick = (promotionId) => {
+        navigate(`/promotion/${promotionId}`)
+    }
 
     if (loading) {
         return (

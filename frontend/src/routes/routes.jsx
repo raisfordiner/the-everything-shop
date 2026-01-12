@@ -50,6 +50,7 @@ import AdminCancellations from "../pages/admin/Cancellations/Cancellations.jsx";
 import SellerCancellations from "../pages/seller/Cancellations/Cancellations.jsx";
 import AdminReturns from "../pages/admin/Returns/Returns.jsx";
 import SellerReturns from "../pages/seller/Returns/Returns.jsx";
+import PromotionProducts from "../pages/customer/PromotionProducts/PromotionProducts.jsx";
 import { Navigate } from "react-router-dom";
 import PromotionProducts from "../pages/customer/PromotionProducts/PromotionProducts.jsx";
 
@@ -89,6 +90,10 @@ export const routes = [
             {
                 path: '/category/:categoryId',
                 element: <FilteredProducts />
+            },
+            {
+                path: '/promotion/:promotionId',
+                element: <PromotionProducts />
             },
             {
                 path: '/access-restricted',
@@ -273,11 +278,11 @@ export const routes = [
                 element: <Category />
             },
             {
-                path: "categories/add-category",
+                path: "categories/new",
                 element: <AddCategory />
             },
             {
-                path: "categories/edit-category/:id",
+                path: "categories/:id",
                 element: <EditCategory />
             },
             {

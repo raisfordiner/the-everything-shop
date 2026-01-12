@@ -56,23 +56,23 @@ const SellerSidebar = ({ onCollapse }) => {
             icon: <ExceptionOutlined />,
             label: <Link to="/seller/cancellations">Cancellations</Link>,
         },
-        {
-            key: "settings",
-            icon: <SettingOutlined />,
-            label: "Settings",
-            children: [
-                {
-                    key: "/admin/settings/personal",
-                    icon: <UserSwitchOutlined />,
-                    label: <Link to="/seller/settings/personal">Personal Setting</Link>,
-                },
-                {
-                    key: "/seller/settings/global",
-                    icon: <GlobalOutlined />,
-                    label: <Link to="/seller/settings/global">Global Setting</Link>,
-                },
-            ],
-        },
+        // {
+        //     key: "settings",
+        //     icon: <SettingOutlined />,
+        //     label: "Settings",
+        //     children: [
+        //         {
+        //             key: "/admin/settings/personal",
+        //             icon: <UserSwitchOutlined />,
+        //             label: <Link to="/seller/settings/personal">Personal Setting</Link>,
+        //         },
+        //         {
+        //             key: "/seller/settings/global",
+        //             icon: <GlobalOutlined />,
+        //             label: <Link to="/seller/settings/global">Global Setting</Link>,
+        //         },
+        //     ],
+        // },
     ];
 
     return (
