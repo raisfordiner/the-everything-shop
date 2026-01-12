@@ -3,7 +3,6 @@ import { Carousel, Card, Typography, Skeleton, Empty } from 'antd'
 import { useNavigate } from 'react-router'
 import promotionService from '../../services/promotionService'
 import './PromotionFlag.css'
-import {useNavigate} from "react-router";
 
 const { Title, Text } = Typography
 
