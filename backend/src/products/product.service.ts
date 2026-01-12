@@ -240,6 +240,15 @@ export default class ProductService {
         images,
         variantTypes: variantTypes || [],
         variantOptions: variantOptions || {},
+        // Automatically create a default product variant
+        productVariants: {
+          create: {
+            quantity: stockQuantity,
+            variantAttributes: {},
+            images: images,
+            priceAdjustment: 0,
+          },
+        },
       },
       include: {
         category: true,
@@ -254,6 +263,7 @@ export default class ProductService {
             },
           },
         },
+        productVariants: true,
       },
     });
 
