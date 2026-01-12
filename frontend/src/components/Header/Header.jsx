@@ -41,8 +41,7 @@ const Header = () => {
     const categories = useSelector((state) => state.allCategories.categories);
 
     const [options, setOptions] = useState([]);
-    const [searchValue, setSearchValue] = useState("");
-  
+    
     // Handle click outside to close suggestions
     useEffect(() => {
         const handleClickOutside = (event) => {
