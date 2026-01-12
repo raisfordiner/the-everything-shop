@@ -165,8 +165,14 @@ const EditPromotion = () => {
             let targetProductIds = [];
             let targetCategoryIds = [];
 
-            if (values.scopeType === 'PRODUCT') targetProductIds = values.appliedIds;
-            if (values.scopeType === 'CATEGORY') targetCategoryIds = values.appliedIds;
+            if (values.scopeType === 'ALL') {
+                // Workaround: apply to all categories for all-store promotion
+                targetCategoryIds = categories.map(cat => cat.id);
+            } else if (values.scopeType === 'PRODUCT') {
+                targetProductIds = values.appliedIds || [];
+            } else if (values.scopeType === 'CATEGORY') {
+                targetCategoryIds = values.appliedIds || [];
+            }
 
             const promises = [];
 

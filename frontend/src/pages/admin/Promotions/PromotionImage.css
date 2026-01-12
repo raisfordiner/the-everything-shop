@@ -7,7 +7,8 @@
 
 .promotion-image-upload .ant-upload.ant-upload-select {
     width: 100% !important;
-    height: 300px !important;
+    height: auto !important;
+    min-height: 120px !important;
 }
 
 .promotion-image-upload .ant-upload-list-item {
