@@ -8,33 +8,42 @@ const ProductCard = ({ product }) => {
     const soldCount = product.soldCount || 0;
 
     // Calculate the highest discount percentage from all available coupons
+    // Checks both direct product promotions AND category-based promotions
     const getMaxDiscountPercentage = () => {
-        if (!product.promotions || product.promotions.length === 0) {
-            return 0;
-        }
-
         const now = new Date();
         let maxDiscount = 0;
 
-        product.promotions.forEach(promotion => {
-            // Check if promotion is active and within valid date range
-            const isActive = promotion.status === 'ACTIVE';
-            const isInDateRange = new Date(promotion.startDate) <= now && new Date(promotion.endDate) >= now;
-            
-            if (isActive && isInDateRange && promotion.coupons) {
-                // Find the highest discount percentage among all coupons in this promotion
-                promotion.coupons.forEach(coupon => {
-                    if (coupon.discountPercentage > maxDiscount && coupon.usageCount < coupon.maxUsage) {
-                        maxDiscount = coupon.discountPercentage;
-                    }
-                });
-            }
-        });
+        const checkPromotions = (promotions) => {
+            if (!promotions || promotions.length === 0) return;
+
+            promotions.forEach(promotion => {
+                const isActive = promotion.status === 'ACTIVE';
+                const isInDateRange = new Date(promotion.startDate) <= now && new Date(promotion.endDate) >= now;
+
+                if (isActive && isInDateRange && promotion.coupons) {
+                    promotion.coupons.forEach(coupon => {
+                        if (coupon.discountPercentage > maxDiscount && coupon.usageCount < coupon.maxUsage) {
+                            maxDiscount = coupon.discountPercentage;
+                        }
+                    });
+                }
+            });
+        };
+
+        // Check direct product promotions
+        checkPromotions(product.promotions);
+
+        // Check category-based promotions (for all-store and category-wide vouchers)
+        checkPromotions(product.category?.promotions);
 
         return Math.round(maxDiscount);
     };
 
     const discountPercent = getMaxDiscountPercentage();
+    const originalPrice = product.price;
+    const discountedPrice = discountPercent > 0
+        ? originalPrice * (1 - discountPercent / 100)
+        : originalPrice;
 
     const formatSoldCount = (count) => {
         if (count < 1000) {
@@ -98,9 +107,20 @@ const ProductCard = ({ product }) => {
                         </Typography.Paragraph>
 
                         <Flex justify="space-between" align="center" className="product-bottom-bar" style={{ width: '100%' }}>
-                            <Typography.Text className="product-sale-price" type="danger" strong>
-                                ${product.price.toLocaleString()}
-                            </Typography.Text>
+                            {discountPercent > 0 ? (
+                                <Flex gap={8} align="center">
+                                    <Typography.Text delete type="secondary" style={{ fontSize: '12px' }}>
+                                        ${originalPrice.toLocaleString()}
+                                    </Typography.Text>
+                                    <Typography.Text type="danger" strong>
+                                        ${discountedPrice.toLocaleString()}
+                                    </Typography.Text>
+                                </Flex>
+                            ) : (
+                                <Typography.Text type="danger" strong>
+                                    ${originalPrice.toLocaleString()}
+                                </Typography.Text>
+                            )}
 
                             <Typography.Text type="secondary" className="sold-count">
                                 {formatSoldCount(soldCount)}
