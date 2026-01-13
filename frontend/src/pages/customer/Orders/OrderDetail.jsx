@@ -23,6 +23,7 @@ import {
     CarOutlined,
 } from '@ant-design/icons';
 import orderService from '../../../services/orderService';
+import paymentService from '../../../services/paymentService';
 
 const { Title, Text } = Typography;
 
@@ -32,6 +33,7 @@ const OrderDetail = () => {
     const { isAuthenticated } = useSelector((state) => state.authReducer || { isAuthenticated: false });
     const [loading, setLoading] = useState(true);
     const [order, setOrder] = useState(null);
+    const [retryPaymentLoading, setRetryPaymentLoading] = useState(false);
 
     useEffect(() => {
         if (!isAuthenticated) {
@@ -75,6 +77,29 @@ const OrderDetail = () => {
         } catch (error) {
             message.error('Failed to cancel order');
             console.error('Error cancelling order:', error);
+        }
+    };
+
+    const handleRetryPayment = async () => {
+        try {
+            setRetryPaymentLoading(true);
+            const response = await paymentService.retryPayment(orderId);
+            console.log('Retry payment response:', response);
+
+            if (response?.data?.sessionUrl) {
+                message.success('Redirecting to Stripe checkout...');
+                window.location.href = response.data.sessionUrl;
+            } else if (response?.sessionUrl) {
+                message.success('Redirecting to Stripe checkout...');
+                window.location.href = response.sessionUrl;
+            } else {
+                throw new Error('Failed to get checkout URL');
+            }
+        } catch (error) {
+            message.error(error.message || 'Failed to retry payment');
+            console.error('Error retrying payment:', error);
+        } finally {
+            setRetryPaymentLoading(false);
         }
     };
 
@@ -170,6 +195,20 @@ const OrderDetail = () => {
                 </Button>
 
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    {/* Retry Payment Button for Stripe orders with pending payment */}
+                    {order.status === 'PENDING' &&
+                        order.payment?.method === 'STRIPE' &&
+                        order.payment?.status !== 'SUCCESS' && (
+                            <Button
+                                type="primary"
+                                size="large"
+                                onClick={handleRetryPayment}
+                                loading={retryPaymentLoading}
+                                style={{ marginRight: 8 }}
+                            >
+                                Retry Payment
+                            </Button>
+                        )}
                     {(order.status === 'PENDING' || order.status === 'SHIPPED') && (
                         <Popconfirm
                             title="Cancel Order"

@@ -278,6 +278,16 @@ export default class CartService {
         },
       });
 
+      // Increment coupon usage count if a coupon was applied
+      if (data.couponCode) {
+        await tx.coupon.updateMany({
+          where: { code: data.couponCode },
+          data: {
+            usageCount: { increment: 1 },
+          },
+        });
+      }
+
       if (data.paymentMethod === "STRIPE") {
         const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "");
 

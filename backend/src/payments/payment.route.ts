@@ -26,6 +26,37 @@ paymentRoute.post("/update-status/:orderId", PaymentController.updatePaymentStat
 
 /**
  * @swagger
+ * /payments/retry/{orderId}:
+ *   post:
+ *     summary: Create a new Stripe checkout session to retry payment for an existing order
+ *     tags: [Payments]
+ *     parameters:
+ *       - in: path
+ *         name: orderId
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Stripe checkout session created successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 sessionUrl:
+ *                   type: string
+ *                 orderId:
+ *                   type: string
+ *       400:
+ *         description: Failed to create retry session
+ */
+paymentRoute.post("/retry/:orderId", PaymentController.retryPayment);
+
+/**
+ * @swagger
  * /payments/{paymentId}/confirm-cod:
  *   post:
  *     summary: Confirm COD payment (Seller/Admin only)

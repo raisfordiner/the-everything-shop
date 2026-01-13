@@ -157,19 +157,66 @@ export default class OrderService {
     }
 
     if (status === "CANCELLED") {
-      // Add stock back to product variants
-      const orderItems = await prisma.orderItem.findMany({
-        where: { orderId: id },
+      // Get order with payment info
+      const order = await prisma.order.findUnique({
+        where: { id },
+        include: {
+          payment: true,
+          orderItems: true,
+        },
       });
-      for (const item of orderItems) {
-        await prisma.productVariant.update({
-          where: { id: item.productVariantId },
-          data: {
-            quantity: {
-              increment: item.quantity,
+
+      if (!order) {
+        throw new Error("Order not found");
+      }
+
+      // Only restore stock if payment was successful (stock was decremented)
+      // For COD: stock is decremented at checkout
+      // For Stripe: stock is decremented after payment success
+      const shouldRestoreStock =
+        order.payment?.method === 'COD' ||
+        (order.payment?.method === 'STRIPE' && order.payment?.status === 'SUCCESS');
+
+      if (shouldRestoreStock) {
+        for (const item of order.orderItems) {
+          await prisma.productVariant.update({
+            where: { id: item.productVariantId },
+            data: {
+              quantity: {
+                increment: item.quantity,
+              },
             },
-          },
+          });
+        }
+      }
+
+      // Reverse membership spent if payment was successful
+      if (order.payment?.status === 'SUCCESS') {
+        const membership = await prisma.membership.findFirst({
+          where: { customerId: order.customerId },
         });
+
+        if (membership) {
+          const newSpent = Math.max(0, membership.spent - order.payment.amount);
+          let newTier = membership.membership;
+
+          // Determine new tier based on updated spent amount
+          if (newSpent >= 500) {
+            newTier = 'GOLD';
+          } else if (newSpent >= 100) {
+            newTier = 'SILVER';
+          } else {
+            newTier = 'BRONZE';
+          }
+
+          await prisma.membership.update({
+            where: { id: membership.id },
+            data: {
+              spent: newSpent,
+              membership: newTier as any,
+            },
+          });
+        }
       }
     }
 
@@ -187,6 +234,7 @@ export default class OrderService {
           },
         },
         address: true,
+        payment: true,
       },
     });
   }

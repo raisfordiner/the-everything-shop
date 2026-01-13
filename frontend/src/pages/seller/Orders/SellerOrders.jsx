@@ -85,7 +85,7 @@ const SellerOrders = () => {
         // Filter by search text
         if (searchText) {
             const searchLower = searchText.toLowerCase();
-            filtered = filtered.filter(order => 
+            filtered = filtered.filter(order =>
                 order.id.toLowerCase().includes(searchLower) ||
                 order.address?.recipientName?.toLowerCase().includes(searchLower) ||
                 order.address?.phone?.toLowerCase().includes(searchLower)
@@ -111,13 +111,29 @@ const SellerOrders = () => {
     const handlePaymentStatusChange = async (paymentId, newPaymentStatus) => {
         try {
             console.log('Updating payment status:', { paymentId, newPaymentStatus });
-            // You'll need to implement this in your orderService
             await paymentService.putPaymentStatus(paymentId, newPaymentStatus);
             message.success('Payment status updated successfully');
             fetchOrders();
         } catch (error) {
             console.error('Error updating payment status:', error);
             message.error('Failed to update payment status');
+        }
+    };
+
+    const handleConfirmCOD = async (paymentId) => {
+        try {
+            console.log('Confirming COD payment:', paymentId);
+            const response = await paymentService.confirmCODPayment(paymentId);
+            console.log('Confirm COD response:', response);
+            message.success('COD payment confirmed and order marked as delivered');
+            fetchOrders();
+            // Also refresh selected order if viewing details
+            if (selectedOrder && selectedOrder.payment?.id === paymentId) {
+                handleViewDetails(selectedOrder.id);
+            }
+        } catch (error) {
+            console.error('Error confirming COD payment:', error);
+            message.error(error.response?.data?.error || 'Failed to confirm COD payment');
         }
     };
 
@@ -129,10 +145,10 @@ const SellerOrders = () => {
 
         try {
             console.log('Bulk updating order status:', { orderIds: selectedRowKeys, newStatus });
-            
+
             // Update all selected orders
             await Promise.all(
-                selectedRowKeys.map(orderId => 
+                selectedRowKeys.map(orderId =>
                     orderService.updateOrderStatus(orderId, newStatus)
                 )
             );
@@ -231,10 +247,10 @@ const SellerOrders = () => {
             key: 'customer',
             width: 200,
             render: (_, record) => {
-                const address = record.address?.address || 
+                const address = record.address?.address ||
                     (record.address?.street ? `${record.address.street}, ${record.address.ward}, ${record.address.district}` : 'N/A');
                 const truncatedAddress = address.length > 30 ? address.substring(0, 30) + '...' : address;
-                
+
                 return (
                     <div>
                         <Text strong>{record.address?.phoneNumber || record.address?.phone || 'N/A'}</Text>
@@ -273,24 +289,11 @@ const SellerOrders = () => {
             render: (_, record) => (
                 record.payment ? (
                     <div>
-                        <Select
-                            value={record.payment.status}
-                            onChange={(value) => handlePaymentStatusChange(record.payment.id, value)}
-                            style={{ width: '100%' }}
-                            size="small"
-                        >
-                            <Option value="PENDING">
-                                <Tag color="orange">Pending</Tag>
-                            </Option>
-                            <Option value="SUCCESS">
-                                <Tag color="green">Success</Tag>
-                            </Option>
-                            <Option value="FAILED">
-                                <Tag color="red">Failed</Tag>
-                            </Option>
-                        </Select>
+                        <Tag color={getPaymentStatusColor(record.payment.status)}>
+                            {record.payment.status}
+                        </Tag>
                         <Text type="secondary" style={{ fontSize: '11px', display: 'block', marginTop: '4px' }}>
-                            {record.payment.method}
+                            {record.payment.method} - ${record.payment.amount?.toFixed(2)}
                         </Text>
                     </div>
                 ) : (
@@ -335,16 +338,31 @@ const SellerOrders = () => {
         {
             title: 'Action',
             key: 'action',
-            width: 100,
+            width: 180,
             align: 'center',
             render: (_, record) => (
-                <Button
-                    type="link"
-                    icon={<EyeOutlined />}
-                    onClick={() => handleViewDetails(record.id)}
-                >
-                    View
-                </Button>
+                <Space direction="vertical" size="small">
+                    <Button
+                        type="link"
+                        icon={<EyeOutlined />}
+                        onClick={() => handleViewDetails(record.id)}
+                        style={{ padding: 0 }}
+                    >
+                        View
+                    </Button>
+                    {/* Show Confirm COD button for COD orders with pending payment */}
+                    {record.payment?.method === 'COD' &&
+                        record.payment?.status === 'PENDING' &&
+                        record.status !== 'CANCELLED' && (
+                            <Button
+                                type="primary"
+                                size="small"
+                                onClick={() => handleConfirmCOD(record.payment.id)}
+                            >
+                                Confirm COD
+                            </Button>
+                        )}
+                </Space>
             ),
         },
     ];
@@ -463,6 +481,17 @@ const SellerOrders = () => {
                 open={detailModalVisible}
                 onCancel={() => setDetailModalVisible(false)}
                 footer={[
+                    selectedOrder?.payment?.method === 'COD' &&
+                    selectedOrder?.payment?.status === 'PENDING' &&
+                    selectedOrder?.status !== 'CANCELLED' && (
+                        <Button
+                            key="confirm-cod"
+                            type="primary"
+                            onClick={() => handleConfirmCOD(selectedOrder.payment.id)}
+                        >
+                            Confirm COD Payment
+                        </Button>
+                    ),
                     <Button key="close" onClick={() => setDetailModalVisible(false)}>
                         Close
                     </Button>
@@ -513,7 +542,7 @@ const SellerOrders = () => {
                                         {selectedOrder.address.phoneNumber || selectedOrder.address.phone}
                                     </Descriptions.Item>
                                     <Descriptions.Item label="Address">
-                                        {selectedOrder.address.address || 
+                                        {selectedOrder.address.address ||
                                             `${selectedOrder.address.street}, ${selectedOrder.address.ward}, ${selectedOrder.address.district}, ${selectedOrder.address.province}`}
                                     </Descriptions.Item>
                                 </Descriptions>

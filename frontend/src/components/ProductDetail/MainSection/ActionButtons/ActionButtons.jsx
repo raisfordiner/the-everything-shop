@@ -1,6 +1,6 @@
 import React, { useState } from "react"
 import { Button, message, notification, Modal, Select } from "antd"
-import { ShoppingCartOutlined } from "@ant-design/icons"
+import { ShoppingCartOutlined, CheckOutlined } from "@ant-design/icons"
 import { useSelector } from "react-redux"
 import { useNavigate } from "react-router-dom"
 import cartService from "../../../../services/cartService"
@@ -9,6 +9,7 @@ import './ActionButtons.css'
 
 const ActionButtons = ({ selectedProductVariant, amount, productData, isAuthenticated }) => {
     const [loading, setLoading] = useState(false)
+    const [addedToCart, setAddedToCart] = useState(false)
     const [buyNowLoading, setBuyNowLoading] = useState(false)
     const [showAddressModal, setShowAddressModal] = useState(false)
     const [selectedAddress, setSelectedAddress] = useState(null)
@@ -138,6 +139,12 @@ const ActionButtons = ({ selectedProductVariant, amount, productData, isAuthenti
                 placement: "topRight"
             })
 
+            // Show visual feedback on button
+            setAddedToCart(true)
+            setTimeout(() => {
+                setAddedToCart(false)
+            }, 1500)
+
         } catch (error) {
             console.error("Error adding to cart:", error)
             notification.error({
@@ -244,10 +251,10 @@ const ActionButtons = ({ selectedProductVariant, amount, productData, isAuthenti
         <>
             <div className="info__actions">
                 <Button
-                    icon={<ShoppingCartOutlined />}
+                    icon={addedToCart ? <CheckOutlined /> : <ShoppingCartOutlined />}
                     type="default"
                     size="large"
-                    className="action__add-cart"
+                    className={`action__add-cart ${addedToCart ? 'action__add-cart--success' : ''}`}
                     onClick={handleAddToCart}
                     loading={loading}
                     disabled={isVariantRequired || isOutOfStock || loading}
@@ -258,14 +265,18 @@ const ActionButtons = ({ selectedProductVariant, amount, productData, isAuthenti
                                 ? "Product out of stock"
                                 : loading
                                     ? "Processing..."
-                                    : "Add to cart"
+                                    : addedToCart
+                                        ? "Added to cart!"
+                                        : "Add to cart"
                     }
                 >
-                    {isVariantRequired
-                        ? "Select Variant"
-                        : isOutOfStock
-                            ? "Out of Stock"
-                            : "Add to Cart"
+                    {addedToCart
+                        ? "Added!"
+                        : isVariantRequired
+                            ? "Select Variant"
+                            : isOutOfStock
+                                ? "Out of Stock"
+                                : "Add to Cart"
                     }
                 </Button>
                 <Button

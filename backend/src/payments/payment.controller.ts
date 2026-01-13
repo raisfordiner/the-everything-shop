@@ -16,6 +16,21 @@ export default class PaymentController {
   }
 
   /**
+   * Create a retry Stripe checkout session for an existing order
+   */
+  static async retryPayment(req: Request, res: Response) {
+    try {
+      const { orderId } = req.params;
+
+      const result = await PaymentService.createRetrySession(orderId);
+      res.json(result);
+    } catch (err: any) {
+      console.error('Retry payment error:', err.message);
+      res.status(400).json({ error: err.message });
+    }
+  }
+
+  /**
    * Confirm COD payment (Seller/Admin only)
    */
   static async confirmCODPayment(req: Request, res: Response) {
