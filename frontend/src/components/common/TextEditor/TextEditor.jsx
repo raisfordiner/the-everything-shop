@@ -33,7 +33,7 @@ export default function TinyMCEEditor({ value, onChange, onUploadedImages }) {
       formData.append('file', file);
 
       const apiDomain = import.meta.env.VITE_API_DOMAIN;
-      
+
       const response = await fetch(`${apiDomain}/upload`, {
         method: 'POST',
         credentials: 'include',
@@ -53,7 +53,7 @@ export default function TinyMCEEditor({ value, onChange, onUploadedImages }) {
       }
 
       progress(100);
-      
+
       // After image is inserted, trigger onChange to capture the updated content
       setTimeout(() => {
         if (editorRef.current) {
@@ -61,7 +61,7 @@ export default function TinyMCEEditor({ value, onChange, onUploadedImages }) {
           onChange(updatedContent);
         }
       }, 100);
-      
+
       // Return the URL - TinyMCE will automatically insert it
       return imageUrl;
     } catch (error) {
@@ -86,7 +86,7 @@ export default function TinyMCEEditor({ value, onChange, onUploadedImages }) {
             formData.append('file', file);
 
             const apiDomain = import.meta.env.VITE_API_DOMAIN;
-            
+
             const response = await fetch(`${apiDomain}/upload`, {
               method: 'POST',
               credentials: 'include',
@@ -108,7 +108,7 @@ export default function TinyMCEEditor({ value, onChange, onUploadedImages }) {
 
             // Call the callback to insert the image
             callback(imageUrl, { title: file.name });
-            
+
             // After image is inserted, trigger onChange to capture the updated content
             setTimeout(() => {
               if (editorRef.current) {
@@ -132,8 +132,7 @@ export default function TinyMCEEditor({ value, onChange, onUploadedImages }) {
       apiKey="wo5yr5cvm21r10czqjpc8cx0jazms2ld0qx1eexiit6tvx2l"
       onInit={(evt, editor) => {
         editorRef.current = editor;
-        // Place cursor at the end when editor is ready
-        placeCursorAtEnd();
+        // Don't auto-focus - let user click to edit
       }}
       value={value} // Use 'value' instead of 'initialValue'
       onEditorChange={handleEditorChange}
@@ -206,26 +205,11 @@ export default function TinyMCEEditor({ value, onChange, onUploadedImages }) {
         border: false,
         style_formats_autohide: true,
         content_css: 'default',
-        placeholder: 'Start writing...',
+        placeholder: '⠀ Start writing...',
         setup: (editor) => {
           editor.on('init', () => {
             editor.getContainer().style.borderRadius = '0.375rem';
             editor.getContainer().style.border = '1px solid #e5e7eb';
-          });
-          
-          // Handle image insertion and other changes
-          editor.on('change', () => {
-            const content = editor.getContent();
-            onChange(content);
-          });
-
-          editor.on('ExecCommand', (e) => {
-            if (e.command === 'mceInsertContent' || e.command === 'InsertImage') {
-              setTimeout(() => {
-                const content = editor.getContent();
-                onChange(content);
-              }, 50);
-            }
           });
 
           // Keep existing Delete key handler

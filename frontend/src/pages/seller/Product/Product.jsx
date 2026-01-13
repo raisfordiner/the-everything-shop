@@ -60,7 +60,7 @@ const Product = () => {
 
   useEffect(() => {
     fetchSellerAndProducts();
-    
+
     // Check if navigated from category page with search term
     if (location.state?.searchCategory) {
       setSearchText(location.state.searchCategory);
@@ -135,10 +135,17 @@ const Product = () => {
     },
     {
       title: 'Stock',
-      dataIndex: 'stockQuantity',
-      key: 'stockQuantity',
-      render: (quantity) => <StockBadge quantity={quantity} />,
-      sorter: (a, b) => a.stockQuantity - b.stockQuantity,
+      key: 'stock',
+      render: (_, record) => {
+        // Calculate total stock from variants
+        const totalStock = record.productVariants?.reduce((sum, v) => sum + (v.quantity || 0), 0) || 0;
+        return <StockBadge quantity={totalStock} />;
+      },
+      sorter: (a, b) => {
+        const stockA = a.productVariants?.reduce((sum, v) => sum + (v.quantity || 0), 0) || 0;
+        const stockB = b.productVariants?.reduce((sum, v) => sum + (v.quantity || 0), 0) || 0;
+        return stockA - stockB;
+      },
     },
     {
       title: 'Price',

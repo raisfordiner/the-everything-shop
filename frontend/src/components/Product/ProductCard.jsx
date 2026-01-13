@@ -7,6 +7,48 @@ import { Link } from "react-router-dom";
 const ProductCard = ({ product }) => {
     const soldCount = product.soldCount || 0;
 
+    // Parse description to get plain text for display
+    const getDescriptionText = (description) => {
+        if (!description) return '';
+
+        try {
+            const parsed = typeof description === 'string'
+                ? JSON.parse(description)
+                : description;
+
+            // New format: { simpleText: "...", sections: [...] }
+            if (parsed.simpleText !== undefined) {
+                // Strip HTML tags for plain text display
+                const div = document.createElement('div');
+                div.innerHTML = parsed.simpleText;
+                return div.textContent || div.innerText || '';
+            }
+            // Old format: { type: 'simple', content: "..." }
+            else if (parsed.type === 'simple' && parsed.content) {
+                const div = document.createElement('div');
+                div.innerHTML = parsed.content;
+                return div.textContent || div.innerText || '';
+            }
+            // Old format: { type: 'sections', sections: [...] }
+            else if (parsed.type === 'sections' && Array.isArray(parsed.sections)) {
+                const firstSection = parsed.sections[0];
+                if (firstSection && firstSection.content) {
+                    const div = document.createElement('div');
+                    div.innerHTML = firstSection.content;
+                    return div.textContent || div.innerText || '';
+                }
+            }
+            return '';
+        } catch {
+            // Plain text or invalid JSON - return as is after stripping HTML
+            const div = document.createElement('div');
+            div.innerHTML = description;
+            return div.textContent || div.innerText || '';
+        }
+    };
+
+    const descriptionText = getDescriptionText(product.description);
+
     // Calculate the highest discount percentage from all available coupons
     // Checks both direct product promotions AND category-based promotions
     const getMaxDiscountPercentage = () => {
@@ -100,10 +142,10 @@ const ProductCard = ({ product }) => {
 
                         <Typography.Paragraph
                             className="product-description"
-                            ellipsis={{ rows: 2, tooltip: product.description }}
+                            ellipsis={{ rows: 2, tooltip: descriptionText }}
                             style={{ marginBottom: 8, wordBreak: 'break-word' }}
                         >
-                            {product.description}
+                            {descriptionText}
                         </Typography.Paragraph>
 
                         <Flex justify="space-between" align="center" className="product-bottom-bar" style={{ width: '100%' }}>

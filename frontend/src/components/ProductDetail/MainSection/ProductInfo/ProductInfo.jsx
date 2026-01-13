@@ -64,10 +64,10 @@ const ProductInfo = ({
     const discount = getMaxDiscountPercentage();
     const salePrice = finalPrice * (1 - discount / 100)
 
-    // Determine stock quantity - use variant quantity if variant exists, otherwise use product stock
+    // Determine stock quantity - use variant quantity if variant exists, otherwise calculate from all variants
     const stockQuantity = selectedProductVariant
         ? selectedProductVariant.quantity
-        : productData.stockQuantity || 0
+        : productData.productVariants?.reduce((sum, v) => sum + (v.quantity || 0), 0) || 0
 
     const handleLoginRedirect = () => {
         navigate('/login')

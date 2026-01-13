@@ -4,7 +4,11 @@ import { DollarOutlined, ShoppingCartOutlined, StockOutlined } from '@ant-design
 export default function ProductStats({ products }) {
   const totalRevenue = products.reduce((sum, p) => sum + (p.price * (p.soldCount || 0)), 0);
   const totalSold = products.reduce((sum, p) => sum + (p.soldCount || 0), 0);
-  const totalStock = products.reduce((sum, p) => sum + (p.stockQuantity || 0), 0);
+  // Calculate stock from variants
+  const totalStock = products.reduce((sum, p) => {
+    const variantStock = p.productVariants?.reduce((vs, v) => vs + (v.quantity || 0), 0) || 0;
+    return sum + variantStock;
+  }, 0);
 
   return (
     <Row gutter={16} style={{ marginBottom: 24 }}>

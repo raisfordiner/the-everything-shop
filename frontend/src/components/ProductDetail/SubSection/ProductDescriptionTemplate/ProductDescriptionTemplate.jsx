@@ -1,9 +1,10 @@
 import { useParams } from 'react-router-dom';
-import { Collapse, Spin, Empty } from 'antd';
+import { Collapse, Spin, Empty, Typography, Divider } from 'antd';
 import { useEffect, useState } from 'react';
 import productService from '../../../../services/productService';
-import DescriptionRenderer from '../../../common/DescriptionRenderer/DescriptionRenderer';
 import './ProductDescriptionTemplate.css';
+
+const { Title } = Typography;
 
 const ProductDescriptionTemplate = () => {
   const { productId } = useParams();
@@ -40,9 +41,9 @@ const ProductDescriptionTemplate = () => {
     return <Empty description="Product not found" />;
   }
 
-  // Parse description
-  let descriptionContent = null;
-  let collapseItems = [];
+  // Parse description - support both old and new formats
+  let simpleContent = null;
+  let sectionItems = [];
 
   try {
     const parsed =
@@ -50,9 +51,25 @@ const ProductDescriptionTemplate = () => {
         ? JSON.parse(product.description)
         : product.description;
 
-    if (parsed.type === 'sections' && Array.isArray(parsed.sections)) {
-      // Sections mode - create collapsible items
-      collapseItems = parsed.sections.map((section, index) => ({
+    // New format: { simpleText: "...", sections: [...] }
+    if (parsed.simpleText !== undefined) {
+      simpleContent = parsed.simpleText;
+      if (Array.isArray(parsed.sections) && parsed.sections.length > 0) {
+        sectionItems = parsed.sections.map((section, index) => ({
+          key: index,
+          label: section.title,
+          children: (
+            <div
+              className="section-content-html"
+              dangerouslySetInnerHTML={{ __html: section.content }}
+            />
+          ),
+        }));
+      }
+    }
+    // Old format: { type: 'sections', sections: [...] }
+    else if (parsed.type === 'sections' && Array.isArray(parsed.sections)) {
+      sectionItems = parsed.sections.map((section, index) => ({
         key: index,
         label: section.title,
         children: (
@@ -61,38 +78,46 @@ const ProductDescriptionTemplate = () => {
             dangerouslySetInnerHTML={{ __html: section.content }}
           />
         ),
-        extra: null,
       }));
-    } else if (parsed.type === 'simple' && typeof parsed.content === 'string') {
-      // Simple mode - render as plain HTML
-      descriptionContent = parsed.content;
+    }
+    // Old format: { type: 'simple', content: "..." }
+    else if (parsed.type === 'simple' && typeof parsed.content === 'string') {
+      simpleContent = parsed.content;
     }
   } catch (error) {
-    // Fallback: treat as plain HTML
-    descriptionContent = product.description;
+    // Fallback: treat as plain HTML string (legacy or plain text)
+    simpleContent = product.description;
   }
+
+  const hasContent = simpleContent || sectionItems.length > 0;
 
   return (
     <div className="product-description-template">
-      {collapseItems.length > 0 ? (
-        // Sections mode - show collapsible sections
+      {/* Simple text content (always shown first if present) */}
+      {simpleContent && (
+        <div
+          className="description-simple-content"
+          dangerouslySetInnerHTML={{ __html: simpleContent }}
+        />
+      )}
+
+      {/* Section divider if both exist */}
+      {simpleContent && sectionItems.length > 0 && <Divider />}
+
+      {/* Sections (shown below simple text) */}
+      {sectionItems.length > 0 && (
         <div className="description-sections">
           <Collapse
-            items={collapseItems}
+            items={sectionItems}
             defaultActiveKey={[0]}
             accordion={false}
             className="description-collapse"
           />
         </div>
-      ) : descriptionContent ? (
-        // Simple mode - show as regular HTML
-        <div
-          className="description-simple-content"
-          dangerouslySetInnerHTML={{ __html: descriptionContent }}
-        />
-      ) : (
-        <Empty description="No description available" />
       )}
+
+      {/* No content */}
+      {!hasContent && <Empty description="No description available" />}
     </div>
   );
 };

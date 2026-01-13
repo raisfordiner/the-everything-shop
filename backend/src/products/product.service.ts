@@ -228,12 +228,17 @@ export default class ProductService {
     name: string,
     description: string,
     price: number,
-    stockQuantity: number,
     categoryId: string,
     sellerId: string,
     images: string[] = [],
-    variantTypes?: any[],
-    variantOptions?: Record<string, any>
+    variantTypes?: string[],
+    variantOptions?: Record<string, any>,
+    variants?: Array<{
+      variantAttributes: Record<string, any>;
+      quantity: number;
+      priceAdjustment: number;
+      images: string[];
+    }>
   ): Promise<Product> {
     // Verify category exists
     const category = await prisma.category.findUnique({
@@ -253,35 +258,68 @@ export default class ProductService {
       throw new Error("Seller not found");
     }
 
-    const product = await prisma.product.create({
-      data: {
-        name,
-        description,
-        price,
-        stockQuantity,
-        categoryId,
-        createdBy: sellerId,
-        images,
-        variantTypes: variantTypes || [],
-        variantOptions: variantOptions || {},
-      },
-      include: {
-        category: true,
-        seller: {
-          select: {
-            id: true,
-            user: {
-              select: {
-                username: true,
-                email: true,
+    // Create product with variants in a transaction
+    const product = await prisma.$transaction(async (tx) => {
+      // Create the product
+      const newProduct = await tx.product.create({
+        data: {
+          name,
+          description,
+          price,
+          categoryId,
+          createdBy: sellerId,
+          images,
+          variantTypes: variantTypes || [],
+          variantOptions: variantOptions || {},
+        },
+      });
+
+      // Create product variants if provided
+      if (variants && variants.length > 0) {
+        await tx.productVariant.createMany({
+          data: variants.map((v) => ({
+            productId: newProduct.id,
+            variantAttributes: v.variantAttributes,
+            quantity: v.quantity,
+            priceAdjustment: v.priceAdjustment,
+            images: v.images || [],
+          })),
+        });
+      } else {
+        // Create a default variant if none provided
+        await tx.productVariant.create({
+          data: {
+            productId: newProduct.id,
+            variantAttributes: {},
+            quantity: 0,
+            priceAdjustment: 0,
+            images: [],
+          },
+        });
+      }
+
+      // Return product with includes
+      return tx.product.findUnique({
+        where: { id: newProduct.id },
+        include: {
+          category: true,
+          seller: {
+            select: {
+              id: true,
+              user: {
+                select: {
+                  username: true,
+                  email: true,
+                },
               },
             },
           },
+          productVariants: true,
         },
-      },
+      });
     });
 
-    return product;
+    return product!;
   }
 
   /**
@@ -294,10 +332,15 @@ export default class ProductService {
       name?: string;
       description?: string;
       price?: number;
-      stockQuantity?: number;
       images?: string[];
-      variantTypes?: any[];
+      variantTypes?: string[];
       variantOptions?: Record<string, any>;
+      variants?: Array<{
+        variantAttributes: Record<string, any>;
+        quantity: number;
+        priceAdjustment: number;
+        images: string[];
+      }>;
     }
   ): Promise<Product> {
     // Verify product exists
@@ -312,27 +355,58 @@ export default class ProductService {
       throw new Error("Product not found");
     }
 
-    // Allow all sellers to update any product
-    const updatedProduct = await prisma.product.update({
-      where: { id: productId },
-      data: updateData,
-      include: {
-        category: true,
-        seller: {
-          select: {
-            id: true,
-            user: {
-              select: {
-                username: true,
-                email: true,
+    // Extract variants from updateData
+    const { variants, ...productUpdateData } = updateData;
+
+    // Update product and variants in a transaction
+    const updatedProduct = await prisma.$transaction(async (tx) => {
+      // Update the product
+      await tx.product.update({
+        where: { id: productId },
+        data: productUpdateData,
+      });
+
+      // If variants are provided, replace all existing variants
+      if (variants && variants.length > 0) {
+        // Delete existing variants
+        await tx.productVariant.deleteMany({
+          where: { productId },
+        });
+
+        // Create new variants
+        await tx.productVariant.createMany({
+          data: variants.map((v) => ({
+            productId,
+            variantAttributes: v.variantAttributes,
+            quantity: v.quantity,
+            priceAdjustment: v.priceAdjustment,
+            images: v.images || [],
+          })),
+        });
+      }
+
+      // Return updated product with includes
+      return tx.product.findUnique({
+        where: { id: productId },
+        include: {
+          category: true,
+          seller: {
+            select: {
+              id: true,
+              user: {
+                select: {
+                  username: true,
+                  email: true,
+                },
               },
             },
           },
+          productVariants: true,
         },
-      },
+      });
     });
 
-    return updatedProduct;
+    return updatedProduct!;
   }
 
   /**
