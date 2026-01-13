@@ -90,10 +90,7 @@ export const routes = [
                 path: '/category/:categoryId',
                 element: <FilteredProducts />
             },
-            {
-                path: '/promotion/:promotionId',
-                element: <PromotionProducts />
-            },
+
             {
                 path: '/access-restricted',
                 element: <AccessRestricted />,
@@ -162,7 +159,7 @@ export const routes = [
             },
             {
                 path: '/promotion/:id',
-                element: <PromotionProducts/>
+                element: <PromotionProducts />
             }
         ]
     },

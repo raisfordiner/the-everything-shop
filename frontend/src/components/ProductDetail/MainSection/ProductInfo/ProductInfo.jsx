@@ -28,7 +28,40 @@ const ProductInfo = ({
     const basePrice = productData.price || 0
     const adjustment = selectedProductVariant?.priceAdjustment || 0
     const finalPrice = basePrice + adjustment
-    const discount = productData.promotions?.[0]?.status === "ACTIVE" ? 20 : 0
+
+    // Calculate the highest discount percentage from all active promotions/coupons
+    // Checks both direct product promotions AND category-based promotions
+    const getMaxDiscountPercentage = () => {
+        const now = new Date();
+        let maxDiscount = 0;
+
+        const checkPromotions = (promotions) => {
+            if (!promotions || promotions.length === 0) return;
+
+            promotions.forEach(promotion => {
+                const isActive = promotion.status === 'ACTIVE';
+                const isInDateRange = new Date(promotion.startDate) <= now && new Date(promotion.endDate) >= now;
+
+                if (isActive && isInDateRange && promotion.coupons) {
+                    promotion.coupons.forEach(coupon => {
+                        if (coupon.discountPercentage > maxDiscount && coupon.usageCount < coupon.maxUsage) {
+                            maxDiscount = coupon.discountPercentage;
+                        }
+                    });
+                }
+            });
+        };
+
+        // Check direct product promotions
+        checkPromotions(productData.promotions);
+
+        // Check category-based promotions (for all-store and category-wide vouchers)
+        checkPromotions(productData.category?.promotions);
+
+        return Math.round(maxDiscount);
+    };
+
+    const discount = getMaxDiscountPercentage();
     const salePrice = finalPrice * (1 - discount / 100)
 
     // Determine stock quantity - use variant quantity if variant exists, otherwise use product stock
@@ -66,17 +99,6 @@ const ProductInfo = ({
                     </>
                 )}
             </div>
-
-            {productData.promotions?.length > 0 && (
-                <div className="info__vouchers">
-                    <Text strong>Promotion(s):</Text>
-                    <div className="voucher-list">
-                        {productData.promotions.map((promo) => (
-                            <div key={promo.id} className="voucher">{promo.name}</div>
-                        ))}
-                    </div>
-                </div>
-            )}
 
             {productData.variantTypes?.length > 0 && (
                 <VariantSelector
