@@ -84,6 +84,19 @@ const AddPromotion = () => {
     const onFinish = async (values) => {
         setSubmitting(true);
         try {
+            let appliedProducts = [];
+            let appliedCategories = [];
+
+            if (values.scopeType === 'ALL') {
+                appliedCategories = categories.map(cat => cat.id);
+            }
+            else if (values.scopeType === 'CATEGORY') {
+                appliedCategories = values.appliedIds || [];
+            }
+            else if (values.scopeType === 'PRODUCT') {
+                appliedProducts = values.appliedIds || [];
+            }
+
             const payload = {
                 name: values.name,
                 description: values.description,
@@ -92,8 +105,8 @@ const AddPromotion = () => {
                 endDate: values.dateRange[1].toISOString(),
                 status: values.status,
 
-                appliedProducts: values.scopeType === 'PRODUCT' ? values.appliedIds : [],
-                appliedCategories: values.scopeType === 'CATEGORY' ? values.appliedIds : [],
+                appliedProducts: appliedProducts,
+                appliedCategories: appliedCategories,
             };
 
             await promotionService.addPromotion(payload);
@@ -266,7 +279,7 @@ const AddPromotion = () => {
                                     }}
                                     buttonStyle="solid"
                                 >
-                                    <Radio.Button value="ALL">All Products</Radio.Button>
+                                    <Radio.Button value="ALL">All Store</Radio.Button>
                                     <Radio.Button value="CATEGORY">Categories</Radio.Button>
                                     <Radio.Button value="PRODUCT">Products</Radio.Button>
                                 </Radio.Group>

@@ -96,6 +96,11 @@
     background-color: #0073b3 !important;
 }
 
+.header .header__middle .search-wrapper {
+    position: relative;
+    width: 100%;
+}
+
 .header .header__middle .middle__right {
     display: flex;
     justify-content: flex-end;
@@ -167,6 +172,35 @@
     background-color: #fff;
     border-top: 1px solid #e8e8e8;
     border-bottom: 1px solid #e8e8e8;
+}
+
+.search-suggestion-item {
+    display: flex;
+    align-items: center;
+    padding: 4px 0;
+}
+
+.search-suggestion-info {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    overflow: hidden;
+}
+
+.search-suggestion-info .product-name {
+    margin-bottom: 0 !important;
+    font-size: 18px;
+    color: #333;
+}
+
+.search-suggestion-info .product-price {
+    margin-bottom: 0 !important;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.ant-select-auto-complete .ant-input-search .ant-input {
+    border-radius: 6px 0 0 6px;
 }
 
 /* Responsive padding for lower header */

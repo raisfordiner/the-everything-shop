@@ -34,7 +34,7 @@ const Promotions = () => {
     const fetchPromotions = async () => {
         setLoading(true);
         try {
-            const response = await promotionService.getAllPromotions({ status: "ACTIVE"});
+            const response = await promotionService.getAllPromotions();
 
             if (response && response.data) {
                 const data = response.data?.promotions || response.data || [];
@@ -54,15 +54,41 @@ const Promotions = () => {
         fetchPromotions();
     }, [])
 
-    const getPromotionStatus = (status) => {
-        if (status === "ACTIVE") {
-            return { status: 'ACTIVE', color: 'green', text: 'Happening Now' };
-        } else if (status === "EXPIRED") {
-            return { status: 'EXPIRED', color: 'default', text: 'Expired' };
-        } else {
-            return { status: 'UPCOMING', color: 'gold', text: 'Upcoming' };
+    const calculateStatus = (record) => {
+        const now = dayjs();
+        const start = dayjs(record.startDate);
+        const end = dayjs(record.endDate);
+        const isActive = record.status === 'ACTIVE';
+
+        if (now.isBefore(start)) {
+            return 'UPCOMING';
         }
-    }
+
+        if (now.isAfter(end)) {
+            return 'EXPIRED';
+        }
+
+        if (!isActive) {
+            return 'INACTIVE';
+        }
+
+        return 'HAPPENING';
+    };
+
+    const getStatusConfig = (statusKey) => {
+        switch (statusKey) {
+            case 'HAPPENING':
+                return { color: 'green', text: 'Happening Now', badge: 'processing' };
+            case 'UPCOMING':
+                return { color: 'gold', text: 'Upcoming', badge: 'warning' };
+            case 'EXPIRED':
+                return { color: 'red', text: 'Expired', badge: 'error' };
+            case 'INACTIVE':
+                return { color: 'default', text: 'Inactive', badge: 'default' };
+            default:
+                return { color: 'default', text: 'Unknown', badge: 'default' };
+        }
+    };
 
     const handleDelete = async (id) => {
         try {
@@ -150,12 +176,13 @@ const Promotions = () => {
             title: 'Status',
             key: 'status',
             render: (_, record) => {
-                const { color, text, status } = getPromotionStatus(record.status);
+                const computedStatus = calculateStatus(record);
+                const config = getStatusConfig(computedStatus);
 
-                if (status === 'ACTIVE') {
-                    return <Badge status="processing" text={<span style={{color: '#52c41a', fontWeight: 600}}>{text}</span>} />;
+                if (computedStatus === 'HAPPENING') {
+                    return <Badge status="processing" text={<span style={{ color: '#52c41a', fontWeight: 600 }}>{config.text}</span>} />;
                 }
-                return <Tag color={color}>{text}</Tag>;
+                return <Badge status={config.badge} text={config.text} />;
             }
         },
         {
@@ -186,8 +213,10 @@ const Promotions = () => {
 
     const filteredData = promotions.filter(item => {
         const matchName = item.name?.toLowerCase().includes(searchText.toLowerCase());
-        const { status } = getPromotionStatus(item.status);
-        const matchStatus = filterStatus === 'ALL' || status === filterStatus;
+
+        const computedStatus = calculateStatus(item);
+        const matchStatus = filterStatus === 'ALL' || computedStatus === filterStatus;
+
         return matchName && matchStatus;
     });
 
@@ -221,9 +250,10 @@ const Promotions = () => {
                         />
                         <Select defaultValue="ALL" style={{width: 180}} onChange={setFilterStatus}>
                             <Select.Option value="ALL">All Status</Select.Option>
-                            <Select.Option value="ACTIVE">Happening Now</Select.Option>
+                            <Select.Option value="HAPPENING">Happening Now</Select.Option>
                             <Select.Option value="UPCOMING">Upcoming</Select.Option>
                             <Select.Option value="EXPIRED">Expired</Select.Option>
+                            <Select.Option value="INACTIVE">Inactive</Select.Option>
                         </Select>
 
                         <Button icon={<ReloadOutlined/>} onClick={fetchPromotions}>Refresh</Button>

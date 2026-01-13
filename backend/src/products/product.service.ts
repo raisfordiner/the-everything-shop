@@ -59,7 +59,15 @@ export default class ProductService {
       where,
       orderBy: sortBy !== "rating" ? [orderBy] : undefined,
       include: {
-        category: true,
+        category: {
+          include: {
+            promotions: {
+              include: {
+                coupons: true,
+              },
+            },
+          },
+        },
         seller: {
           select: {
             id: true,
@@ -81,7 +89,11 @@ export default class ProductService {
             },
           },
         },
-        promotions: true,
+        promotions: {
+          include: {
+            coupons: true,
+          },
+        },
       },
     });
 
@@ -144,7 +156,15 @@ export default class ProductService {
         is_deleted: false,
       },
       include: {
-        category: true,
+        category: {
+          include: {
+            promotions: {
+              include: {
+                coupons: true,
+              },
+            },
+          },
+        },
         seller: {
           select: {
             id: true,
@@ -166,7 +186,11 @@ export default class ProductService {
             },
           },
         },
-        promotions: true,
+        promotions: {
+          include: {
+            coupons: true,
+          },
+        },
       },
     });
 
@@ -455,7 +479,11 @@ export default class ProductService {
         include: {
           category: true,
           productVariants: true,
-          promotions: true,
+          promotions: {
+            include: {
+              coupons: true,
+            },
+          },
         },
       }),
       prisma.product.count({ where: { createdBy: sellerId, is_deleted: false } }),
@@ -497,7 +525,15 @@ export default class ProductService {
         skip,
         take,
         include: {
-          category: true,
+          category: {
+            include: {
+              promotions: {
+                include: {
+                  coupons: true,
+                },
+              },
+            },
+          },
           seller: {
             select: {
               id: true,
@@ -509,7 +545,11 @@ export default class ProductService {
             },
           },
           productVariants: true,
-          promotions: true,
+          promotions: {
+            include: {
+              coupons: true,
+            },
+          },
         },
       }),
       prisma.product.count({ where: { categoryId, is_deleted: false } }),

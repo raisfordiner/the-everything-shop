@@ -50,6 +50,7 @@ import AdminCancellations from "../pages/admin/Cancellations/Cancellations.jsx";
 import SellerCancellations from "../pages/seller/Cancellations/Cancellations.jsx";
 import AdminReturns from "../pages/admin/Returns/Returns.jsx";
 import SellerReturns from "../pages/seller/Returns/Returns.jsx";
+import PromotionProducts from "../pages/customer/PromotionProducts/PromotionProducts.jsx";
 import { Navigate } from "react-router-dom";
 
 export const routes = [
@@ -89,6 +90,7 @@ export const routes = [
                 path: '/category/:categoryId',
                 element: <FilteredProducts />
             },
+
             {
                 path: '/access-restricted',
                 element: <AccessRestricted />,
@@ -154,6 +156,10 @@ export const routes = [
             {
                 path: '/orders/:orderId/review',
                 element: <LeaveReview />,
+            },
+            {
+                path: '/promotion/:id',
+                element: <PromotionProducts />
             }
         ]
     },
