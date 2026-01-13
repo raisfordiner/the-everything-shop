@@ -9,7 +9,7 @@ import {
 } from "@ant-design/icons";
 import cancellationService from "../../../services/cancellationService.js";
 
-const { Title, Text} = Typography;
+const { Title, Text } = Typography;
 const { Option } = Select;
 const { TextArea } = Input;
 
@@ -116,7 +116,7 @@ const Cancellations = () => {
             dataIndex: "id",
             key: "id",
             width: 80,
-            render: (text) => <Text ellipsis strong style={{width: 50}}>{text}</Text>,
+            render: (text) => <Text ellipsis strong style={{ width: 50 }}>{text}</Text>,
         },
         {
             title: "Order ID",
@@ -134,13 +134,50 @@ const Cancellations = () => {
             title: "Status",
             dataIndex: "status",
             key: "status",
+            width: 160,
             render: (val) => renderStatusTag(val),
         },
         {
             title: "Action",
             key: "action",
+            // width: 280,
             render: (_, record) => (
-                <Space size="middle" style={{ whiteSpace: 'nowrap' }}>
+                <Space size="small" wrap>
+                    {/* Quick Approve/Reject for REQUESTED status */}
+                    {record.status === 'REQUESTED' && (
+                        <>
+                            <Popconfirm
+                                title="Approve this cancellation?"
+                                description="This will mark the request as approved."
+                                onConfirm={async () => {
+                                    try {
+                                        await cancellationService.updateCancellation(record.id, { status: 'APPROVED' });
+                                        messageApi.success('Cancellation approved');
+                                        fetchCancellations();
+                                    } catch (error) {
+                                        messageApi.error('Failed to approve');
+                                    }
+                                }}
+                            >
+                                <Button type="primary" size="small">Approve</Button>
+                            </Popconfirm>
+                            <Popconfirm
+                                title="Reject this cancellation?"
+                                description="This will reject the request."
+                                onConfirm={async () => {
+                                    try {
+                                        await cancellationService.updateCancellation(record.id, { status: 'REJECTED' });
+                                        messageApi.success('Cancellation rejected');
+                                        fetchCancellations();
+                                    } catch (error) {
+                                        messageApi.error('Failed to reject');
+                                    }
+                                }}
+                            >
+                                <Button danger size="small">Reject</Button>
+                            </Popconfirm>
+                        </>
+                    )}
                     <Button
                         icon={<EditOutlined />}
                         size="small"

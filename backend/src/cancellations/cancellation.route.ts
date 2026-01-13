@@ -215,6 +215,19 @@ class CancellationRouter extends BaseRouter {
         middlewares: checkIfAdminSeller,
         controller: CancellationController.getCancellations,
       },
+      // Customer-facing route to submit cancellation request
+      {
+        path: "/request",
+        method: "post",
+        middlewares: [authGuard, validateBody(CancellationSchema.create)],
+        controller: CancellationController.createCustomerCancellationRequest,
+      },
+      {
+        path: "/request/:orderId",
+        method: "delete",
+        middlewares: [authGuard],
+        controller: CancellationController.withdrawCustomerRequest,
+      },
       {
         path: "/",
         method: "post",

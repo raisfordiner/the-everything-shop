@@ -127,6 +127,8 @@ export default class OrderService {
       },
       address: true,
       payment: true,
+      return: true,
+      cancellation: true,
     };
 
     if (id) {

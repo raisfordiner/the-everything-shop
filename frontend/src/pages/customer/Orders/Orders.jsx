@@ -15,6 +15,8 @@ import {
     Divider,
     message,
     Popconfirm,
+    Modal,
+    Input,
 } from 'antd';
 import {
     ShoppingOutlined,
@@ -24,17 +26,30 @@ import {
     CloseCircleOutlined,
     CarOutlined,
     StarFilled,
+    RollbackOutlined,
+    UndoOutlined,
 } from '@ant-design/icons';
 import orderService from '../../../services/orderService';
+import cancellationService from '../../../services/cancellationService';
+import returnService from '../../../services/returnService';
 
 const { Title, Text } = Typography;
 const { Panel } = Collapse;
+const { TextArea } = Input;
 
 const Orders = () => {
     const navigate = useNavigate();
     const { user, isAuthenticated } = useSelector((state) => state.authReducer || { user: {}, isAuthenticated: false });
     const [loading, setLoading] = useState(true);
     const [orders, setOrders] = useState([]);
+    const [displayItems, setDisplayItems] = useState([]);
+
+    // Modal State
+    const [cancellationModalVisible, setCancellationModalVisible] = useState(false);
+    const [returnModalVisible, setReturnModalVisible] = useState(false);
+    const [selectedOrder, setSelectedOrder] = useState(null);
+    const [requestReason, setRequestReason] = useState('');
+    const [requestLoading, setRequestLoading] = useState(false);
 
     useEffect(() => {
         if (!isAuthenticated) {
@@ -55,14 +70,20 @@ const Orders = () => {
     const fetchOrders = async () => {
         try {
             setLoading(true);
-            console.log('Fetching orders...');
             const response = await orderService.getAllOrders();
-            console.log('Orders response:', response);
-
-            // Handle response structure
             const ordersData = response?.data?.orders || response?.orders || [];
+
+            // Process orders to include return entries
+            const items = [];
+            ordersData.forEach(order => {
+                items.push({ type: 'ORDER', data: order });
+                if (order.return) {
+                    items.push({ type: 'RETURN', data: order.return, order: order });
+                }
+            });
+
             setOrders(ordersData);
-            console.log('Orders loaded:', ordersData);
+            setDisplayItems(items);
         } catch (error) {
             message.error('Failed to load orders');
             console.error('Error fetching orders:', error);
@@ -73,109 +94,213 @@ const Orders = () => {
 
     const handleCancelOrder = async (orderId) => {
         try {
-            console.log('Cancelling order:', orderId);
             await orderService.updateOrderStatus(orderId, 'CANCELLED');
             message.success('Order cancelled successfully');
             fetchOrders();
         } catch (error) {
             message.error('Failed to cancel order');
-            console.error('Error cancelling order:', error);
+        }
+    };
+
+    const handleCancellationRequest = async () => {
+        if (!requestReason.trim()) {
+            message.error('Please provide a reason');
+            return;
+        }
+        try {
+            setRequestLoading(true);
+            await cancellationService.createCancellationRequest(selectedOrder.id, requestReason);
+            message.success('Cancellation request submitted');
+            setCancellationModalVisible(false);
+            setRequestReason('');
+            fetchOrders();
+        } catch (error) {
+            message.error(error.message || 'Failed to submit request');
+        } finally {
+            setRequestLoading(false);
+        }
+    };
+
+    const handleReturnRequest = async () => {
+        if (!requestReason.trim()) {
+            message.error('Please provide a reason');
+            return;
+        }
+        try {
+            setRequestLoading(true);
+            await returnService.createReturnRequest(selectedOrder.id, requestReason);
+            message.success('Return request submitted');
+            setReturnModalVisible(false);
+            setRequestReason('');
+            fetchOrders();
+        } catch (error) {
+            message.error(error.message || 'Failed to submit request');
+        } finally {
+            setRequestLoading(false);
+        }
+    };
+
+    const handleWithdrawCancellation = async (orderId) => {
+        try {
+            await cancellationService.withdrawCancellationRequest(orderId);
+            message.success('Request withdrawn successfully');
+            fetchOrders();
+        } catch (error) {
+            message.error(error.message || 'Failed to withdraw request');
+        }
+    };
+
+    const handleWithdrawReturn = async (orderId) => {
+        try {
+            await returnService.withdrawReturnRequest(orderId);
+            message.success('Request withdrawn successfully');
+            fetchOrders();
+        } catch (error) {
+            message.error(error.message || 'Failed to withdraw request');
         }
     };
 
     const getStatusIcon = (status) => {
         switch (status) {
-            case 'PENDING':
-                return <ClockCircleOutlined />;
-            case 'SHIPPED':
-                return <CarOutlined />;
-            case 'DELIVERED':
-                return <CheckCircleOutlined />;
-            case 'CANCELLED':
-                return <CloseCircleOutlined />;
-            default:
-                return <ClockCircleOutlined />;
+            case 'PENDING': return <ClockCircleOutlined />;
+            case 'SHIPPED': return <CarOutlined />;
+            case 'DELIVERED': return <CheckCircleOutlined />;
+            case 'CANCELLED': return <CloseCircleOutlined />;
+            case 'APPROVED': return <CheckCircleOutlined />;
+            case 'REJECTED': return <CloseCircleOutlined />;
+            case 'REQUESTED': return <ClockCircleOutlined />;
+            default: return <ClockCircleOutlined />;
         }
     };
 
     const getStatusColor = (status) => {
         switch (status) {
-            case 'PENDING':
-                return 'orange';
-            case 'SHIPPED':
-                return 'blue';
-            case 'DELIVERED':
-                return 'green';
-            case 'CANCELLED':
-                return 'red';
-            default:
-                return 'default';
+            case 'PENDING': return 'orange';
+            case 'SHIPPED': return 'blue';
+            case 'DELIVERED': return 'green';
+            case 'CANCELLED': return 'red';
+            case 'APPROVED': return 'green';
+            case 'REJECTED': return 'red';
+            case 'REQUESTED': return 'gold';
+            default: return 'default';
         }
     };
 
     const getPaymentStatusColor = (status) => {
         switch (status) {
-            case 'SUCCESS':
-                return 'green';
-            case 'PENDING':
-                return 'orange';
-            default:
-                return 'default';
+            case 'SUCCESS': return 'green';
+            case 'PENDING': return 'orange';
+            default: return 'default';
         }
     };
 
     const formatDate = (dateString) => {
         return new Date(dateString).toLocaleDateString('en-US', {
-            year: 'numeric',
-            month: 'long',
-            day: 'numeric',
-            hour: '2-digit',
-            minute: '2-digit',
+            year: 'numeric', month: 'long', day: 'numeric',
+            hour: '2-digit', minute: '2-digit'
         });
     };
 
     const getItemPrice = (item) => {
-        // If item has price field, use it (for older orders)
-        if (item.price !== undefined) {
-            return item.price;
-        }
-        // Otherwise calculate from product and variant
+        if (item.price !== undefined) return item.price;
         const basePrice = item.productVariant?.product?.price || 0;
         const priceAdjustment = item.productVariant?.priceAdjustment || 0;
         return basePrice + priceAdjustment;
     };
 
     const calculateOrderTotal = (order) => {
-        // Use payment amount which includes discounts
-        if (order?.payment?.amount !== undefined) {
-            return order.payment.amount;
-        }
-        // Fallback to calculating from items (for orders without payment info)
+        if (order?.payment?.amount !== undefined) return order.payment.amount;
         if (!order?.orderItems) return 0;
         return order.orderItems.reduce((total, item) => {
-            const itemPrice = getItemPrice(item);
-            return total + (itemPrice * item.quantity);
+            return total + (getItemPrice(item) * item.quantity);
         }, 0);
     };
 
+    const renderActionButtons = (order) => {
+        if (order.status === 'CANCELLED') return null;
+
+        // Validation for SHIPPED orders (Cancellation Request)
+        if (order.status === 'SHIPPED') {
+            if (order.cancellation) {
+                if (order.cancellation.status === 'REQUESTED') {
+                    return (
+                        <Popconfirm
+                            title="Withdraw Request"
+                            description="Are you sure you want to withdraw your cancellation request?"
+                            onConfirm={() => handleWithdrawCancellation(order.id)}
+                            okText="Yes"
+                            cancelText="No"
+                        >
+                            <Button type="default" icon={<UndoOutlined />}>
+                                Withdraw Request
+                            </Button>
+                        </Popconfirm>
+                    );
+                }
+                return <Tag color={getStatusColor(order.cancellation.status)}>Cancellation: {order.cancellation.status}</Tag>;
+            }
+            return (
+                <Button
+                    danger
+                    onClick={() => {
+                        setSelectedOrder(order);
+                        setCancellationModalVisible(true);
+                    }}
+                >
+                    Request Cancellation
+                </Button>
+            );
+        }
+
+        // Validation for PENDING orders (Direct Cancel)
+        if (order.status === 'PENDING') {
+            return (
+                <Popconfirm
+                    title="Cancel Order"
+                    description="Are you sure you want to cancel this order?"
+                    onConfirm={() => handleCancelOrder(order.id)}
+                    okText="Yes"
+                    cancelText="No"
+                >
+                    <Button type="default" danger>
+                        Cancel Order
+                    </Button>
+                </Popconfirm>
+            );
+        }
+
+        // Validation for DELIVERED orders (Return Request)
+        if (order.status === 'DELIVERED') {
+            // "One order can have one Cancellation or Return"
+            if (order.return) {
+                // Return entry handles the tracking, so maybe just show nothing or status here?
+                return null;
+            }
+            return (
+                <Button
+                    type="default"
+                    onClick={() => {
+                        setSelectedOrder(order);
+                        setReturnModalVisible(true);
+                    }}
+                >
+                    Request Return
+                </Button>
+            );
+        }
+
+        return null;
+    };
+
     if (loading) {
-        return (
-            <div style={{ textAlign: 'center', padding: '50px' }}>
-                <Spin size="large" />
-            </div>
-        );
+        return <div style={{ textAlign: 'center', padding: '50px' }}><Spin size="large" /></div>;
     }
 
-    if (!orders || orders.length === 0) {
+    if (!displayItems || displayItems.length === 0) {
         return (
             <div style={{ padding: '50px' }}>
-                <Empty
-                    image={Empty.PRESENTED_IMAGE_SIMPLE}
-                    description="No orders yet"
-                >
-                    <Button type="primary" onClick={() => navigate('/products')}>
-                        Start Shopping
-                    </Button>
+                <Empty description="No orders yet">
+                    <Button type="primary" onClick={() => navigate('/products')}>Start Shopping</Button>
                 </Empty>
             </div>
         );
@@ -183,10 +308,64 @@ const Orders = () => {
 
     return (
         <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
-
             <List
-                dataSource={orders}
-                renderItem={(order) => {
+                dataSource={displayItems}
+                renderItem={(item) => {
+                    // RETURN ENTRY RENDER
+                    if (item.type === 'RETURN') {
+                        const returnData = item.data;
+                        const order = item.order;
+                        return (
+                            <Card
+                                key={`return-${returnData.id}`}
+                                style={{ marginBottom: '16px', background: '#fafafa', borderColor: '#d9d9d9' }}
+                                title={
+                                    <Space>
+                                        <RollbackOutlined style={{ color: '#1890ff' }} />
+                                        <Text strong>Return for Order #{order.id.substring(0, 8)}...</Text>
+                                    </Space>
+                                }
+                                extra={
+                                    returnData.status === 'REQUESTED' && (
+                                        <Popconfirm
+                                            title="Withdraw Request"
+                                            description="Are you sure you want to withdraw this return request?"
+                                            onConfirm={() => handleWithdrawReturn(order.id)}
+                                            okText="Yes"
+                                            cancelText="No"
+                                        >
+                                            <Button type="link" danger>Withdraw Request</Button>
+                                        </Popconfirm>
+                                    )
+                                }
+                            >
+                                <Space size="large">
+                                    <div>
+                                        <Text type="secondary">Return Status:</Text>
+                                        <br />
+                                        <Tag icon={getStatusIcon(returnData.status)} color={getStatusColor(returnData.status)}>
+                                            {returnData.status}
+                                        </Tag>
+                                    </div>
+                                    <Divider type="vertical" />
+                                    <div>
+                                        <Text type="secondary">Reason:</Text>
+                                        <br />
+                                        <Text>{returnData.reason}</Text>
+                                    </div>
+                                    <Divider type="vertical" />
+                                    <div>
+                                        <Text type="secondary">Requested On:</Text>
+                                        <br />
+                                        <Text>{formatDate(returnData.createdAt)}</Text>
+                                    </div>
+                                </Space>
+                            </Card>
+                        );
+                    }
+
+                    // ORDER ENTRY RENDER
+                    const order = item.data;
                     const total = calculateOrderTotal(order);
 
                     return (
@@ -195,12 +374,13 @@ const Orders = () => {
                             style={{ marginBottom: '16px' }}
                             title={
                                 <Space>
-                                    <Text type="secondary" style={{ fontWeight: 'normal', fontSize: '14px' }}>Order ID:</Text>
+                                    <Text type="secondary">Order ID:</Text>
                                     <Text strong>{order.id.substring(0, 8)}...</Text>
                                 </Space>
                             }
                             extra={
                                 <Space size="middle">
+                                    {renderActionButtons(order)}
                                     {order.status === 'DELIVERED' && order.payment?.status === 'SUCCESS' && (
                                         <Button
                                             type="primary"
@@ -232,10 +412,7 @@ const Orders = () => {
                                     <div>
                                         <Text type="secondary">Status:</Text>
                                         <br />
-                                        <Tag
-                                            icon={getStatusIcon(order.status)}
-                                            color={getStatusColor(order.status)}
-                                        >
+                                        <Tag icon={getStatusIcon(order.status)} color={getStatusColor(order.status)}>
                                             {order.status}
                                         </Tag>
                                     </div>
@@ -251,24 +428,6 @@ const Orders = () => {
                                             <Tag color="default">No Payment Info</Tag>
                                         )}
                                     </div>
-                                    {(order.status === 'PENDING' || order.status === 'SHIPPED') && (
-                                        <>
-                                            <Divider type="vertical" />
-                                            <div style={{ flex: 1, textAlign: 'right' }}>
-                                                <Popconfirm
-                                                    title="Cancel Order"
-                                                    description="Are you sure you want to cancel this order?"
-                                                    onConfirm={() => handleCancelOrder(order.id)}
-                                                    okText="Yes"
-                                                    cancelText="No"
-                                                >
-                                                    <Button type="default" danger>
-                                                        Cancel Order
-                                                    </Button>
-                                                </Popconfirm>
-                                            </div>
-                                        </>
-                                    )}
                                 </Space>
                             </div>
 
@@ -286,32 +445,13 @@ const Orders = () => {
                                                                 item.productVariant?.product?.images?.[0] ||
                                                                 'https://via.placeholder.com/60'
                                                             }
-                                                            alt={item.productVariant?.product?.name || 'Product'}
                                                             width={60}
-                                                            height={60}
-                                                            style={{ objectFit: 'cover', borderRadius: '4px' }}
                                                         />
                                                     }
-                                                    title={item.productVariant?.product?.name || 'Product'}
-                                                    description={
-                                                        <>
-                                                            <Text type="secondary">
-                                                                {item.productVariant?.variantAttributes &&
-                                                                    Object.entries(item.productVariant.variantAttributes)
-                                                                        .map(([key, value]) => `${key}: ${value}`)
-                                                                        .join(', ')
-                                                                }
-                                                            </Text>
-                                                            <br />
-                                                            <Text>
-                                                                ${getItemPrice(item).toFixed(2)} × {item.quantity}
-                                                            </Text>
-                                                        </>
-                                                    }
+                                                    title={item.productVariant?.product?.name}
+                                                    description={`${item.quantity} x $${getItemPrice(item).toFixed(2)}`}
                                                 />
-                                                <Text strong style={{ fontSize: '16px' }}>
-                                                    ${(getItemPrice(item) * item.quantity).toFixed(2)}
-                                                </Text>
+                                                <Text strong>${(getItemPrice(item) * item.quantity).toFixed(2)}</Text>
                                             </List.Item>
                                         )}
                                     />
@@ -319,19 +459,57 @@ const Orders = () => {
                             </Collapse>
 
                             <Divider />
-
                             <div style={{ textAlign: 'right' }}>
-                                <Space>
-                                    <Text strong>Total Amount:</Text>
-                                    <Text strong style={{ fontSize: '20px', color: '#ff4d4f' }}>
-                                        ${total.toFixed(2)}
-                                    </Text>
-                                </Space>
+                                <Text strong>Total: ${total.toFixed(2)}</Text>
                             </div>
                         </Card>
                     );
                 }}
             />
+
+            {/* Request Modals */}
+            <Modal
+                title="Request Cancellation"
+                open={cancellationModalVisible}
+                onOk={handleCancellationRequest}
+                onCancel={() => {
+                    setCancellationModalVisible(false);
+                    setRequestReason('');
+                }}
+                confirmLoading={requestLoading}
+            >
+                <Text>Please provide a reason for cancelling this order:</Text>
+                <TextArea
+                    rows={4}
+                    value={requestReason}
+                    onChange={(e) => setRequestReason(e.target.value)}
+                    style={{ marginTop: '10px' }}
+                    placeholder="Enter reason..."
+                    minLength={3}
+                />
+            </Modal>
+
+            <Modal
+                title="Request Return"
+                open={returnModalVisible}
+                onOk={handleReturnRequest}
+                onCancel={() => {
+                    setReturnModalVisible(false);
+                    setRequestReason('');
+                }}
+                confirmLoading={requestLoading}
+            >
+                <Text>Please provide a reason for returning this order:</Text>
+                <TextArea
+                    rows={4}
+                    value={requestReason}
+                    onChange={(e) => setRequestReason(e.target.value)}
+                    style={{ marginTop: '10px' }}
+                    maxLength={1000}
+                    placeholder="Enter reason..."
+                    minLength={3}
+                />
+            </Modal>
         </div >
     );
 };

@@ -13,7 +13,6 @@ import {
     Divider,
     message,
     Spin,
-    Popconfirm,
 } from 'antd';
 import {
     ArrowLeftOutlined,
@@ -48,10 +47,7 @@ const OrderDetail = () => {
     const fetchOrderDetails = async () => {
         try {
             setLoading(true);
-            console.log('Fetching order details for:', orderId);
             const response = await orderService.getOrderById(orderId);
-            console.log('Order detail response:', response);
-
             const orderData = response?.data?.order || response?.order || null;
             if (orderData) {
                 setOrder(orderData);
@@ -65,18 +61,6 @@ const OrderDetail = () => {
             navigate('/orders');
         } finally {
             setLoading(false);
-        }
-    };
-
-    const handleCancelOrder = async () => {
-        try {
-            console.log('Cancelling order:', orderId);
-            await orderService.updateOrderStatus(orderId, 'CANCELLED');
-            message.success('Order cancelled successfully');
-            fetchOrderDetails();
-        } catch (error) {
-            message.error('Failed to cancel order');
-            console.error('Error cancelling order:', error);
         }
     };
 
@@ -105,59 +89,41 @@ const OrderDetail = () => {
 
     const getStatusIcon = (status) => {
         switch (status) {
-            case 'PENDING':
-                return <ClockCircleOutlined />;
-            case 'SHIPPED':
-                return <CarOutlined />;
-            case 'DELIVERED':
-                return <CheckCircleOutlined />;
-            case 'CANCELLED':
-                return <CloseCircleOutlined />;
-            default:
-                return <ClockCircleOutlined />;
+            case 'PENDING': return <ClockCircleOutlined />;
+            case 'SHIPPED': return <CarOutlined />;
+            case 'DELIVERED': return <CheckCircleOutlined />;
+            case 'CANCELLED': return <CloseCircleOutlined />;
+            default: return <ClockCircleOutlined />;
         }
     };
 
     const getStatusColor = (status) => {
         switch (status) {
-            case 'PENDING':
-                return 'orange';
-            case 'SHIPPED':
-                return 'blue';
-            case 'DELIVERED':
-                return 'green';
-            case 'CANCELLED':
-                return 'red';
-            default:
-                return 'default';
+            case 'PENDING': return 'orange';
+            case 'SHIPPED': return 'blue';
+            case 'DELIVERED': return 'green';
+            case 'CANCELLED': return 'red';
+            default: return 'default';
         }
     };
 
     const getPaymentStatusColor = (status) => {
         switch (status) {
-            case 'SUCCESS':
-                return 'green';
-            case 'PENDING':
-                return 'orange';
-            default:
-                return 'default';
+            case 'SUCCESS': return 'green';
+            case 'PENDING': return 'orange';
+            default: return 'default';
         }
     };
 
     const formatDate = (dateString) => {
         return new Date(dateString).toLocaleDateString('vi-VN', {
-            year: 'numeric',
-            month: 'long',
-            day: 'numeric',
-            hour: '2-digit',
-            minute: '2-digit',
+            year: 'numeric', month: 'long', day: 'numeric',
+            hour: '2-digit', minute: '2-digit'
         });
     };
 
     const getItemPrice = (item) => {
-        if (item.price !== undefined) {
-            return item.price;
-        }
+        if (item.price !== undefined) return item.price;
         const basePrice = item.productVariant?.product?.price || 0;
         const priceAdjustment = item.productVariant?.priceAdjustment || 0;
         return basePrice + priceAdjustment;
@@ -194,7 +160,7 @@ const OrderDetail = () => {
                     Back to Orders
                 </Button>
 
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8 }}>
                     {/* Retry Payment Button for Stripe orders with pending payment */}
                     {order.status === 'PENDING' &&
                         order.payment?.method === 'STRIPE' &&
@@ -204,24 +170,10 @@ const OrderDetail = () => {
                                 size="large"
                                 onClick={handleRetryPayment}
                                 loading={retryPaymentLoading}
-                                style={{ marginRight: 8 }}
                             >
                                 Retry Payment
                             </Button>
                         )}
-                    {(order.status === 'PENDING' || order.status === 'SHIPPED') && (
-                        <Popconfirm
-                            title="Cancel Order"
-                            description="Are you sure you want to cancel this order?"
-                            onConfirm={handleCancelOrder}
-                            okText="Yes"
-                            cancelText="No"
-                        >
-                            <Button danger size="large">
-                                Cancel Order
-                            </Button>
-                        </Popconfirm>
-                    )}
                 </div>
             </div>
 
@@ -231,25 +183,26 @@ const OrderDetail = () => {
                     <Descriptions.Item label="Order ID" span={2}>
                         <Text copyable>{order.id}</Text>
                     </Descriptions.Item>
-                    <Descriptions.Item label="Order Date">
-                        {formatDate(order.createdAt)}
-                    </Descriptions.Item>
                     <Descriptions.Item label="Status">
-                        <Tag
-                            icon={getStatusIcon(order.status)}
-                            color={getStatusColor(order.status)}
-                            style={{ fontSize: '14px', padding: '4px 12px' }}
-                        >
+                        <Tag color={getStatusColor(order.status)} icon={getStatusIcon(order.status)}>
                             {order.status}
                         </Tag>
+                    </Descriptions.Item>
+                    <Descriptions.Item label="Order Date">
+                        {new Date(order.createdAt).toLocaleDateString('en-US', {
+                            year: 'numeric', month: 'long', day: 'numeric',
+                            hour: '2-digit', minute: '2-digit'
+                        })}
                     </Descriptions.Item>
                     {order.payment && (
                         <>
                             <Descriptions.Item label="Payment Method">
-                                {order.payment.method}
+                                <Tag color={order.payment.method === 'COD' ? 'gold' : 'blue'}>
+                                    {order.payment.method}
+                                </Tag>
                             </Descriptions.Item>
                             <Descriptions.Item label="Payment Status">
-                                <Tag color={getPaymentStatusColor(order.payment.status)}>
+                                <Tag color={order.payment.status === 'SUCCESS' ? 'green' : order.payment.status === 'PENDING' ? 'orange' : 'red'}>
                                     {order.payment.status}
                                 </Tag>
                             </Descriptions.Item>
@@ -263,7 +216,7 @@ const OrderDetail = () => {
                 <Card title="Delivery Address" style={{ marginBottom: '16px' }}>
                     <Descriptions bordered column={1}>
                         <Descriptions.Item label="Recipient">
-                            <Text strong>{order.address.recipientName}</Text>
+                            {order.address.recipientName}
                         </Descriptions.Item>
                         <Descriptions.Item label="Phone">
                             {order.address.phoneNumber || order.address.phone}
@@ -277,32 +230,31 @@ const OrderDetail = () => {
             )}
 
             {/* Order Items */}
-            <Card title="Order Items" style={{ marginBottom: '16px' }}>
+            <Card title="Order Items">
                 <List
+                    itemLayout="horizontal"
                     dataSource={order.orderItems || []}
                     renderItem={(item) => (
-                        <List.Item key={item.id}>
+                        <List.Item>
                             <List.Item.Meta
                                 avatar={
                                     <Image
+                                        width={80}
                                         src={
                                             item.productVariant?.images?.[0] ||
                                             item.productVariant?.product?.images?.[0] ||
                                             'https://via.placeholder.com/80'
                                         }
-                                        alt={item.productVariant?.product?.name || 'Product'}
-                                        width={80}
-                                        height={80}
-                                        style={{ objectFit: 'cover', borderRadius: '8px' }}
+                                        style={{ objectFit: 'cover', borderRadius: '4px' }}
                                     />
                                 }
                                 title={
-                                    <Text strong style={{ fontSize: '16px' }}>
+                                    <Text strong>
                                         {item.productVariant?.product?.name || 'Product'}
                                     </Text>
                                 }
                                 description={
-                                    <Space direction="vertical">
+                                    <Space direction="vertical" size="small">
                                         {item.productVariant?.variantAttributes && (
                                             <Text type="secondary">
                                                 {Object.entries(item.productVariant.variantAttributes)
@@ -310,39 +262,33 @@ const OrderDetail = () => {
                                                     .join(', ')}
                                             </Text>
                                         )}
-                                        <Text>
-                                            <Text strong>${getItemPrice(item).toFixed(2)}</Text> × {item.quantity}
-                                        </Text>
+                                        <Text>Quantity: {item.quantity}</Text>
                                     </Space>
                                 }
                             />
-                            <Text strong style={{ fontSize: '18px' }}>
-                                ${(getItemPrice(item) * item.quantity).toFixed(2)}
-                            </Text>
+                            <div style={{ textAlign: 'right' }}>
+                                <Text strong style={{ fontSize: '16px' }}>
+                                    ${(getItemPrice(item) * item.quantity).toFixed(2)}
+                                </Text>
+                                <br />
+                                <Text type="secondary">
+                                    ${getItemPrice(item).toFixed(2)} each
+                                </Text>
+                            </div>
                         </List.Item>
                     )}
                 />
 
                 <Divider />
 
-                <div style={{ textAlign: 'right' }}>
-                    <Space direction="vertical" align="end" size="middle">
+                <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                    <Space direction="vertical" align="end">
                         <div>
-                            <Text style={{ fontSize: '16px' }}>Subtotal: </Text>
-                            <Text strong style={{ fontSize: '16px' }}>
-                                ${calculateOrderTotal(order).toFixed(2)}
-                            </Text>
+                            <Text>Subtotal: </Text>
+                            <Text strong>${calculateOrderTotal(order).toFixed(2)}</Text>
                         </div>
-                        {order.payment && order.payment.amount < calculateOrderTotal(order) && (
-                            <div>
-                                <Text type="success" style={{ fontSize: '14px' }}>Discounts Applied: </Text>
-                                <Text type="success" strong style={{ fontSize: '14px' }}>
-                                    -${(calculateOrderTotal(order) - order.payment.amount).toFixed(2)}
-                                </Text>
-                            </div>
-                        )}
                         <div style={{
-                            padding: '16px 24px',
+                            padding: '12px 24px',
                             background: '#fafafa',
                             borderRadius: '8px',
                             minWidth: '300px'
