@@ -222,7 +222,7 @@ export default class OrderService {
       }
     }
 
-    return await prisma.order.update({
+    const updatedOrder = await prisma.order.update({
       where: { id },
       data: { status: status as any },
       include: {
@@ -239,6 +239,8 @@ export default class OrderService {
         payment: true,
       },
     });
+
+    return updatedOrder;
   }
 
   static async delete(id: string) {

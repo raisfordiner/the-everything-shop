@@ -71,14 +71,28 @@ export default class PaymentService {
 
           // Decrement stock for each order item
           for (const orderItem of order.orderItems) {
-            await tx.productVariant.update({
+            const updatedVariant = await tx.productVariant.update({
               where: { id: orderItem.productVariantId },
               data: {
                 quantity: { decrement: orderItem.quantity },
               },
             });
 
-            // TODO: Increment product sold count when 'sold' field is added to Product model
+            // Log OUT_OF_STOCK if quantity reached 0
+            if (updatedVariant.quantity <= 0) {
+              try {
+                await tx.inventoryLog.create({
+                  data: {
+                    type: 'OUT_OF_STOCK',
+                    productId: orderItem.productVariant.productId,
+                    variantId: orderItem.productVariantId,
+                    details: { productName: orderItem.productVariant.product?.name },
+                  },
+                });
+              } catch (e) {
+                console.error('Failed to create inventory log:', e);
+              }
+            }
           }
 
           // Update membership spent
@@ -108,6 +122,20 @@ export default class PaymentService {
             });
           }
         });
+
+        // Log revenue for Stripe payment completion
+        try {
+          await prisma.revenueLog.create({
+            data: {
+              type: 'ORDER_COMPLETED',
+              orderId: orderId,
+              amount: payment.amount,
+              details: { customerId: order.customerId, paymentMethod: 'STRIPE' },
+            },
+          });
+        } catch (e) {
+          console.error('Failed to create revenue log for Stripe payment:', e);
+        }
 
         return {
           success: true,
@@ -295,6 +323,20 @@ export default class PaymentService {
           });
         }
       });
+
+      // Log revenue for COD payment completion
+      try {
+        await prisma.revenueLog.create({
+          data: {
+            type: 'ORDER_COMPLETED',
+            orderId: order.id,
+            amount: payment.amount,
+            details: { customerId: order.customerId, paymentMethod: 'COD' },
+          },
+        });
+      } catch (e) {
+        console.error('Failed to create revenue log for COD payment:', e);
+      }
 
       // Fetch updated payment and order
       const updatedPayment = await prisma.payment.findUnique({

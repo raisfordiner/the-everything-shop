@@ -30,6 +30,20 @@ export default class AuthService {
       expiresIn: authConfig.secret_expires_in as any,
     });
 
+    // Log user signup for audit
+    try {
+      await prisma.auditLog.create({
+        data: {
+          type: 'USER_SIGNUP',
+          userId: user.id,
+          email: user.email,
+          details: { username: user.username },
+        },
+      });
+    } catch (e) {
+      console.error('Failed to create audit log for signup:', e);
+    }
+
     return { user, emailVerificationToken };
   }
 
@@ -98,6 +112,20 @@ export default class AuthService {
     });
 
     await prisma.user.update({ where: { email }, data: { refreshToken } });
+
+    // Log user login for audit
+    try {
+      await prisma.auditLog.create({
+        data: {
+          type: 'USER_LOGIN',
+          userId: user.id,
+          email: user.email,
+          details: { role: user.role },
+        },
+      });
+    } catch (e) {
+      console.error('Failed to create audit log for login:', e);
+    }
 
     return { user, accessToken, refreshToken };
   }

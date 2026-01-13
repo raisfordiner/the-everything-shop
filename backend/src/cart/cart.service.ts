@@ -259,16 +259,30 @@ export default class CartService {
       // Only subtract stock quantities immediately for COD orders
       // For Stripe, stock will be decremented after payment confirmation via webhook
       if (data.paymentMethod === "COD") {
-        await Promise.all(
-          cartItems.map((cartItem) =>
-            tx.productVariant.update({
-              where: { id: cartItem.productVariantId },
-              data: {
-                quantity: { decrement: cartItem.quantity },
-              },
-            })
-          )
-        );
+        for (const cartItem of cartItems) {
+          const updatedVariant = await tx.productVariant.update({
+            where: { id: cartItem.productVariantId },
+            data: {
+              quantity: { decrement: cartItem.quantity },
+            },
+          });
+
+          // Log OUT_OF_STOCK if quantity reached 0
+          if (updatedVariant.quantity <= 0) {
+            try {
+              await tx.inventoryLog.create({
+                data: {
+                  type: 'OUT_OF_STOCK',
+                  productId: cartItem.productVariant.productId,
+                  variantId: cartItem.productVariantId,
+                  details: { productName: cartItem.productVariant.product.name },
+                },
+              });
+            } catch (e) {
+              console.error('Failed to create inventory log:', e);
+            }
+          }
+        }
       }
 
       // Delete the cart items that were checked out

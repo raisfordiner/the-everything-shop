@@ -133,16 +133,38 @@ export default class ReturnService {
       status?: ReturnStatus;
     }
   ) {
-    const existingReturn = await prisma.return.findUnique({ where: { id } });
+    const existingReturn = await prisma.return.findUnique({
+      where: { id },
+      include: { order: { include: { payment: true } } }
+    });
     if (!existingReturn) {
       throw new Error("Return not found");
     }
 
-    return await prisma.return.update({
+    const updatedReturn = await prisma.return.update({
       where: { id },
       data,
       include: returnInclude,
     });
+
+    // Log negative revenue when return is COMPLETED
+    if (data.status === 'COMPLETED' && existingReturn.status !== 'COMPLETED') {
+      try {
+        const amount = existingReturn.order.payment?.amount || 0;
+        await prisma.revenueLog.create({
+          data: {
+            type: 'RETURN_COMPLETED',
+            orderId: existingReturn.orderId,
+            amount: -amount, // Negative for returns
+            details: { reason: existingReturn.reason },
+          },
+        });
+      } catch (e) {
+        console.error('Failed to create revenue log for return:', e);
+      }
+    }
+
+    return updatedReturn;
   }
 
   static async delete(id: string) {

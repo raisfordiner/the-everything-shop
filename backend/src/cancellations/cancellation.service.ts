@@ -134,7 +134,7 @@ export default class CancellationService {
   static async update(id: string, data: { reason?: string; status?: CancellationStatus }) {
     const cancellation = await prisma.cancellation.findUnique({
       where: { id },
-      include: { order: true }
+      include: { order: { include: { payment: true } } }
     });
     if (!cancellation) {
       throw new Error("Cancellation not found");
@@ -146,6 +146,21 @@ export default class CancellationService {
         where: { id: cancellation.orderId },
         data: { status: 'CANCELLED' }
       });
+
+      // Log negative revenue for cancellation
+      try {
+        const amount = cancellation.order.payment?.amount || 0;
+        await prisma.revenueLog.create({
+          data: {
+            type: 'CANCELLATION_COMPLETED',
+            orderId: cancellation.orderId,
+            amount: -amount, // Negative for cancellations
+            details: { reason: cancellation.reason },
+          },
+        });
+      } catch (e) {
+        console.error('Failed to create revenue log for cancellation:', e);
+      }
     }
 
     return await prisma.cancellation.update({
