@@ -40,6 +40,51 @@ export default class ReturnController {
     }
   }
 
+  /**
+   * Customer-facing endpoint to request return
+   */
+  static async createCustomerReturnRequest(req: Request, res: Response) {
+    try {
+      const { orderId, reason } = req.body;
+      const customerId = (req as any).user?.id;
+
+      if (!customerId) {
+        return Send.unauthorized(res, {}, "Authentication required");
+      }
+
+      const returnItem = await ReturnService.createCustomerRequest({
+        orderId,
+        reason,
+        customerId,
+      });
+
+      return Send.success(res, { return: returnItem }, "Return request submitted successfully");
+    } catch (error: any) {
+      const errorMessage = error?.message || "Failed to submit return request";
+      logger.error({ errorMessage, error: error?.toString() }, "Error creating customer return request");
+      return Send.badRequest(res, {}, errorMessage);
+    }
+  }
+
+  static async withdrawCustomerRequest(req: Request, res: Response) {
+    try {
+      const { orderId } = req.params;
+      const customerId = (req as any).user?.id;
+
+      if (!customerId) {
+        return Send.unauthorized(res, {}, "Authentication required");
+      }
+
+      await ReturnService.withdrawCustomerRequest(orderId, customerId);
+
+      return Send.success(res, {}, "Return request withdrawn successfully");
+    } catch (error: any) {
+      const errorMessage = error?.message || "Failed to withdraw return request";
+      logger.error({ errorMessage, error: error?.toString() }, "Error withdrawing return request");
+      return Send.badRequest(res, {}, errorMessage);
+    }
+  }
+
   static async updateReturn(req: Request, res: Response) {
     try {
       const { id } = req.params;

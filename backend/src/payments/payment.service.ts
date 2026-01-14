@@ -1,5 +1,6 @@
 import { prisma } from "util/db";
 import { PaymentStatus } from "@prisma/client";
+import Stripe from "stripe";
 
 export default class PaymentService {
   static async updatePaymentStatus(orderId: string) {
@@ -23,12 +24,21 @@ export default class PaymentService {
         };
       }
 
-      // Get the order with order items
+      // Get the order with order items and customer
       const order = await prisma.order.findUnique({
         where: { id: orderId },
         include: {
           payment: true,
-          orderItems: true,
+          orderItems: {
+            include: {
+              productVariant: {
+                include: {
+                  product: true,
+                },
+              },
+            },
+          },
+          customer: true,
         },
       });
 
@@ -51,7 +61,7 @@ export default class PaymentService {
       const isSuccess = true;
 
       if (isSuccess) {
-        // Use transaction to update payment and decrement stock atomically
+        // Use transaction to update payment, decrement stock, update membership, and increment sold count
         await prisma.$transaction(async (tx) => {
           // Update payment status to SUCCESS
           await tx.payment.updateMany({
@@ -61,14 +71,71 @@ export default class PaymentService {
 
           // Decrement stock for each order item
           for (const orderItem of order.orderItems) {
-            await tx.productVariant.update({
+            const updatedVariant = await tx.productVariant.update({
               where: { id: orderItem.productVariantId },
               data: {
                 quantity: { decrement: orderItem.quantity },
               },
             });
+
+            // Log OUT_OF_STOCK if quantity reached 0
+            if (updatedVariant.quantity <= 0) {
+              try {
+                await tx.inventoryLog.create({
+                  data: {
+                    type: 'OUT_OF_STOCK',
+                    productId: orderItem.productVariant.productId,
+                    variantId: orderItem.productVariantId,
+                    details: { productName: orderItem.productVariant.product?.name },
+                  },
+                });
+              } catch (e) {
+                console.error('Failed to create inventory log:', e);
+              }
+            }
+          }
+
+          // Update membership spent
+          const membership = await tx.membership.findFirst({
+            where: { customerId: order.customerId },
+          });
+
+          if (membership) {
+            const newSpent = membership.spent + payment.amount;
+            let newTier = membership.membership;
+
+            // Determine new tier based on spent amount
+            if (newSpent >= 500) {
+              newTier = 'GOLD';
+            } else if (newSpent >= 100) {
+              newTier = 'SILVER';
+            } else {
+              newTier = 'BRONZE';
+            }
+
+            await tx.membership.update({
+              where: { id: membership.id },
+              data: {
+                spent: newSpent,
+                membership: newTier,
+              },
+            });
           }
         });
+
+        // Log revenue for Stripe payment completion
+        try {
+          await prisma.revenueLog.create({
+            data: {
+              type: 'ORDER_COMPLETED',
+              orderId: orderId,
+              amount: payment.amount,
+              details: { customerId: order.customerId, paymentMethod: 'STRIPE' },
+            },
+          });
+        } catch (e) {
+          console.error('Failed to create revenue log for Stripe payment:', e);
+        }
 
         return {
           success: true,
@@ -91,12 +158,103 @@ export default class PaymentService {
   }
 
   /**
+   * Create a new Stripe checkout session for retrying payment on an existing order
+   */
+  static async createRetrySession(orderId: string) {
+    try {
+      // Get the order with payment
+      const order = await prisma.order.findUnique({
+        where: { id: orderId },
+        include: {
+          payment: true,
+          orderItems: {
+            include: {
+              productVariant: {
+                include: {
+                  product: true,
+                },
+              },
+            },
+          },
+        },
+      });
+
+      if (!order) {
+        throw new Error('Order not found');
+      }
+
+      if (!order.payment) {
+        throw new Error('Payment record not found for this order');
+      }
+
+      // Only allow retry for STRIPE payments that are PENDING
+      if (order.payment.method !== 'STRIPE') {
+        throw new Error('Retry is only available for Stripe payments');
+      }
+
+      if (order.payment.status === 'SUCCESS') {
+        throw new Error('Payment has already been completed');
+      }
+
+      if (order.status === 'CANCELLED') {
+        throw new Error('Cannot retry payment for cancelled orders');
+      }
+
+      // Create new Stripe checkout session
+      const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "");
+      const frontendUrl = process.env.FE_URL || "http://localhost:3000";
+      const successUrl = `${frontendUrl}/loading?orderId=${order.id}`;
+      const cancelUrl = `${frontendUrl}/orders/${order.id}`;
+
+      const session = await stripe.checkout.sessions.create({
+        payment_method_types: ['card'],
+        line_items: [{
+          price_data: {
+            currency: 'usd',
+            product_data: {
+              name: `Order #${order.id}`,
+            },
+            unit_amount: Math.round(order.payment.amount * 100),
+          },
+          quantity: 1,
+        }],
+        expires_at: Math.floor(Date.now() / 1000) + 30 * 60, // 30 minutes from now
+        mode: 'payment',
+        success_url: successUrl,
+        cancel_url: cancelUrl,
+        metadata: {
+          orderIds: order.id,
+          appId: 'the-everything-shop',
+          isRetry: 'true',
+        }
+      });
+
+      return {
+        success: true,
+        sessionUrl: session.url,
+        orderId: order.id,
+      };
+    } catch (error: any) {
+      throw new Error(`Failed to create retry session: ${error.message}`);
+    }
+  }
+
+  /**
    * Confirm COD payment (for sellers/admins when payment is received)
+   * This also updates the order status to DELIVERED since confirming COD
+   * means the order has been delivered and payment received.
    */
   static async confirmCODPayment(paymentId: string) {
     try {
       const payment = await prisma.payment.findUnique({
         where: { id: paymentId },
+        include: {
+          order: {
+            include: {
+              orderItems: true,
+            },
+          },
+        },
       });
 
       if (!payment) {
@@ -115,15 +273,84 @@ export default class PaymentService {
         };
       }
 
-      const updatedPayment = await prisma.payment.update({
+      const order = payment.order;
+      if (!order) {
+        throw new Error('Order not found for this payment');
+      }
+
+      // Validate that order can be confirmed (not already cancelled)
+      if (order.status === 'CANCELLED') {
+        throw new Error('Cannot confirm payment for a cancelled order');
+      }
+
+      // Use transaction to update payment, order status, and membership atomically
+      await prisma.$transaction(async (tx) => {
+        // Update payment status to SUCCESS
+        await tx.payment.update({
+          where: { id: paymentId },
+          data: { status: 'SUCCESS' },
+        });
+
+        // Update order status to DELIVERED (confirming COD means delivery completed)
+        await tx.order.update({
+          where: { id: order.id },
+          data: { status: 'DELIVERED' },
+        });
+
+        // Update membership spent for COD payment confirmation
+        const membership = await tx.membership.findFirst({
+          where: { customerId: order.customerId },
+        });
+
+        if (membership) {
+          const newSpent = membership.spent + payment.amount;
+          let newTier = membership.membership;
+
+          if (newSpent >= 500) {
+            newTier = 'GOLD';
+          } else if (newSpent >= 100) {
+            newTier = 'SILVER';
+          } else {
+            newTier = 'BRONZE';
+          }
+
+          await tx.membership.update({
+            where: { id: membership.id },
+            data: {
+              spent: newSpent,
+              membership: newTier,
+            },
+          });
+        }
+      });
+
+      // Log revenue for COD payment completion
+      try {
+        await prisma.revenueLog.create({
+          data: {
+            type: 'ORDER_COMPLETED',
+            orderId: order.id,
+            amount: payment.amount,
+            details: { customerId: order.customerId, paymentMethod: 'COD' },
+          },
+        });
+      } catch (e) {
+        console.error('Failed to create revenue log for COD payment:', e);
+      }
+
+      // Fetch updated payment and order
+      const updatedPayment = await prisma.payment.findUnique({
         where: { id: paymentId },
-        data: { status: 'SUCCESS' },
+        include: {
+          order: true,
+        },
       });
 
       return {
         success: true,
-        message: 'COD payment confirmed successfully',
+        message: 'COD payment confirmed and order marked as delivered',
         payment: updatedPayment,
+        orderStatus: 'DELIVERED',
       };
     } catch (error: any) {
       throw new Error(`Failed to confirm COD payment: ${error.message}`);

@@ -3,11 +3,11 @@ import { ReturnStatus } from "@prisma/client";
 
 const create = z.object({
   orderId: z.string().min(1, "Order ID is required"),
-  reason: z.string().min(10, "Reason must be at least 10 characters").max(500, "Reason too long"),
+  reason: z.string().min(3, "Reason must be at least 3 characters").max(1000, "Reason too long"),
 });
 
 const update = z.object({
-  reason: z.string().min(10, "Reason must be at least 10 characters").max(500, "Reason too long").optional(),
+  reason: z.string().min(3, "Reason must be at least 3 characters").max(1000, "Reason too long").optional(),
   status: z.nativeEnum(ReturnStatus).optional(),
 });
 

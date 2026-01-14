@@ -71,6 +71,49 @@ enum ReportType {
   ORDERS
 }
 
+enum InventoryLogType {
+  PRODUCT_CREATED
+  OUT_OF_STOCK
+}
+
+enum RevenueLogType {
+  ORDER_COMPLETED
+  RETURN_COMPLETED
+  CANCELLATION_COMPLETED
+}
+
+enum AuditLogType {
+  USER_SIGNUP
+  USER_LOGIN
+}
+
+model InventoryLog {
+  id        String           @id @default(cuid())
+  type      InventoryLogType
+  productId String?
+  variantId String?
+  details   Json?
+  createdAt DateTime         @default(now())
+}
+
+model RevenueLog {
+  id        String         @id @default(cuid())
+  type      RevenueLogType
+  orderId   String?
+  amount    Float
+  details   Json?
+  createdAt DateTime       @default(now())
+}
+
+model AuditLog {
+  id        String       @id @default(cuid())
+  type      AuditLogType
+  userId    String?
+  email     String?
+  details   Json?
+  createdAt DateTime     @default(now())
+}
+
 
 
 model User {

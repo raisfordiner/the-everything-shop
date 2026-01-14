@@ -213,6 +213,19 @@ class ReturnRouter extends BaseRouter {
         middlewares: checkIfAdminSeller,
         controller: ReturnController.getReturns,
       },
+      // Customer-facing route to submit return request
+      {
+        path: "/request",
+        method: "post",
+        middlewares: [authGuard, validateBody(ReturnSchema.create)],
+        controller: ReturnController.createCustomerReturnRequest,
+      },
+      {
+        path: "/request/:orderId",
+        method: "delete",
+        middlewares: [authGuard],
+        controller: ReturnController.withdrawCustomerRequest,
+      },
       {
         path: "/",
         method: "post",

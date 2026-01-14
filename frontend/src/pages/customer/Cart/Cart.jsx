@@ -17,6 +17,7 @@ import {
     Typography,
     Divider,
     Image,
+    Select,
 } from 'antd';
 import { DeleteOutlined, ShoppingCartOutlined, TagOutlined, GiftOutlined } from '@ant-design/icons';
 import cartService from '../../../services/cartService';
@@ -611,28 +612,18 @@ const Cart = () => {
                             </Button>
                         </Empty>
                     ) : (
-                        <Radio.Group
+                        <Select
                             value={selectedAddress}
-                            onChange={(e) => setSelectedAddress(e.target.value)}
+                            onChange={setSelectedAddress}
                             style={{ width: '100%' }}
+                            placeholder="Select a delivery address"
                         >
-                            <Space direction="vertical" style={{ width: '100%' }}>
-                                {addresses.map((address) => (
-                                    <Radio key={address.id} value={address.id}>
-                                        <div>
-                                            <Text strong>{address.recipientName}</Text>
-                                            <br />
-                                            <Text>{address.phone}</Text>
-                                            <br />
-                                            <Text type="secondary">
-                                                {address.street}, {address.ward}, {address.district},{' '}
-                                                {address.province}
-                                            </Text>
-                                        </div>
-                                    </Radio>
-                                ))}
-                            </Space>
-                        </Radio.Group>
+                            {addresses.map((address) => (
+                                <Select.Option key={address.id} value={address.id}>
+                                    {address.recipientName} - {address.phone} - {address.street}, {address.ward}, {address.district}, {address.province}
+                                </Select.Option>
+                            ))}
+                        </Select>
                     )}
                 </div>
 

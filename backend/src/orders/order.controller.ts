@@ -52,7 +52,7 @@ export default class OrderController {
   }
 
   static async createDirect(req: Request, res: Response) {
-    const { addressId, productVariantId, quantity } = req.body;
+    const { addressId, productVariantId, quantity, paymentMethod } = req.body;
     console.log("request", (req as any).user);
     const customerId = (req as any).user?.customer?.id;
 
@@ -63,7 +63,13 @@ export default class OrderController {
     }
 
     try {
-      const order = await OrderService.createDirectOrder(customerId, addressId, productVariantId, quantity);
+      const order = await OrderService.createDirectOrder(
+        customerId,
+        addressId,
+        productVariantId,
+        quantity,
+        paymentMethod || 'COD'
+      );
 
       return Send.success(res, order, "Order created successfully");
     } catch (error: any) {

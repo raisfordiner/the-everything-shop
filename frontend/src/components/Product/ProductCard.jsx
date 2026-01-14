@@ -152,21 +152,34 @@ const ProductCard = ({ product }) => {
                             {discountPercent > 0 ? (
                                 <Flex gap={8} align="center">
                                     <Typography.Text delete type="secondary" style={{ fontSize: '12px' }}>
-                                        ${originalPrice.toLocaleString()}
+                                        ${originalPrice.toFixed(2)}
                                     </Typography.Text>
                                     <Typography.Text type="danger" strong>
-                                        ${discountedPrice.toLocaleString()}
+                                        ${discountedPrice.toFixed(2)}
                                     </Typography.Text>
                                 </Flex>
                             ) : (
                                 <Typography.Text type="danger" strong>
-                                    ${originalPrice.toLocaleString()}
+                                    ${originalPrice.toFixed(2)}
                                 </Typography.Text>
                             )}
 
-                            <Typography.Text type="secondary" className="sold-count">
-                                {formatSoldCount(soldCount)}
-                            </Typography.Text>
+                            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '2px' }}>
+                                <Space size={4} align="center">
+                                    <Rate
+                                        disabled
+                                        defaultValue={product.averageRating || 0}
+                                        style={{ fontSize: 12 }}
+                                        allowHalf
+                                    />
+                                    <Typography.Text type="secondary" style={{ fontSize: 12 }}>
+                                        ({product.reviewCount || 0})
+                                    </Typography.Text>
+                                </Space>
+                                <Typography.Text type="secondary" className="sold-count">
+                                    {formatSoldCount(soldCount)}
+                                </Typography.Text>
+                            </div>
                         </Flex>
                     </Space>
                 </Space>

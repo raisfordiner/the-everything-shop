@@ -40,6 +40,51 @@ export default class CancellationController {
     }
   }
 
+  /**
+   * Customer-facing endpoint to request cancellation
+   */
+  static async createCustomerCancellationRequest(req: Request, res: Response) {
+    try {
+      const { orderId, reason } = req.body;
+      const customerId = (req as any).user?.id;
+
+      if (!customerId) {
+        return Send.unauthorized(res, {}, "Authentication required");
+      }
+
+      const cancellation = await CancellationService.createCustomerRequest({
+        orderId,
+        reason,
+        customerId,
+      });
+
+      return Send.success(res, { cancellation }, "Cancellation request submitted successfully");
+    } catch (error: any) {
+      const errorMessage = error?.message || "Failed to submit cancellation request";
+      logger.error({ errorMessage, error: error?.toString() }, "Error creating customer cancellation request");
+      return Send.badRequest(res, {}, errorMessage);
+    }
+  }
+
+  static async withdrawCustomerRequest(req: Request, res: Response) {
+    try {
+      const { orderId } = req.params;
+      const customerId = (req as any).user?.id;
+
+      if (!customerId) {
+        return Send.unauthorized(res, {}, "Authentication required");
+      }
+
+      await CancellationService.withdrawCustomerRequest(orderId, customerId);
+
+      return Send.success(res, {}, "Cancellation request withdrawn successfully");
+    } catch (error: any) {
+      const errorMessage = error?.message || "Failed to withdraw cancellation request";
+      logger.error({ errorMessage, error: error?.toString() }, "Error withdrawing cancellation request");
+      return Send.badRequest(res, {}, errorMessage);
+    }
+  }
+
   static async updateCancellation(req: Request, res: Response) {
     try {
       const { id } = req.params;

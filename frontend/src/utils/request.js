@@ -14,8 +14,10 @@ const request = async (path, options = {}) => {
 
     if (!response.ok) {
         const errorData = await response.json();
-        const error = new Error(errorData.message || 'Errors has occurred');
+        console.log('Error response data:', errorData);
+        const error = new Error(errorData.message || errorData.error || 'An error has occurred');
         error.status = response.status;
+        error.data = errorData;
         throw error;
     }
 

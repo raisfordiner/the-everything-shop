@@ -1,6 +1,6 @@
 import React, { useState } from "react"
-import { Button, message, notification, Modal, Select } from "antd"
-import { ShoppingCartOutlined } from "@ant-design/icons"
+import { Button, message, notification, Modal, Select, Radio, Space, Typography, Divider } from "antd"
+import { ShoppingCartOutlined, CheckOutlined } from "@ant-design/icons"
 import { useSelector } from "react-redux"
 import { useNavigate } from "react-router-dom"
 import cartService from "../../../../services/cartService"
@@ -9,9 +9,11 @@ import './ActionButtons.css'
 
 const ActionButtons = ({ selectedProductVariant, amount, productData, isAuthenticated }) => {
     const [loading, setLoading] = useState(false)
+    const [addedToCart, setAddedToCart] = useState(false)
     const [buyNowLoading, setBuyNowLoading] = useState(false)
     const [showAddressModal, setShowAddressModal] = useState(false)
     const [selectedAddress, setSelectedAddress] = useState(null)
+    const [paymentMethod, setPaymentMethod] = useState('COD')
     const { user } = useSelector(state => state.authReducer || { user: {} })
     const navigate = useNavigate()
 
@@ -138,6 +140,12 @@ const ActionButtons = ({ selectedProductVariant, amount, productData, isAuthenti
                 placement: "topRight"
             })
 
+            // Show visual feedback on button
+            setAddedToCart(true)
+            setTimeout(() => {
+                setAddedToCart(false)
+            }, 1500)
+
         } catch (error) {
             console.error("Error adding to cart:", error)
             notification.error({
@@ -216,7 +224,18 @@ const ActionButtons = ({ selectedProductVariant, amount, productData, isAuthenti
             setBuyNowLoading(true)
             const variantId = effectiveVariant.id || selectedProductVariant?.id
 
-            const response = await orderService.createDirectOrder(selectedAddress, variantId, amount)
+            const response = await orderService.createDirectOrder(selectedAddress, variantId, amount, paymentMethod)
+
+            // Check if Stripe session URL exists
+            if (response?.data?.stripeSessionUrl) {
+                notification.success({
+                    message: "Redirecting to Payment",
+                    description: "Redirecting to Stripe checkout...",
+                    placement: "topRight"
+                })
+                window.location.href = response.data.stripeSessionUrl
+                return
+            }
 
             notification.success({
                 message: "Order Created Successfully",
@@ -244,10 +263,10 @@ const ActionButtons = ({ selectedProductVariant, amount, productData, isAuthenti
         <>
             <div className="info__actions">
                 <Button
-                    icon={<ShoppingCartOutlined />}
+                    icon={addedToCart ? <CheckOutlined /> : <ShoppingCartOutlined />}
                     type="default"
                     size="large"
-                    className="action__add-cart"
+                    className={`action__add-cart ${addedToCart ? 'action__add-cart--success' : ''}`}
                     onClick={handleAddToCart}
                     loading={loading}
                     disabled={isVariantRequired || isOutOfStock || loading}
@@ -258,14 +277,18 @@ const ActionButtons = ({ selectedProductVariant, amount, productData, isAuthenti
                                 ? "Product out of stock"
                                 : loading
                                     ? "Processing..."
-                                    : "Add to cart"
+                                    : addedToCart
+                                        ? "Added to cart!"
+                                        : "Add to cart"
                     }
                 >
-                    {isVariantRequired
-                        ? "Select Variant"
-                        : isOutOfStock
-                            ? "Out of Stock"
-                            : "Add to Cart"
+                    {addedToCart
+                        ? "Added!"
+                        : isVariantRequired
+                            ? "Select Variant"
+                            : isOutOfStock
+                                ? "Out of Stock"
+                                : "Add to Cart"
                     }
                 </Button>
                 <Button
@@ -292,34 +315,57 @@ const ActionButtons = ({ selectedProductVariant, amount, productData, isAuthenti
             </div>
 
             <Modal
-                title="Select Delivery Address"
+                title="Checkout"
                 open={showAddressModal}
                 onOk={handleConfirmBuyNow}
                 onCancel={() => setShowAddressModal(false)}
                 confirmLoading={buyNowLoading}
-                okText="Confirm Order"
+                okText="Place Order"
                 cancelText="Cancel"
+                width={500}
             >
                 <div style={{ marginBottom: 16 }}>
-                    <p>Select a delivery address for your order:</p>
+                    <Typography.Text strong>Delivery Address:</Typography.Text>
                     <Select
-                        style={{ width: '100%' }}
+                        style={{ width: '100%', marginTop: 8 }}
                         placeholder="Select address"
                         value={selectedAddress}
                         onChange={setSelectedAddress}
                     >
                         {user.customer?.addresses?.map(address => (
                             <Select.Option key={address.id} value={address.id}>
-                                {address.phoneNumber}
-                                {address.address}
+                                {address.phoneNumber} {address.address}
                             </Select.Option>
                         ))}
                     </Select>
                 </div>
-                <div style={{ marginTop: 16, padding: 12, background: '#f5f5f5', borderRadius: 4 }}>
-                    <p style={{ margin: 0, fontWeight: 500 }}>Order Summary:</p>
+
+                <Divider />
+
+                <div style={{ marginBottom: 16 }}>
+                    <Typography.Text strong>Payment Method:</Typography.Text>
+                    <Radio.Group
+                        value={paymentMethod}
+                        onChange={(e) => setPaymentMethod(e.target.value)}
+                        style={{ marginTop: 8, display: 'block' }}
+                    >
+                        <Space direction="vertical">
+                            <Radio value="COD">Cash on Delivery (COD)</Radio>
+                            <Radio value="VNPAY" disabled>VNPay <Typography.Text type="secondary">(in maintenance)</Typography.Text></Radio>
+                            <Radio value="STRIPE">Stripe (Credit/Debit Card)</Radio>
+                        </Space>
+                    </Radio.Group>
+                </div>
+
+                <Divider />
+
+                <div style={{ padding: 12, background: '#f5f5f5', borderRadius: 4 }}>
+                    <Typography.Text strong>Order Summary:</Typography.Text>
                     <p style={{ margin: '8px 0 0 0' }}>
                         {productData.name} × {amount}
+                    </p>
+                    <p style={{ margin: '4px 0 0 0', color: '#ff4d4f', fontWeight: 'bold' }}>
+                        Total: ${((productData.price + (effectiveVariant?.priceAdjustment || 0)) * amount).toFixed(2)}
                     </p>
                 </div>
             </Modal>

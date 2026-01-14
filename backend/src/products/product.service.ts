@@ -319,6 +319,19 @@ export default class ProductService {
       });
     });
 
+    // Log product creation for reporting
+    try {
+      await prisma.inventoryLog.create({
+        data: {
+          type: 'PRODUCT_CREATED',
+          productId: product!.id,
+          details: { name, price, categoryId, sellerId },
+        },
+      });
+    } catch (e) {
+      console.error('Failed to create inventory log:', e);
+    }
+
     return product!;
   }
 
