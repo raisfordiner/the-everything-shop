@@ -32,6 +32,7 @@ import {
 import orderService from '../../../services/orderService';
 import cancellationService from '../../../services/cancellationService';
 import returnService from '../../../services/returnService';
+import paymentService from '../../../services/paymentService';
 
 const { Title, Text } = Typography;
 const { Panel } = Collapse;
@@ -99,6 +100,22 @@ const Orders = () => {
             fetchOrders();
         } catch (error) {
             message.error('Failed to cancel order');
+        }
+    };
+
+    const handleRetryPayment = async (orderId) => {
+        try {
+            const response = await paymentService.retryPayment(orderId);
+            if (response?.data?.sessionUrl) {
+                message.success('Redirecting to Stripe checkout...');
+                window.location.href = response.data.sessionUrl;
+            } else if (response?.sessionUrl) {
+                window.location.href = response.sessionUrl;
+            } else {
+                throw new Error('Failed to get checkout URL');
+            }
+        } catch (error) {
+            message.error(error.message || 'Failed to retry payment');
         }
     };
 
@@ -255,17 +272,28 @@ const Orders = () => {
         // Validation for PENDING orders (Direct Cancel)
         if (order.status === 'PENDING') {
             return (
-                <Popconfirm
-                    title="Cancel Order"
-                    description="Are you sure you want to cancel this order?"
-                    onConfirm={() => handleCancelOrder(order.id)}
-                    okText="Yes"
-                    cancelText="No"
-                >
-                    <Button type="default" danger>
-                        Cancel Order
-                    </Button>
-                </Popconfirm>
+                <Space>
+                    {/* Retry Payment for pending Stripe orders */}
+                    {order.payment?.method === 'STRIPE' && order.payment?.status !== 'SUCCESS' && (
+                        <Button
+                            type="primary"
+                            onClick={() => handleRetryPayment(order.id)}
+                        >
+                            Retry Payment
+                        </Button>
+                    )}
+                    <Popconfirm
+                        title="Cancel Order"
+                        description="Are you sure you want to cancel this order?"
+                        onConfirm={() => handleCancelOrder(order.id)}
+                        okText="Yes"
+                        cancelText="No"
+                    >
+                        <Button type="default" danger>
+                            Cancel Order
+                        </Button>
+                    </Popconfirm>
+                </Space>
             );
         }
 

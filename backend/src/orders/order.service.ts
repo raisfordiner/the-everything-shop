@@ -1,7 +1,14 @@
 import { prisma } from "util/db";
+import Stripe from "stripe";
 
 export default class OrderService {
-  static async createDirectOrder(customerId: string, addressId: string, productVariantId: string, quantity: number) {
+  static async createDirectOrder(
+    customerId: string,
+    addressId: string,
+    productVariantId: string,
+    quantity: number,
+    paymentMethod: "COD" | "VNPAY" | "STRIPE" = "COD"
+  ) {
     // Validate product variant and stock
     const productVariant = await prisma.productVariant.findUnique({
       where: { id: productVariantId },
@@ -18,20 +25,26 @@ export default class OrderService {
       throw new Error(`Insufficient stock. Only ${productVariant.quantity} items available`);
     }
 
+    // Calculate total amount
+    const unitPrice = productVariant.product.price + productVariant.priceAdjustment;
+    const totalAmount = unitPrice * quantity;
+
     // Create order directly without cart
     const order = await prisma.$transaction(async (tx) => {
-      // Decrease product variant quantity
-      await tx.productVariant.update({
-        where: { id: productVariantId },
-        data: {
-          quantity: {
-            decrement: quantity,
+      // Only decrease stock for COD orders; Stripe decrements after payment confirmation
+      if (paymentMethod === "COD") {
+        await tx.productVariant.update({
+          where: { id: productVariantId },
+          data: {
+            quantity: {
+              decrement: quantity,
+            },
           },
-        },
-      });
+        });
+      }
 
       // Create order with order item
-      return await tx.order.create({
+      const newOrder = await tx.order.create({
         data: {
           customerId,
           addressId,
@@ -55,7 +68,52 @@ export default class OrderService {
           address: true,
         },
       });
+
+      // Create payment record
+      await tx.payment.create({
+        data: {
+          orderId: newOrder.id,
+          amount: totalAmount,
+          method: paymentMethod as any,
+          status: "PENDING",
+        },
+      });
+
+      return newOrder;
     });
+
+    // Handle Stripe payment
+    if (paymentMethod === "STRIPE") {
+      const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "");
+      const frontendUrl = process.env.FE_URL || "http://localhost:3000";
+      const successUrl = `${frontendUrl}/loading?orderId=${order.id}`;
+      const cancelUrl = `${frontendUrl}/product/${productVariant.productId}`;
+
+      const session = await stripe.checkout.sessions.create({
+        payment_method_types: ['card'],
+        line_items: [{
+          price_data: {
+            currency: 'usd',
+            product_data: {
+              name: productVariant.product.name,
+            },
+            unit_amount: Math.round(unitPrice * 100), // Stripe uses cents
+          },
+          quantity: quantity,
+        }],
+        mode: 'payment',
+        success_url: successUrl,
+        cancel_url: cancelUrl,
+        metadata: {
+          orderId: order.id,
+        },
+      });
+
+      return {
+        ...order,
+        stripeSessionUrl: session.url,
+      };
+    }
 
     return order;
   }

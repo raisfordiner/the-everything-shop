@@ -159,22 +159,6 @@ const OrderDetail = () => {
                 >
                     Back to Orders
                 </Button>
-
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8 }}>
-                    {/* Retry Payment Button for Stripe orders with pending payment */}
-                    {order.status === 'PENDING' &&
-                        order.payment?.method === 'STRIPE' &&
-                        order.payment?.status !== 'SUCCESS' && (
-                            <Button
-                                type="primary"
-                                size="large"
-                                onClick={handleRetryPayment}
-                                loading={retryPaymentLoading}
-                            >
-                                Retry Payment
-                            </Button>
-                        )}
-                </div>
             </div>
 
             {/* Order Information */}

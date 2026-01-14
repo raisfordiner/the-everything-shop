@@ -6,25 +6,25 @@ import { Link } from "react-router";
 
 const { Title } = Typography;
 
-const ProductSection = ({title, products, bannerImage, onViewAll, categoryId }) => {
+const ProductSection = ({ title, products, bannerImage, onViewAll, categoryId }) => {
     const hasBanner = !!bannerImage;
 
     return (
         <div className="product-section">
             <div className="section-header">
                 <Title level={4}>{title}</Title>
-                <Link to={`/category/${categoryId}`}>
+                {/* <Link to={`/category/${categoryId}`}>
                     <Button type="link" onClick={onViewAll}>
-                        Xem tất cả
+                        Show all
                     </Button>
-                </Link>
+                </Link> */}
             </div>
 
             <Row gutter={[16, 16]}>
                 {hasBanner && (
                     <Col xs={24} md={6}>
                         <div className="banner-box">
-                        <img src={bannerImage} alt="banner" />
+                            <img src={bannerImage} alt="banner" />
                         </div>
                     </Col>
                 )}

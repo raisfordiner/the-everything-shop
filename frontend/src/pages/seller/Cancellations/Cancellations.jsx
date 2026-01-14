@@ -102,9 +102,9 @@ const Cancellations = () => {
         let color = "default";
         switch (statusVal) {
             case "REQUESTED": color = "orange"; break;
-            case "APPROVED": color = "green"; break;
+            case "APPROVED": color = "blue"; break;
             case "REJECTED": color = "red"; break;
-            case "COMPLETED": color = "blue"; break;
+            case "COMPLETED": color = "green"; break;
             default: color = "default";
         }
         return <Tag color={color}>{statusVal}</Tag>;
