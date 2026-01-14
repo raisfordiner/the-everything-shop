@@ -113,6 +113,64 @@ const Reports = () => {
         });
     };
 
+    const exportToCSV = () => {
+        const data = getDataSource();
+        if (!data || data.length === 0) {
+            message.warning('No data to export');
+            return;
+        }
+
+        let headers = [];
+        let rows = [];
+
+        switch (activeTab) {
+            case 'INVENTORY':
+                headers = ['Type', 'Product ID', 'Variant ID', 'Details', 'Date'];
+                rows = data.map(item => [
+                    item.type === 'PRODUCT_CREATED' ? 'New Product' : 'Out of Stock',
+                    item.productId || '',
+                    item.variantId || '',
+                    item.details?.productName || item.details?.name || '',
+                    formatDate(item.createdAt)
+                ]);
+                break;
+            case 'REVENUE':
+                headers = ['Type', 'Order ID', 'Amount', 'Date'];
+                rows = data.map(item => [
+                    item.type === 'ORDER_COMPLETED' ? 'Order Completed' :
+                        item.type === 'RETURN_COMPLETED' ? 'Return' : 'Cancellation',
+                    item.orderId || '',
+                    item.amount?.toFixed(2) || '0.00',
+                    formatDate(item.createdAt)
+                ]);
+                break;
+            case 'CONTROL':
+                headers = ['Activity', 'Email', 'User ID', 'Details', 'Timestamp'];
+                rows = data.map(item => [
+                    item.type === 'USER_SIGNUP' ? 'Sign Up' : 'Login',
+                    item.email || '',
+                    item.userId || '',
+                    item.details?.username || item.details?.role || '',
+                    formatDate(item.createdAt)
+                ]);
+                break;
+            default:
+                return;
+        }
+
+        const csvContent = [headers.join(','), ...rows.map(row =>
+            row.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(',')
+        )].join('\n');
+
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = `${activeTab.toLowerCase()}_report_${new Date().toISOString().split('T')[0]}.csv`;
+        link.click();
+        URL.revokeObjectURL(link.href);
+        message.success('Report exported successfully');
+    };
+
     const getColumns = () => {
         switch (activeTab) {
             case 'INVENTORY':
@@ -276,7 +334,7 @@ const Reports = () => {
         <div className="reports-page">
             <div style={{ marginBottom: 24, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 10 }}>
                 <Title level={2} style={{ margin: 0, color: '#008ECC' }}>Reports Center</Title>
-                <Button icon={<ExportOutlined />} disabled>Export Report</Button>
+                <Button icon={<ExportOutlined />} onClick={exportToCSV}>Export Report</Button>
             </div>
 
             <Row gutter={[16, 16]} style={{ marginBottom: 24 }}>
