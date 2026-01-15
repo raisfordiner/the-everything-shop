@@ -105,13 +105,103 @@ const Reports = () => {
     const [subFilter, setSubFilter] = useState('ALL');
     const [loading, setLoading] = useState(false);
     const [dateRange, setDateRange] = useState([dayjs().startOf('month'), dayjs().endOf('month')]);
-    const [timeGranularity, setTimeGranularity] = useState('day');
     const [timePeriod, setTimePeriod] = useState('24H');
-    const [activityType, setActivityType] = useState('ALL');
-
     const [inventoryData, setInventoryData] = useState([]);
     const [revenueData, setRevenueData] = useState([]);
     const [controlData, setControlData] = useState([]);
+
+    const fillTimeData = (data, rangeOption, mode = 'count') => {
+        if (!rangeOption) return [];
+
+        const grain = rangeOption.grain || 'day';
+        const now = dayjs();
+        let start = now;
+
+        if (rangeOption.value === 'ALL') {
+            // For All Time, find the earliest date in data or default to 1 year ago
+            if (data.length > 0) {
+                const earliest = data.reduce((min, p) => p.createdAt < min ? p.createdAt : min, data[0].createdAt);
+                start = dayjs(earliest).startOf('month');
+            } else {
+                start = now.subtract(1, 'year').startOf('month');
+            }
+        } else if (rangeOption.value === 'CUSTOM') {
+            if (dateRange && dateRange[0]) {
+                start = dayjs(dateRange[0]).startOf('day');
+            } else {
+                start = now.subtract(7, 'day').startOf('day');
+            }
+        } else {
+            // Standard ranges
+            start = now.subtract(rangeOption.hours, 'hour');
+            // adjust start based on grain for cleaner charts
+            if (grain === 'day') start = start.startOf('day');
+            if (grain === 'month') start = start.startOf('month');
+
+            // Shift forward by one unit to avoid the "same time last day" (extra bar) issue
+            // and ensure we end on the current time/day.
+            start = start.add(1, grain === 'minute' ? 'minute' : grain);
+        }
+
+        const filledData = [];
+        let current = start;
+
+        // Determine format based on grain
+        let format = 'MMM D';
+        if (grain === 'hour') format = 'HH:mm';
+        if (grain === 'minute') format = 'HH:mm';
+        if (grain === 'month') format = 'MMM YYYY';
+
+        // Limit iteration to avoid infinite loops
+        let safety = 0;
+        const end = now;
+
+        while (current.isBefore(end) || current.isSame(end, grain)) {
+            if (safety++ > 1000) break;
+
+            const label = current.format(format);
+
+            if (mode === 'sum') {
+                let sum = 0;
+                data.forEach(item => {
+                    const itemDate = dayjs(item.createdAt);
+                    if (itemDate.isSame(current, grain)) {
+                        sum += (item.amount || 0);
+                    }
+                });
+                filledData.push({
+                    date: label,
+                    value: sum,
+                    timestamp: current.valueOf()
+                });
+            } else {
+                // Count items in this bucket (grouped logic)
+                let typeMap = {};
+                data.forEach(item => {
+                    const itemDate = dayjs(item.createdAt);
+                    if (itemDate.isSame(current, grain)) {
+                        const type = item.type === 'USER_SIGNUP' ? 'Sign Up' : 'Login';
+                        typeMap[type] = (typeMap[type] || 0) + 1;
+                    }
+                });
+
+                const types = ['Sign Up', 'Login'];
+                types.forEach(type => {
+                    filledData.push({
+                        date: label,
+                        type: type,
+                        count: typeMap[type] || 0,
+                        timestamp: current.valueOf()
+                    })
+                });
+            }
+
+            // Advance time
+            current = current.add(1, grain === 'minute' ? 'minute' : grain);
+        }
+
+        return filledData;
+    };
 
     const buildParams = (additionalParams = {}) => {
         const params = { ...additionalParams };
@@ -216,69 +306,17 @@ const Reports = () => {
         };
     }, [revenueData]);
 
-    const columnData = useMemo(() => {
-        if (!dateRange || !dateRange[0]) return [];
+    const revenueTimelineData = useMemo(() => {
+        const option = TIME_PERIOD_OPTIONS.find(opt => opt.value === timePeriod);
+        const rangeOpt = timePeriod === 'CUSTOM' ? { value: 'CUSTOM', grain: 'day' } : option;
 
-        const anchorDate = dateRange[0];
-        const dataMap = {};
-
-        revenueData.forEach(item => {
-            const date = dayjs(item.createdAt);
-            let key;
-            if (timeGranularity === 'hour') key = date.hour();
-            else if (timeGranularity === 'day') key = date.date();
-            else if (timeGranularity === 'month') key = date.month();
-            else if (timeGranularity === 'year') key = date.year();
-
-            if (dataMap[key] === undefined) dataMap[key] = 0;
-            dataMap[key] += (item.amount || 0);
-        });
-
-        const filledData = [];
-
-        if (timeGranularity === 'hour') {
-            for (let i = 0; i < 24; i++) {
-                filledData.push({
-                    time: `${i}:00`,
-                    value: dataMap[i] || 0,
-                    sortIndex: i
-                });
-            }
-        } else if (timeGranularity === 'day') {
-            const daysInMonth = anchorDate.daysInMonth();
-            for (let i = 1; i <= daysInMonth; i++) {
-                filledData.push({
-                    time: `${i}/${anchorDate.format('MM')}`,
-                    value: dataMap[i] || 0,
-                    sortIndex: i
-                });
-            }
-        } else if (timeGranularity === 'month') {
-            const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-            for (let i = 0; i < 12; i++) {
-                filledData.push({
-                    time: months[i],
-                    value: dataMap[i] || 0,
-                    sortIndex: i
-                });
-            }
-        } else if (timeGranularity === 'year') {
-            const currentYear = dayjs().year();
-            for (let i = currentYear - 4; i <= currentYear; i++) {
-                filledData.push({
-                    time: i.toString(),
-                    value: dataMap[i] || 0,
-                    sortIndex: i
-                });
-            }
-        }
-
-        return filledData;
-    }, [revenueData, timeGranularity, dateRange]);
+        // Use 'sum' mode to aggregate revenue amounts
+        return fillTimeData(revenueData, rangeOpt, 'sum');
+    }, [revenueData, timePeriod, dateRange]);
 
     const columnRevenueConfig = {
-        data: columnData,
-        xField: 'time',
+        data: revenueTimelineData,
+        xField: 'date',
         yField: 'value',
         label: {
             position: 'middle',
@@ -289,8 +327,8 @@ const Reports = () => {
             label: { autoHide: true, autoRotate: false },
         },
         meta: {
-            time: { alias: 'Thời gian' },
-            value: { alias: 'Doanh thu' }
+            date: { alias: 'Time' },
+            value: { alias: 'Revenue' }
         },
         color: ({ value }) => {
             if (value > 0) return '#008ECC';
@@ -299,10 +337,12 @@ const Reports = () => {
         },
         tooltip: {
             formatter: (datum) => {
-                return { name: 'Revenue', value: `$${datum.value.toFixed(2)}` };
+                return { name: 'Net Revenue', value: `$${datum.value.toFixed(2)}` };
             },
         }
     };
+
+
 
     const pieData = useMemo(() => {
         return [
@@ -561,91 +601,7 @@ const Reports = () => {
 
     // --- CHART LOGIC ---
 
-    const fillTimeData = (data, rangeOption) => {
-        if (!rangeOption) return [];
 
-        const grain = rangeOption.grain || 'day';
-        const now = dayjs();
-        let start = now;
-
-        if (rangeOption.value === 'ALL') {
-            // For All Time, find the earliest date in data or default to 1 year ago
-            if (data.length > 0) {
-                const earliest = data.reduce((min, p) => p.createdAt < min ? p.createdAt : min, data[0].createdAt);
-                start = dayjs(earliest).startOf('month');
-            } else {
-                start = now.subtract(1, 'year').startOf('month');
-            }
-        } else if (rangeOption.value === 'CUSTOM') {
-            if (dateRange && dateRange[0]) {
-                start = dayjs(dateRange[0]).startOf('day');
-            } else {
-                start = now.subtract(7, 'day').startOf('day');
-            }
-        } else {
-            // Standard ranges
-            start = now.subtract(rangeOption.hours, 'hour');
-            // adjust start based on grain for cleaner charts
-            if (grain === 'day') start = start.startOf('day');
-            if (grain === 'month') start = start.startOf('month');
-
-            // Shift forward by one unit to avoid the "same time last day" (extra bar) issue
-            // and ensure we end on the current time/day.
-            start = start.add(1, grain === 'minute' ? 'minute' : grain);
-        }
-
-        const filledData = [];
-        let current = start;
-
-        // Determine format based on grain
-        let format = 'MMM D';
-        if (grain === 'hour') format = 'HH:mm';
-        if (grain === 'minute') format = 'HH:mm';
-        if (grain === 'month') format = 'MMM YYYY';
-
-        // Limit iteration to avoid infinite loops
-        let safety = 0;
-        const end = now;
-
-        while (current.isBefore(end) || current.isSame(end, grain)) {
-            if (safety++ > 1000) break;
-
-            const label = current.format(format);
-
-            // Count items in this bucket
-            let count = 0;
-            let typeMap = {}; // for grouped data
-
-            data.forEach(item => {
-                const itemDate = dayjs(item.createdAt);
-                if (itemDate.isSame(current, grain)) {
-                    count++;
-                    // For grouped charts
-                    const type = item.type === 'USER_SIGNUP' ? 'Sign Up' : 'Login';
-                    typeMap[type] = (typeMap[type] || 0) + 1;
-                }
-            });
-
-            // For timeline chart, we need an entry for each type if it exists, 
-            // OR just a total if not grouped by type in the same bar slot.
-            // The previous chart was grouped by type.
-
-            const types = ['Sign Up', 'Login'];
-            types.forEach(type => {
-                filledData.push({
-                    date: label,
-                    type: type,
-                    count: typeMap[type] || 0,
-                    timestamp: current.valueOf() // for sorting
-                })
-            });
-
-            // Advance time
-            current = current.add(1, grain === 'minute' ? 'minute' : grain);
-        }
-
-        return filledData;
-    };
 
     // Chart data for Audit Logs (CONTROL tab)
     const auditPieData = useMemo(() => {
@@ -748,6 +704,50 @@ const Reports = () => {
             </Row>
 
             <Card style={{ borderRadius: 12, minHeight: 400 }}>
+                {/* Global Filters - Moved to top */}
+                <Row justify="space-between" align="middle" style={{ marginBottom: 24, flexWrap: 'wrap', gap: 12 }}>
+                    <Space wrap size="middle">
+                        <Space>
+                            <FilterOutlined style={{ color: '#888' }} />
+                            <span style={{ fontWeight: 'bold', fontSize: '14px' }}>Filter:</span>
+                            <Select
+                                value={subFilter}
+                                onChange={setSubFilter}
+                                style={{ width: 160 }}
+                            >
+                                {getFilterOptions().map(opt => (
+                                    <Option key={opt.value} value={opt.value}>{opt.label}</Option>
+                                ))}
+                            </Select>
+                        </Space>
+
+                        <Space>
+                            <Divider type="vertical" style={{ height: 24 }} />
+                            <ClockCircleOutlined style={{ color: '#888' }} />
+                            <span style={{ fontWeight: 'bold', fontSize: '14px' }}>Time Period:</span>
+                            <Select
+                                value={timePeriod}
+                                onChange={handleTimePeriodChange}
+                                style={{ width: 180 }}
+                            >
+                                {TIME_PERIOD_OPTIONS.map(opt => (
+                                    <Option key={opt.value} value={opt.value}>{opt.label}</Option>
+                                ))}
+                            </Select>
+                        </Space>
+
+                        {timePeriod === 'CUSTOM' && (
+                            <RangePicker
+                                value={dateRange}
+                                onChange={handleDateRangeChange}
+                                allowClear
+                                style={{ width: 260 }}
+                                placeholder={['Start Date', 'End Date']}
+                            />
+                        )}
+                    </Space>
+                </Row>
+
                 {activeTab === 'REVENUE' && (
                     <div style={{ marginBottom: 30 }}>
                         <Row gutter={[16, 16]} style={{ marginBottom: 24 }}>
@@ -792,7 +792,7 @@ const Reports = () => {
                                     <List itemLayout="horizontal" split={true}>
                                         <List.Item>
                                             <List.Item.Meta
-                                                avatar={<div style={{background: '#f6ffed', padding: 8, borderRadius: 6}}><ArrowUpOutlined style={{color: '#52c41a'}}/></div>}
+                                                avatar={<div style={{ background: '#f6ffed', padding: 8, borderRadius: 6 }}><ArrowUpOutlined style={{ color: '#52c41a' }} /></div>}
                                                 title="Money In (Orders)"
                                                 description="Revenue from completed orders"
                                             />
@@ -802,7 +802,7 @@ const Reports = () => {
                                         </List.Item>
                                         <List.Item>
                                             <List.Item.Meta
-                                                avatar={<div style={{background: '#fff7e6', padding: 8, borderRadius: 6}}><RollbackOutlined style={{color: '#faad14'}}/></div>}
+                                                avatar={<div style={{ background: '#fff7e6', padding: 8, borderRadius: 6 }}><RollbackOutlined style={{ color: '#faad14' }} /></div>}
                                                 title="Money Out (Returns)"
                                                 description="Refunds for returned items"
                                             />
@@ -812,7 +812,7 @@ const Reports = () => {
                                         </List.Item>
                                         <List.Item>
                                             <List.Item.Meta
-                                                avatar={<div style={{background: '#fff1f0', padding: 8, borderRadius: 6}}><CloseCircleOutlined style={{color: '#f5222d'}}/></div>}
+                                                avatar={<div style={{ background: '#fff1f0', padding: 8, borderRadius: 6 }}><CloseCircleOutlined style={{ color: '#f5222d' }} /></div>}
                                                 title="Money Out (Cancellations)"
                                                 description="Refunds for cancelled orders"
                                             />
@@ -840,16 +840,6 @@ const Reports = () => {
                                     title={
                                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                                             <span><BarChartOutlined /> Revenue Trends</span>
-                                            <Segmented
-                                                options={[
-                                                    { label: 'Hour (24h)', value: 'hour' },
-                                                    { label: 'Day (Month)', value: 'day' },
-                                                    { label: 'Month (Year)', value: 'month' },
-                                                    { label: 'Year (5 Years)', value: 'year' },
-                                                ]}
-                                                value={timeGranularity}
-                                                onChange={setTimeGranularity}
-                                            />
                                         </div>
                                     }
                                 >
@@ -863,51 +853,6 @@ const Reports = () => {
                         <Divider dashed />
                     </div>
                 )}
-
-                <Row justify="space-between" align="middle" style={{ marginBottom: 24, flexWrap: 'wrap', gap: 12 }}>
-                    <Space wrap size="middle">
-                        <Space>
-                            <FilterOutlined style={{ color: '#888' }} />
-                            <span style={{ fontWeight: 'bold', fontSize: '14px' }}>Filter:</span>
-                            <Select
-                                value={subFilter}
-                                onChange={setSubFilter}
-                                style={{ width: 160 }}
-                            >
-                                {getFilterOptions().map(opt => (
-                                    <Option key={opt.value} value={opt.value}>{opt.label}</Option>
-                                ))}
-                            </Select>
-                        </Space>
-
-                        {/* Consolidated filtered logic - no separate Activity filter */}
-
-                        <Space>
-                            <Divider type="vertical" style={{ height: 24 }} />
-                            <ClockCircleOutlined style={{ color: '#888' }} />
-                            <span style={{ fontWeight: 'bold', fontSize: '14px' }}>Time Period:</span>
-                            <Select
-                                value={timePeriod}
-                                onChange={handleTimePeriodChange}
-                                style={{ width: 180 }}
-                            >
-                                {TIME_PERIOD_OPTIONS.map(opt => (
-                                    <Option key={opt.value} value={opt.value}>{opt.label}</Option>
-                                ))}
-                            </Select>
-                        </Space>
-
-                        {timePeriod === 'CUSTOM' && (
-                            <RangePicker
-                                value={dateRange}
-                                onChange={handleDateRangeChange}
-                                allowClear
-                                style={{ width: 260 }}
-                                placeholder={['Start Date', 'End Date']}
-                            />
-                        )}
-                    </Space>
-                </Row>
 
                 <Spin spinning={loading}>
                     {/* Audit Logs Charts - Only show when CONTROL tab is active */}
