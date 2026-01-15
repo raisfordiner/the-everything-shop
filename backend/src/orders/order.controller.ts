@@ -21,8 +21,8 @@ export default class OrderController {
         return Send.notFound(res, null, id ? "Order not found" : "Orders not found");
       }
 
-      // Check if user owns this order (unless admin)
-      if (id && userRole !== "ADMIN" && (result as any).customerId !== userCustomerId) {
+      // Check if user owns this order (unless admin or seller)
+      if (id && userRole !== "ADMIN" && userRole !== "SELLER" && (result as any).customerId !== userCustomerId) {
         return Send.forbidden(res, null, "Unauthorized");
       }
 
