@@ -194,7 +194,6 @@ const Category = () => {
         </Col>
         <Col>
           <Space>
-            <Button icon={<ExportOutlined />}>Export</Button>
             <Button
               type="primary"
               icon={<PlusOutlined />}
