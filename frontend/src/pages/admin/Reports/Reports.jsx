@@ -1,12 +1,14 @@
-import React, { useState, useEffect } from 'react';
-import { Card, Row, Col, Table, Statistic, Space, Select, DatePicker, Button, Tag, Empty, Typography, message, Spin } from 'antd';
+import React, { useState, useEffect, useMemo } from 'react';
+import { Card, Row, Col, Table, Statistic, Space, Select, DatePicker, Button, Tag, Empty, Typography, message, Spin, Divider } from 'antd';
 import {
     ShopOutlined,
     DollarOutlined,
     SafetyCertificateOutlined,
     ExportOutlined,
-    FilterOutlined
+    FilterOutlined,
+    ClockCircleOutlined
 } from '@ant-design/icons';
+import { Pie, Column } from '@ant-design/plots';
 import reportService from '../../../services/reportService';
 
 const { Option } = Select;
@@ -48,11 +50,33 @@ const ReportCard = ({ title, value, icon, type, activeTab, onClick }) => {
     );
 };
 
+// Time period options (in hours)
+const TIME_PERIOD_OPTIONS = [
+    { value: 'CUSTOM', label: 'Custom Range', hours: null },
+    { value: '1H', label: 'Last 1 Hour', hours: 1 },
+    { value: '6H', label: 'Last 6 Hours', hours: 6 },
+    { value: '12H', label: 'Last 12 Hours', hours: 12 },
+    { value: '24H', label: 'Last 24 Hours', hours: 24 },
+    { value: '48H', label: 'Last 48 Hours', hours: 48 },
+    { value: '7D', label: 'Last 7 Days', hours: 24 * 7 },
+    { value: '30D', label: 'Last 30 Days', hours: 24 * 30 },
+    { value: '90D', label: 'Last 90 Days', hours: 24 * 90 },
+];
+
+// Activity type options for CONTROL tab
+const ACTIVITY_TYPE_OPTIONS = [
+    { value: 'ALL', label: 'All Activities' },
+    { value: 'USER_SIGNUP', label: 'Sign Up Only' },
+    { value: 'USER_LOGIN', label: 'Login Only' },
+];
+
 const Reports = () => {
     const [activeTab, setActiveTab] = useState('INVENTORY');
     const [subFilter, setSubFilter] = useState('ALL');
     const [loading, setLoading] = useState(false);
     const [dateRange, setDateRange] = useState(null);
+    const [timePeriod, setTimePeriod] = useState('24H');
+    const [activityType, setActivityType] = useState('ALL');
 
     const [inventoryData, setInventoryData] = useState([]);
     const [revenueData, setRevenueData] = useState([]);
@@ -60,7 +84,18 @@ const Reports = () => {
 
     const buildParams = (additionalParams = {}) => {
         const params = { ...additionalParams };
-        if (dateRange && dateRange[0] && dateRange[1]) {
+        
+        // Handle time period filter
+        if (timePeriod !== 'CUSTOM') {
+            const selectedPeriod = TIME_PERIOD_OPTIONS.find(opt => opt.value === timePeriod);
+            if (selectedPeriod && selectedPeriod.hours) {
+                const now = new Date();
+                const startTime = new Date(now.getTime() - selectedPeriod.hours * 60 * 60 * 1000);
+                params.startDate = startTime.toISOString();
+                params.endDate = now.toISOString();
+            }
+        } else if (dateRange && dateRange[0] && dateRange[1]) {
+            // Custom date range
             params.startDate = dateRange[0].startOf('day').toISOString();
             params.endDate = dateRange[1].endOf('day').toISOString();
         }
@@ -83,7 +118,8 @@ const Reports = () => {
                     setRevenueData(revRes?.logs || []);
                     break;
                 case 'CONTROL':
-                    const audRes = await reportService.getAuditLogs(buildParams());
+                    const activityFilter = activityType !== 'ALL' ? { type: activityType } : {};
+                    const audRes = await reportService.getAuditLogs(buildParams(activityFilter));
                     setControlData(audRes?.logs || []);
                     break;
                 default:
@@ -99,11 +135,26 @@ const Reports = () => {
 
     useEffect(() => {
         fetchData(activeTab);
-    }, [activeTab, subFilter, dateRange]);
+    }, [activeTab, subFilter, dateRange, timePeriod, activityType]);
 
     const handleTabChange = (type) => {
         setActiveTab(type);
         setSubFilter('ALL');
+        setActivityType('ALL');
+    };
+
+    const handleTimePeriodChange = (value) => {
+        setTimePeriod(value);
+        if (value !== 'CUSTOM') {
+            setDateRange(null);
+        }
+    };
+
+    const handleDateRangeChange = (dates) => {
+        setDateRange(dates);
+        if (dates && dates[0] && dates[1]) {
+            setTimePeriod('CUSTOM');
+        }
     };
 
     const formatDate = (dateString) => {
@@ -309,6 +360,83 @@ const Reports = () => {
         }
     };
 
+    // Chart data for Audit Logs (CONTROL tab)
+    const auditPieData = useMemo(() => {
+        if (!controlData || controlData.length === 0) return [];
+        const signUpCount = controlData.filter(item => item.type === 'USER_SIGNUP').length;
+        const loginCount = controlData.filter(item => item.type === 'USER_LOGIN').length;
+        return [
+            { type: 'Sign Up', value: signUpCount },
+            { type: 'Login', value: loginCount },
+        ].filter(item => item.value > 0);
+    }, [controlData]);
+
+    const auditTimelineData = useMemo(() => {
+        if (!controlData || controlData.length === 0) return [];
+        
+        // Group data by date and type
+        const grouped = {};
+        controlData.forEach(item => {
+            const date = new Date(item.createdAt).toLocaleDateString('en-US', {
+                month: 'short',
+                day: 'numeric'
+            });
+            const type = item.type === 'USER_SIGNUP' ? 'Sign Up' : 'Login';
+            const key = `${date}-${type}`;
+            if (!grouped[key]) {
+                grouped[key] = { date, type, count: 0 };
+            }
+            grouped[key].count++;
+        });
+        
+        return Object.values(grouped).sort((a, b) => {
+            const dateA = new Date(a.date);
+            const dateB = new Date(b.date);
+            return dateA - dateB;
+        });
+    }, [controlData]);
+
+    const pieConfig = {
+        data: auditPieData,
+        angleField: 'value',
+        colorField: 'type',
+        radius: 0.8,
+        innerRadius: 0.6,
+        label: {
+            text: 'value',
+            style: {
+                fontWeight: 'bold',
+            },
+        },
+        legend: {
+            color: {
+                title: false,
+                position: 'bottom',
+            },
+        },
+        tooltip: {
+            title: 'type',
+        },
+    };
+
+    const columnConfig = {
+        data: auditTimelineData,
+        xField: 'date',
+        yField: 'count',
+        colorField: 'type',
+        group: true,
+        style: {
+            radiusTopLeft: 4,
+            radiusTopRight: 4,
+        },
+        legend: {
+            color: {
+                title: false,
+                position: 'top',
+            },
+        },
+    };
+
     const getFilterOptions = () => {
         switch (activeTab) {
             case 'INVENTORY':
@@ -372,28 +500,101 @@ const Reports = () => {
 
             <Card style={{ borderRadius: 12, minHeight: 400 }}>
                 <Row justify="space-between" align="middle" style={{ marginBottom: 24, flexWrap: 'wrap', gap: 12 }}>
-                    <Space wrap>
-                        <FilterOutlined style={{ color: '#888' }} />
-                        <span style={{ fontWeight: 'bold', fontSize: '14px' }}>Filter:</span>
-                        <Select
-                            value={subFilter}
-                            onChange={setSubFilter}
-                            style={{ width: 160 }}
-                        >
-                            {getFilterOptions().map(opt => (
-                                <Option key={opt.value} value={opt.value}>{opt.label}</Option>
-                            ))}
-                        </Select>
-                        <RangePicker
-                            value={dateRange}
-                            onChange={setDateRange}
-                            allowClear
-                            style={{ width: 260 }}
-                        />
+                    <Space wrap size="middle">
+                        <Space>
+                            <FilterOutlined style={{ color: '#888' }} />
+                            <span style={{ fontWeight: 'bold', fontSize: '14px' }}>Filter:</span>
+                            <Select
+                                value={subFilter}
+                                onChange={setSubFilter}
+                                style={{ width: 160 }}
+                            >
+                                {getFilterOptions().map(opt => (
+                                    <Option key={opt.value} value={opt.value}>{opt.label}</Option>
+                                ))}
+                            </Select>
+                        </Space>
+
+                        {activeTab === 'CONTROL' && (
+                            <Space>
+                                <Divider type="vertical" style={{ height: 24 }} />
+                                <span style={{ fontWeight: 'bold', fontSize: '14px' }}>Activity:</span>
+                                <Select
+                                    value={activityType}
+                                    onChange={setActivityType}
+                                    style={{ width: 140 }}
+                                >
+                                    {ACTIVITY_TYPE_OPTIONS.map(opt => (
+                                        <Option key={opt.value} value={opt.value}>{opt.label}</Option>
+                                    ))}
+                                </Select>
+                            </Space>
+                        )}
+
+                        <Space>
+                            <Divider type="vertical" style={{ height: 24 }} />
+                            <ClockCircleOutlined style={{ color: '#888' }} />
+                            <span style={{ fontWeight: 'bold', fontSize: '14px' }}>Time Period:</span>
+                            <Select
+                                value={timePeriod}
+                                onChange={handleTimePeriodChange}
+                                style={{ width: 150 }}
+                            >
+                                {TIME_PERIOD_OPTIONS.map(opt => (
+                                    <Option key={opt.value} value={opt.value}>{opt.label}</Option>
+                                ))}
+                            </Select>
+                        </Space>
+
+                        {timePeriod === 'CUSTOM' && (
+                            <RangePicker
+                                value={dateRange}
+                                onChange={handleDateRangeChange}
+                                allowClear
+                                style={{ width: 260 }}
+                                placeholder={['Start Date', 'End Date']}
+                            />
+                        )}
                     </Space>
                 </Row>
 
                 <Spin spinning={loading}>
+                    {/* Audit Logs Charts - Only show when CONTROL tab is active */}
+                    {activeTab === 'CONTROL' && controlData.length > 0 && (
+                        <Row gutter={[16, 16]} style={{ marginBottom: 24 }}>
+                            <Col xs={24} lg={10}>
+                                <Card 
+                                    title="Activity Distribution" 
+                                    size="small"
+                                    style={{ height: '100%' }}
+                                >
+                                    <div style={{ height: 280 }}>
+                                        {auditPieData.length > 0 ? (
+                                            <Pie {...pieConfig} />
+                                        ) : (
+                                            <Empty description="No activity data" />
+                                        )}
+                                    </div>
+                                </Card>
+                            </Col>
+                            <Col xs={24} lg={14}>
+                                <Card 
+                                    title="Activity Timeline" 
+                                    size="small"
+                                    style={{ height: '100%' }}
+                                >
+                                    <div style={{ height: 280 }}>
+                                        {auditTimelineData.length > 0 ? (
+                                            <Column {...columnConfig} />
+                                        ) : (
+                                            <Empty description="No timeline data" />
+                                        )}
+                                    </div>
+                                </Card>
+                            </Col>
+                        </Row>
+                    )}
+
                     <Table
                         rowKey="id"
                         columns={getColumns()}
