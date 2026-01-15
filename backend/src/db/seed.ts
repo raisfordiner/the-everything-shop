@@ -9,6 +9,8 @@ async function hash(p: string) {
   return bcrypt.hash(p, salt);
 }
 
+import { seedReports } from './report-seed';
+
 async function main() {
   console.log('🌱 Starting database seeding...');
 
@@ -382,7 +384,7 @@ async function main() {
       price: 79.99,
       categoryId: homeGoods.id,
       variantTypes: ['Condition'],
-      variantOptions: {'Condition': ['New Seal']},
+      variantOptions: { 'Condition': ['New Seal'] },
     },
   });
 
@@ -408,7 +410,7 @@ async function main() {
       price: 40.00,
       categoryId: books.id,
       variantTypes: ['Condition'],
-      variantOptions: {'Condition': ['New Seal']},
+      variantOptions: { 'Condition': ['New Seal'] },
     },
   });
 
@@ -421,7 +423,7 @@ async function main() {
       price: 159.99,
       categoryId: toys.id,
       variantTypes: ['Condition'],
-      variantOptions: {'Condition': ['New Seal']},
+      variantOptions: { 'Condition': ['New Seal'] },
     },
   });
 
@@ -839,6 +841,9 @@ async function main() {
       status: 'SUCCESS',
     },
   });
+
+  // ============ REPORT DATA ============
+  await seedReports(prisma);
 
   console.log('✅ Seeding finished successfully!');
   console.log('📊 Seeded data:');

@@ -10,6 +10,7 @@ import {
 } from '@ant-design/icons';
 import { Pie, Column } from '@ant-design/plots';
 import reportService from '../../../services/reportService';
+import dayjs from 'dayjs';
 
 const { Option } = Select;
 const { RangePicker } = DatePicker;
@@ -50,24 +51,17 @@ const ReportCard = ({ title, value, icon, type, activeTab, onClick }) => {
     );
 };
 
-// Time period options (in hours)
+// Time period options
 const TIME_PERIOD_OPTIONS = [
-    { value: 'CUSTOM', label: 'Custom Range', hours: null },
-    { value: '1H', label: 'Last 1 Hour', hours: 1 },
-    { value: '6H', label: 'Last 6 Hours', hours: 6 },
-    { value: '12H', label: 'Last 12 Hours', hours: 12 },
-    { value: '24H', label: 'Last 24 Hours', hours: 24 },
-    { value: '48H', label: 'Last 48 Hours', hours: 48 },
-    { value: '7D', label: 'Last 7 Days', hours: 24 * 7 },
-    { value: '30D', label: 'Last 30 Days', hours: 24 * 30 },
-    { value: '90D', label: 'Last 90 Days', hours: 24 * 90 },
-];
-
-// Activity type options for CONTROL tab
-const ACTIVITY_TYPE_OPTIONS = [
-    { value: 'ALL', label: 'All Activities' },
-    { value: 'USER_SIGNUP', label: 'Sign Up Only' },
-    { value: 'USER_LOGIN', label: 'Login Only' },
+    { value: '1H', label: 'Last 60 Minutes', hours: 1, grain: 'minute' },
+    { value: '6H', label: 'Last 6 Hours', hours: 6, grain: 'hour' },
+    { value: '12H', label: 'Last 12 Hours', hours: 12, grain: 'hour' },
+    { value: '24H', label: 'Last 24 Hours', hours: 24, grain: 'hour' },
+    { value: '7D', label: 'Last 7 Days', hours: 24 * 7, grain: 'day' },
+    { value: '30D', label: 'Last 30 Days', hours: 24 * 30, grain: 'day' },
+    { value: '12M', label: 'Last 12 Months', hours: 24 * 365, grain: 'month' },
+    { value: 'ALL', label: 'All Time', hours: null, grain: 'month' },
+    { value: 'CUSTOM', label: 'Custom Range', hours: null, grain: 'day' },
 ];
 
 const Reports = () => {
@@ -75,8 +69,7 @@ const Reports = () => {
     const [subFilter, setSubFilter] = useState('ALL');
     const [loading, setLoading] = useState(false);
     const [dateRange, setDateRange] = useState(null);
-    const [timePeriod, setTimePeriod] = useState('24H');
-    const [activityType, setActivityType] = useState('ALL');
+    const [timePeriod, setTimePeriod] = useState('7D'); // Default to 7 Days
 
     const [inventoryData, setInventoryData] = useState([]);
     const [revenueData, setRevenueData] = useState([]);
@@ -84,9 +77,9 @@ const Reports = () => {
 
     const buildParams = (additionalParams = {}) => {
         const params = { ...additionalParams };
-        
+
         // Handle time period filter
-        if (timePeriod !== 'CUSTOM') {
+        if (timePeriod !== 'CUSTOM' && timePeriod !== 'ALL') {
             const selectedPeriod = TIME_PERIOD_OPTIONS.find(opt => opt.value === timePeriod);
             if (selectedPeriod && selectedPeriod.hours) {
                 const now = new Date();
@@ -94,7 +87,7 @@ const Reports = () => {
                 params.startDate = startTime.toISOString();
                 params.endDate = now.toISOString();
             }
-        } else if (dateRange && dateRange[0] && dateRange[1]) {
+        } else if (timePeriod === 'CUSTOM' && dateRange && dateRange[0] && dateRange[1]) {
             // Custom date range
             params.startDate = dateRange[0].startOf('day').toISOString();
             params.endDate = dateRange[1].endOf('day').toISOString();
@@ -107,10 +100,10 @@ const Reports = () => {
         try {
             switch (tab) {
                 case 'INVENTORY':
-                    const typeFilter = subFilter !== 'ALL'
+                    const invFilter = subFilter !== 'ALL'
                         ? { type: subFilter === 'OUT' ? 'OUT_OF_STOCK' : 'PRODUCT_CREATED' }
                         : {};
-                    const invRes = await reportService.getInventoryLogs(buildParams(typeFilter));
+                    const invRes = await reportService.getInventoryLogs(buildParams(invFilter));
                     setInventoryData(invRes?.logs || []);
                     break;
                 case 'REVENUE':
@@ -118,8 +111,8 @@ const Reports = () => {
                     setRevenueData(revRes?.logs || []);
                     break;
                 case 'CONTROL':
-                    const activityFilter = activityType !== 'ALL' ? { type: activityType } : {};
-                    const audRes = await reportService.getAuditLogs(buildParams(activityFilter));
+                    const auditFilter = subFilter !== 'ALL' ? { type: subFilter } : {};
+                    const audRes = await reportService.getAuditLogs(buildParams(auditFilter));
                     setControlData(audRes?.logs || []);
                     break;
                 default:
@@ -135,12 +128,11 @@ const Reports = () => {
 
     useEffect(() => {
         fetchData(activeTab);
-    }, [activeTab, subFilter, dateRange, timePeriod, activityType]);
+    }, [activeTab, subFilter, dateRange, timePeriod]);
 
     const handleTabChange = (type) => {
         setActiveTab(type);
         setSubFilter('ALL');
-        setActivityType('ALL');
     };
 
     const handleTimePeriodChange = (value) => {
@@ -360,6 +352,117 @@ const Reports = () => {
         }
     };
 
+    const getFilterOptions = () => {
+        switch (activeTab) {
+            case 'INVENTORY':
+                return [
+                    { value: 'ALL', label: 'All Inventory' },
+                    { value: 'NEW', label: 'New Products' },
+                    { value: 'OUT', label: 'Out of Stock' },
+                ];
+            case 'REVENUE':
+                return [
+                    { value: 'ALL', label: 'All Transactions' },
+                ];
+            case 'CONTROL':
+                return [
+                    { value: 'ALL', label: 'All Activities' },
+                    { value: 'USER_SIGNUP', label: 'Sign Up Only' },
+                    { value: 'USER_LOGIN', label: 'Login Only' },
+                ];
+            default:
+                return [{ value: 'ALL', label: 'All Records' }];
+        }
+    };
+
+    // --- CHART LOGIC ---
+
+    const fillTimeData = (data, rangeOption) => {
+        if (!rangeOption) return [];
+
+        const grain = rangeOption.grain || 'day';
+        const now = dayjs();
+        let start = now;
+
+        if (rangeOption.value === 'ALL') {
+            // For All Time, find the earliest date in data or default to 1 year ago
+            if (data.length > 0) {
+                const earliest = data.reduce((min, p) => p.createdAt < min ? p.createdAt : min, data[0].createdAt);
+                start = dayjs(earliest).startOf('month');
+            } else {
+                start = now.subtract(1, 'year').startOf('month');
+            }
+        } else if (rangeOption.value === 'CUSTOM') {
+            if (dateRange && dateRange[0]) {
+                start = dayjs(dateRange[0]).startOf('day');
+            } else {
+                start = now.subtract(7, 'day').startOf('day');
+            }
+        } else {
+            // Standard ranges
+            start = now.subtract(rangeOption.hours, 'hour');
+            // adjust start based on grain for cleaner charts
+            if (grain === 'day') start = start.startOf('day');
+            if (grain === 'month') start = start.startOf('month');
+
+            // Shift forward by one unit to avoid the "same time last day" (extra bar) issue
+            // and ensure we end on the current time/day.
+            start = start.add(1, grain === 'minute' ? 'minute' : grain);
+        }
+
+        const filledData = [];
+        let current = start;
+
+        // Determine format based on grain
+        let format = 'MMM D';
+        if (grain === 'hour') format = 'HH:mm';
+        if (grain === 'minute') format = 'HH:mm';
+        if (grain === 'month') format = 'MMM YYYY';
+
+        // Limit iteration to avoid infinite loops
+        let safety = 0;
+        const end = now;
+
+        while (current.isBefore(end) || current.isSame(end, grain)) {
+            if (safety++ > 1000) break;
+
+            const label = current.format(format);
+
+            // Count items in this bucket
+            let count = 0;
+            let typeMap = {}; // for grouped data
+
+            data.forEach(item => {
+                const itemDate = dayjs(item.createdAt);
+                if (itemDate.isSame(current, grain)) {
+                    count++;
+                    // For grouped charts
+                    const type = item.type === 'USER_SIGNUP' ? 'Sign Up' : 'Login';
+                    typeMap[type] = (typeMap[type] || 0) + 1;
+                }
+            });
+
+            // For timeline chart, we need an entry for each type if it exists, 
+            // OR just a total if not grouped by type in the same bar slot.
+            // The previous chart was grouped by type.
+
+            const types = ['Sign Up', 'Login'];
+            types.forEach(type => {
+                filledData.push({
+                    date: label,
+                    type: type,
+                    count: typeMap[type] || 0,
+                    timestamp: current.valueOf() // for sorting
+                })
+            });
+
+            // Advance time
+            current = current.add(1, grain === 'minute' ? 'minute' : grain);
+        }
+
+        return filledData;
+    };
+
     // Chart data for Audit Logs (CONTROL tab)
     const auditPieData = useMemo(() => {
         if (!controlData || controlData.length === 0) return [];
@@ -372,29 +475,12 @@ const Reports = () => {
     }, [controlData]);
 
     const auditTimelineData = useMemo(() => {
-        if (!controlData || controlData.length === 0) return [];
-        
-        // Group data by date and type
-        const grouped = {};
-        controlData.forEach(item => {
-            const date = new Date(item.createdAt).toLocaleDateString('en-US', {
-                month: 'short',
-                day: 'numeric'
-            });
-            const type = item.type === 'USER_SIGNUP' ? 'Sign Up' : 'Login';
-            const key = `${date}-${type}`;
-            if (!grouped[key]) {
-                grouped[key] = { date, type, count: 0 };
-            }
-            grouped[key].count++;
-        });
-        
-        return Object.values(grouped).sort((a, b) => {
-            const dateA = new Date(a.date);
-            const dateB = new Date(b.date);
-            return dateA - dateB;
-        });
-    }, [controlData]);
+        const option = TIME_PERIOD_OPTIONS.find(opt => opt.value === timePeriod);
+        // Pass the actual option or a custom one for CUSTOM range
+        const rangeOpt = timePeriod === 'CUSTOM' ? { value: 'CUSTOM', grain: 'day' } : option;
+
+        return fillTimeData(controlData, rangeOpt);
+    }, [controlData, timePeriod, dateRange]);
 
     const pieConfig = {
         data: auditPieData,
@@ -435,27 +521,6 @@ const Reports = () => {
                 position: 'top',
             },
         },
-    };
-
-    const getFilterOptions = () => {
-        switch (activeTab) {
-            case 'INVENTORY':
-                return [
-                    { value: 'ALL', label: 'All Inventory' },
-                    { value: 'NEW', label: 'New Products' },
-                    { value: 'OUT', label: 'Out of Stock' },
-                ];
-            case 'REVENUE':
-                return [
-                    { value: 'ALL', label: 'All Transactions' },
-                ];
-            case 'CONTROL':
-                return [
-                    { value: 'ALL', label: 'All Activities' },
-                ];
-            default:
-                return [{ value: 'ALL', label: 'All Records' }];
-        }
     };
 
     return (
@@ -515,21 +580,7 @@ const Reports = () => {
                             </Select>
                         </Space>
 
-                        {activeTab === 'CONTROL' && (
-                            <Space>
-                                <Divider type="vertical" style={{ height: 24 }} />
-                                <span style={{ fontWeight: 'bold', fontSize: '14px' }}>Activity:</span>
-                                <Select
-                                    value={activityType}
-                                    onChange={setActivityType}
-                                    style={{ width: 140 }}
-                                >
-                                    {ACTIVITY_TYPE_OPTIONS.map(opt => (
-                                        <Option key={opt.value} value={opt.value}>{opt.label}</Option>
-                                    ))}
-                                </Select>
-                            </Space>
-                        )}
+                        {/* Consolidated filtered logic - no separate Activity filter */}
 
                         <Space>
                             <Divider type="vertical" style={{ height: 24 }} />
@@ -538,7 +589,7 @@ const Reports = () => {
                             <Select
                                 value={timePeriod}
                                 onChange={handleTimePeriodChange}
-                                style={{ width: 150 }}
+                                style={{ width: 180 }}
                             >
                                 {TIME_PERIOD_OPTIONS.map(opt => (
                                     <Option key={opt.value} value={opt.value}>{opt.label}</Option>
@@ -562,9 +613,10 @@ const Reports = () => {
                     {/* Audit Logs Charts - Only show when CONTROL tab is active */}
                     {activeTab === 'CONTROL' && controlData.length > 0 && (
                         <Row gutter={[16, 16]} style={{ marginBottom: 24 }}>
-                            <Col xs={24} lg={10}>
-                                <Card 
-                                    title="Activity Distribution" 
+                            {/* Adjusted Column Sizes */}
+                            <Col xs={24} lg={6}>
+                                <Card
+                                    title="Activity Distribution"
                                     size="small"
                                     style={{ height: '100%' }}
                                 >
@@ -577,9 +629,9 @@ const Reports = () => {
                                     </div>
                                 </Card>
                             </Col>
-                            <Col xs={24} lg={14}>
-                                <Card 
-                                    title="Activity Timeline" 
+                            <Col xs={24} lg={18}>
+                                <Card
+                                    title="Activity Timeline"
                                     size="small"
                                     style={{ height: '100%' }}
                                 >
