@@ -1,20 +1,33 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { Card, Row, Col, Table, Statistic, Space, Select, DatePicker, Button, Tag, Empty, Typography, message, Spin, Divider } from 'antd';
+import { Card, Row, Col, Table, Statistic, Space, Select, DatePicker, Button, Tag, Empty, Typography, message, Spin, Segmented, Divider, List } from 'antd';
 import {
     ShopOutlined,
     DollarOutlined,
     SafetyCertificateOutlined,
     ExportOutlined,
     FilterOutlined,
-    ClockCircleOutlined
+    ClockCircleOutlined,
+    BarChartOutlined,
+    PieChartOutlined,
+    ArrowUpOutlined,
+    ArrowDownOutlined,
+    WalletOutlined,
+    ShoppingCartOutlined,
+    RollbackOutlined,
+    CloseCircleOutlined,
+    CheckCircleOutlined,
+    FileTextOutlined
 } from '@ant-design/icons';
 import { Pie, Column } from '@ant-design/plots';
 import reportService from '../../../services/reportService';
 import dayjs from 'dayjs';
+import isBetween from 'dayjs/plugin/isBetween';
+
+dayjs.extend(isBetween);
 
 const { Option } = Select;
 const { RangePicker } = DatePicker;
-const { Title } = Typography;
+const { Title, Text } = Typography;
 
 const ReportCard = ({ title, value, icon, type, activeTab, onClick }) => {
     const isActive = activeTab === type;
@@ -51,7 +64,30 @@ const ReportCard = ({ title, value, icon, type, activeTab, onClick }) => {
     );
 };
 
-// Time period options
+const MetricCard = ({ title, value, color, icon }) => (
+    <Card style={{ height: '100%', borderRadius: 12, boxShadow: '0 2px 8px rgba(0,0,0,0.04)' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div>
+                <Text type="secondary" style={{ fontSize: 14 }}>{title}</Text>
+                <div style={{ fontSize: 28, fontWeight: 'bold', color: '#333', marginTop: 8 }}>
+                    {value}
+                </div>
+            </div>
+            <div style={{
+                backgroundColor: `${color}20`,
+                padding: 12,
+                borderRadius: '50%',
+                color: color,
+                fontSize: 24,
+                display: 'flex', alignItems: 'center', justifyContent: 'center'
+            }}>
+                {icon}
+            </div>
+        </div>
+    </Card>
+);
+
+// Time period options (in hours)
 const TIME_PERIOD_OPTIONS = [
     { value: '1H', label: 'Last 60 Minutes', hours: 1, grain: 'minute' },
     { value: '6H', label: 'Last 6 Hours', hours: 6, grain: 'hour' },
@@ -68,8 +104,10 @@ const Reports = () => {
     const [activeTab, setActiveTab] = useState('INVENTORY');
     const [subFilter, setSubFilter] = useState('ALL');
     const [loading, setLoading] = useState(false);
-    const [dateRange, setDateRange] = useState(null);
-    const [timePeriod, setTimePeriod] = useState('7D'); // Default to 7 Days
+    const [dateRange, setDateRange] = useState([dayjs().startOf('month'), dayjs().endOf('month')]);
+    const [timeGranularity, setTimeGranularity] = useState('day');
+    const [timePeriod, setTimePeriod] = useState('24H');
+    const [activityType, setActivityType] = useState('ALL');
 
     const [inventoryData, setInventoryData] = useState([]);
     const [revenueData, setRevenueData] = useState([]);
@@ -154,6 +192,152 @@ const Reports = () => {
             year: 'numeric', month: 'short', day: 'numeric',
             hour: '2-digit', minute: '2-digit'
         });
+    };
+
+    const revenueMetrics = useMemo(() => {
+        const completed = revenueData.filter(i => i.type === 'ORDER_COMPLETED');
+        const returns = revenueData.filter(i => i.type === 'RETURN_COMPLETED');
+        const cancels = revenueData.filter(i => i.type === 'CANCELLATION_COMPLETED');
+
+        const income = completed.reduce((acc, curr) => acc + (curr.amount || 0), 0);
+        const expenseReturn = Math.abs(returns.reduce((acc, curr) => acc + (curr.amount || 0), 0));
+        const expenseCancel = Math.abs(cancels.reduce((acc, curr) => acc + (curr.amount || 0), 0));
+        const netRevenue = revenueData.reduce((acc, curr) => acc + (curr.amount || 0), 0);
+
+        return {
+            netRevenue,
+            grossIncome: income,
+            totalDeduction: expenseReturn + expenseCancel,
+            deductionReturn: expenseReturn,
+            deductionCancel: expenseCancel,
+            countOrder: completed.length,
+            countReturn: returns.length,
+            countCancel: cancels.length
+        };
+    }, [revenueData]);
+
+    const columnData = useMemo(() => {
+        if (!dateRange || !dateRange[0]) return [];
+
+        const anchorDate = dateRange[0];
+        const dataMap = {};
+
+        revenueData.forEach(item => {
+            const date = dayjs(item.createdAt);
+            let key;
+            if (timeGranularity === 'hour') key = date.hour();
+            else if (timeGranularity === 'day') key = date.date();
+            else if (timeGranularity === 'month') key = date.month();
+            else if (timeGranularity === 'year') key = date.year();
+
+            if (dataMap[key] === undefined) dataMap[key] = 0;
+            dataMap[key] += (item.amount || 0);
+        });
+
+        const filledData = [];
+
+        if (timeGranularity === 'hour') {
+            for (let i = 0; i < 24; i++) {
+                filledData.push({
+                    time: `${i}:00`,
+                    value: dataMap[i] || 0,
+                    sortIndex: i
+                });
+            }
+        } else if (timeGranularity === 'day') {
+            const daysInMonth = anchorDate.daysInMonth();
+            for (let i = 1; i <= daysInMonth; i++) {
+                filledData.push({
+                    time: `${i}/${anchorDate.format('MM')}`,
+                    value: dataMap[i] || 0,
+                    sortIndex: i
+                });
+            }
+        } else if (timeGranularity === 'month') {
+            const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+            for (let i = 0; i < 12; i++) {
+                filledData.push({
+                    time: months[i],
+                    value: dataMap[i] || 0,
+                    sortIndex: i
+                });
+            }
+        } else if (timeGranularity === 'year') {
+            const currentYear = dayjs().year();
+            for (let i = currentYear - 4; i <= currentYear; i++) {
+                filledData.push({
+                    time: i.toString(),
+                    value: dataMap[i] || 0,
+                    sortIndex: i
+                });
+            }
+        }
+
+        return filledData;
+    }, [revenueData, timeGranularity, dateRange]);
+
+    const columnRevenueConfig = {
+        data: columnData,
+        xField: 'time',
+        yField: 'value',
+        label: {
+            position: 'middle',
+            style: { fill: '#FFFFFF', opacity: 0.6 },
+            formatter: (datum) => datum.value !== 0 ? datum.value.toFixed(0) : '',
+        },
+        xAxis: {
+            label: { autoHide: true, autoRotate: false },
+        },
+        meta: {
+            time: { alias: 'Thời gian' },
+            value: { alias: 'Doanh thu' }
+        },
+        color: ({ value }) => {
+            if (value > 0) return '#008ECC';
+            if (value < 0) return '#ff4d4f';
+            return '#f0f0f0';
+        },
+        tooltip: {
+            formatter: (datum) => {
+                return { name: 'Revenue', value: `$${datum.value.toFixed(2)}` };
+            },
+        }
+    };
+
+    const pieData = useMemo(() => {
+        return [
+            { type: 'Orders', value: revenueMetrics.countOrder },
+            { type: 'Returns', value: revenueMetrics.countReturn },
+            { type: 'Cancellations', value: revenueMetrics.countCancel },
+        ].filter(i => i.value > 0);
+    }, [revenueMetrics]);
+
+    const pieRevenueConfig = {
+        appendPadding: 10,
+        data: pieData,
+        angleField: 'value',
+        colorField: 'type',
+        radius: 0.8,
+        innerRadius: 0.6,
+        label: {
+            type: 'inner',
+            offset: '-50%',
+            content: '{value}',
+            style: { textAlign: 'center', fontSize: 14, fill: '#fff' },
+        },
+        interactions: [{ type: 'element-active' }],
+        color: ({ type }) => {
+            if (type === 'Orders') return '#52c41a';
+            if (type === 'Returns') return '#faad14';
+            return '#f5222d';
+        },
+        statistic: {
+            title: false,
+            content: {
+                style: { whiteSpace: 'pre-wrap', overflow: 'hidden', textOverflow: 'ellipsis', fontSize: '18px' },
+                content: 'Total\nTxns',
+            },
+        },
     };
 
     const exportToCSV = () => {
@@ -564,6 +748,122 @@ const Reports = () => {
             </Row>
 
             <Card style={{ borderRadius: 12, minHeight: 400 }}>
+                {activeTab === 'REVENUE' && (
+                    <div style={{ marginBottom: 30 }}>
+                        <Row gutter={[16, 16]} style={{ marginBottom: 24 }}>
+                            <Col xs={24} sm={12} lg={6}>
+                                <MetricCard
+                                    title="Total Transactions" value={revenueData.length}
+                                    color="#008ECC" icon={<FileTextOutlined />}
+                                />
+                            </Col>
+                            <Col xs={24} sm={12} lg={6}>
+                                <MetricCard
+                                    title="Completed Orders" value={revenueMetrics.countOrder}
+                                    color="#52c41a" icon={<CheckCircleOutlined />}
+                                />
+                            </Col>
+                            <Col xs={24} sm={12} lg={6}>
+                                <MetricCard
+                                    title="Returned Orders" value={revenueMetrics.countReturn}
+                                    color="#faad14" icon={<RollbackOutlined />}
+                                />
+                            </Col>
+                            <Col xs={24} sm={12} lg={6}>
+                                <MetricCard
+                                    title="Cancelled Orders" value={revenueMetrics.countCancel}
+                                    color="#f5222d" icon={<CloseCircleOutlined />}
+                                />
+                            </Col>
+                        </Row>
+
+                        <Row gutter={[24, 24]}>
+                            <Col xs={24} lg={12}>
+                                <Card title={<span><PieChartOutlined /> Order Status Distribution</span>} style={{ borderRadius: 12, height: '100%' }}>
+                                    {pieData.length > 0 ? (
+                                        <div style={{ height: 280 }}>
+                                            <Pie {...pieRevenueConfig} />
+                                        </div>
+                                    ) : <Empty description="No transaction data" image={Empty.PRESENTED_IMAGE_SIMPLE} />}
+                                </Card>
+                            </Col>
+                            <Col xs={24} lg={12}>
+                                <Card title={<span><DollarOutlined /> Financial Breakdown</span>} style={{ borderRadius: 12, height: '100%' }}>
+                                    <List itemLayout="horizontal" split={true}>
+                                        <List.Item>
+                                            <List.Item.Meta
+                                                avatar={<div style={{background: '#f6ffed', padding: 8, borderRadius: 6}}><ArrowUpOutlined style={{color: '#52c41a'}}/></div>}
+                                                title="Money In (Orders)"
+                                                description="Revenue from completed orders"
+                                            />
+                                            <div style={{ fontWeight: 'bold', color: '#52c41a', fontSize: 16 }}>
+                                                +${revenueMetrics.grossIncome.toFixed(2)}
+                                            </div>
+                                        </List.Item>
+                                        <List.Item>
+                                            <List.Item.Meta
+                                                avatar={<div style={{background: '#fff7e6', padding: 8, borderRadius: 6}}><RollbackOutlined style={{color: '#faad14'}}/></div>}
+                                                title="Money Out (Returns)"
+                                                description="Refunds for returned items"
+                                            />
+                                            <div style={{ fontWeight: 'bold', color: '#faad14', fontSize: 16 }}>
+                                                -${revenueMetrics.deductionReturn.toFixed(2)}
+                                            </div>
+                                        </List.Item>
+                                        <List.Item>
+                                            <List.Item.Meta
+                                                avatar={<div style={{background: '#fff1f0', padding: 8, borderRadius: 6}}><CloseCircleOutlined style={{color: '#f5222d'}}/></div>}
+                                                title="Money Out (Cancellations)"
+                                                description="Refunds for cancelled orders"
+                                            />
+                                            <div style={{ fontWeight: 'bold', color: '#f5222d', fontSize: 16 }}>
+                                                -${revenueMetrics.deductionCancel.toFixed(2)}
+                                            </div>
+                                        </List.Item>
+                                        <div style={{ marginTop: 20, paddingTop: 15, borderTop: '2px dashed #f0f0f0', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                            <span style={{ fontSize: 16, fontWeight: 600 }}>Net Profit</span>
+                                            <span style={{ fontSize: 20, fontWeight: 'bold', color: '#008ECC' }}>
+                                                ${revenueMetrics.netRevenue.toFixed(2)}
+                                            </span>
+                                        </div>
+                                    </List>
+                                </Card>
+                            </Col>
+                        </Row>
+
+                        <Divider />
+
+                        <Row gutter={[24, 24]}>
+                            <Col xs={24}>
+                                <Card
+                                    style={{ borderRadius: 12 }}
+                                    title={
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                            <span><BarChartOutlined /> Revenue Trends</span>
+                                            <Segmented
+                                                options={[
+                                                    { label: 'Hour (24h)', value: 'hour' },
+                                                    { label: 'Day (Month)', value: 'day' },
+                                                    { label: 'Month (Year)', value: 'month' },
+                                                    { label: 'Year (5 Years)', value: 'year' },
+                                                ]}
+                                                value={timeGranularity}
+                                                onChange={setTimeGranularity}
+                                            />
+                                        </div>
+                                    }
+                                >
+                                    <div style={{ height: 320 }}>
+                                        <Column {...columnRevenueConfig} />
+                                    </div>
+                                </Card>
+                            </Col>
+                        </Row>
+
+                        <Divider dashed />
+                    </div>
+                )}
+
                 <Row justify="space-between" align="middle" style={{ marginBottom: 24, flexWrap: 'wrap', gap: 12 }}>
                     <Space wrap size="middle">
                         <Space>
