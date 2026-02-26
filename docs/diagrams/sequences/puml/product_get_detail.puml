@@ -1,0 +1,27 @@
+@startuml
+!theme plain
+title Product: Get Product Detail Sequence
+
+actor "User" as User
+participant "ProductController" as ProdCtrl
+participant "ProductService" as ProdService
+participant "Product (DB)" as ProdDB
+
+User -> ProdCtrl : GET /products/:id
+activate ProdCtrl
+
+ProdCtrl -> ProdService : getProductById(id)
+activate ProdService
+
+ProdService -> ProdDB : findFirst(id, include: variants, reviews)
+activate ProdDB
+ProdDB --> ProdService : product
+deactivate ProdDB
+
+ProdService --> ProdCtrl : product
+deactivate ProdService
+
+ProdCtrl --> User : 200 OK (JSON)
+deactivate ProdCtrl
+
+@enduml

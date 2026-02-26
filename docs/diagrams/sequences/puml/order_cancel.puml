@@ -1,0 +1,33 @@
+@startuml
+!theme plain
+title Order: Cancel Sequence
+
+actor "Customer" as User
+participant "OrderController" as OrderCtrl
+participant "OrderService" as OrderService
+participant "Order (DB)" as OrderDB
+
+User -> OrderCtrl : POST /orders/:id/cancel
+activate OrderCtrl
+
+OrderCtrl -> OrderService : updateStatus(id, "CANCELLED")
+activate OrderService
+
+OrderService -> OrderDB : findOrder(id)
+alt Order is Pending
+    OrderService -> OrderDB : incrementStock(orderItems)
+    
+    OrderService -> OrderDB : update(id, status: "CANCELLED")
+    activate OrderDB
+    OrderDB --> OrderService : success
+    deactivate OrderDB
+    
+    OrderService --> OrderCtrl : success
+else Already Shipped
+    OrderService --> OrderCtrl : Error (Cannot Cancel)
+end
+
+OrderCtrl --> User : 200 OK
+deactivate OrderCtrl
+
+@enduml

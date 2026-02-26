@@ -1,0 +1,33 @@
+@startuml
+!theme plain
+title Product: Create Product Sequence
+
+actor "Seller" as Seller
+participant "ProductController" as ProdCtrl
+participant "ProductService" as ProdService
+participant "Product (DB)" as ProdDB
+participant "ProductVariant (DB)" as VariantDB
+
+Seller -> ProdCtrl : POST /products (multipart/form-data)
+activate ProdCtrl
+note right of ProdCtrl: Includes images and JSON data
+
+ProdCtrl -> ProdService : createProduct(data, images)
+activate ProdService
+
+ProdService -> ProdDB : create(productData)
+activate ProdDB
+ProdDB --> ProdService : product
+deactivate ProdDB
+
+loop for each variant
+  ProdService -> VariantDB : create(variantData)
+end
+
+ProdService --> ProdCtrl : product
+deactivate ProdService
+
+ProdCtrl --> Seller : 201 Created
+deactivate ProdCtrl
+
+@enduml

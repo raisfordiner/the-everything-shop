@@ -1,0 +1,59 @@
+@startuml
+left to right direction
+skinparam packageStyle rectangle
+
+actor Guest
+actor Customer
+actor Seller
+actor Admin
+actor SessionManagementModule
+
+rectangle "The Everything Shop" {
+  package "EP-01: Account & Session" {
+    usecase "**Authenticate**" as UC_AUTH
+    usecase "**Manage Account**" as UC_ACC
+    usecase "UC-01: Register account" as UC01
+    usecase "UC-02: Login (Email)" as UC02
+    usecase "UC-03: Login (OAuth)" as UC03
+    usecase "UC-04: Logout" as UC04
+    usecase "UC-05: View Account Info" as UC05
+    usecase "UC-06: Update Account Info" as UC06
+    usecase "UC-07: Request Account Removal" as UC07
+    usecase "UC-08: Enforce RBAC" as UC08
+    usecase "UC-09: Auto Session Timeout" as UC09
+    usecase "UC-10: Authorize Accounts" as UC10
+    usecase "UC-11: View User Accounts" as UC11
+    usecase "UC-12: Delete User Account" as UC12
+    usecase "UC-13: Monitor Logs" as UC13
+  }
+}
+
+' Relationships
+' 1. Authenticate
+UC_AUTH ..> UC02 : <<include>>
+UC_AUTH ..> UC03 : <<include>>
+UC_AUTH ..> UC04 : <<include>>
+Guest --> UC_AUTH
+Customer --> UC_AUTH
+Seller --> UC_AUTH
+Admin --> UC_AUTH
+Guest --> UC01
+
+' 2. Account Management
+UC_ACC ..> UC05 : <<include>>
+UC_ACC ..> UC06 : <<include>>
+UC_ACC ..> UC07 : <<extend>>
+Customer --> UC_ACC
+Seller --> UC_ACC
+Admin --> UC_ACC : View/Update
+' Admin specific
+Admin --> UC10
+Admin --> UC11
+Admin --> UC12
+Admin --> UC13
+
+' System
+SessionManagementModule --> UC08
+SessionManagementModule --> UC09
+
+@enduml

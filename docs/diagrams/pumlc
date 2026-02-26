@@ -1,0 +1,66 @@
+#!/bin/bash
+# pumlc - PlantUML Compiler
+# Recursively searches for .puml files in the docs/diagrams directory and renders them to SVG.
+# Usage: ./pumlc [-k|--keep]
+
+# Get the absolute directory of the script
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+cd "$SCRIPT_DIR"
+
+KEEP_EXISTING=false
+
+# Parse arguments
+while [[ "$#" -gt 0 ]]; do
+    case $1 in
+        -k|--keep) KEEP_EXISTING=true ;;
+        *) echo "Unknown parameter passed: $1"; exit 1 ;;
+    esac
+    shift
+done
+
+echo "Starting PlantUML rendering from $SCRIPT_DIR..."
+if [ "$KEEP_EXISTING" = true ]; then
+    echo "Mode: Keep existing files"
+else
+    echo "Mode: Overwrite"
+fi
+
+# Find all .puml files recursively
+find "$SCRIPT_DIR" -type f -name "*.puml" | while read -r puml_abspath; do
+    dir=$(dirname "$puml_abspath")
+    filename=$(basename "$puml_abspath")
+    basename_no_ext="${filename%.*}"
+    
+    # Check parent directory name
+    parent_dirname=$(basename "$dir")
+    
+    if [[ "$parent_dirname" == "puml" ]]; then
+        # Structure: .../something/puml/file.puml -> .../something/svg/file.svg
+        grandparent_dir=$(dirname "$dir")
+        out_dir="$grandparent_dir/svg"
+    else
+        # Default: Render in same directory
+        out_dir="$dir"
+    fi
+    
+    # Create output directory
+    mkdir -p "$out_dir"
+    
+    # Expected output file
+    svg_abspath="$out_dir/${basename_no_ext}.svg"
+    
+    if [ "$KEEP_EXISTING" = true ] && [ -f "$svg_abspath" ]; then
+        echo "Skipping $filename (SVG exists)"
+        continue
+    fi
+    
+    if [ -f "$svg_abspath" ]; then
+        rm "$svg_abspath"
+    fi
+    
+    echo "Rendering $filename -> $out_dir"
+    # Use -o with absolute path
+    plantuml -tsvg "$puml_abspath" -o "$out_dir"
+done
+
+echo "Rendering complete."

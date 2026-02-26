@@ -1,4 +1,0 @@
-- Hướng dẫn cài đặt chi tiết
-- Hướng dẫn sử dụng
-- Mã nguồn minh hoạ
-- Hình ảnh giao diện

@@ -1,0 +1,31 @@
+@startuml
+!theme plain
+title Order: Update Status Sequence
+
+actor "Seller/Admin" as Seller
+participant "OrderController" as OrderCtrl
+participant "OrderService" as OrderService
+participant "Order (DB)" as OrderDB
+
+Seller -> OrderCtrl : PATCH /orders/:id/status
+activate OrderCtrl
+
+OrderCtrl -> OrderService : updateStatus(id, newStatus)
+activate OrderService
+
+alt Status == CANCELLED
+    OrderService -> OrderDB : incrementStock(orderItems)
+end
+
+OrderService -> OrderDB : update(id, status: newStatus)
+activate OrderDB
+OrderDB --> OrderService : updatedOrder
+deactivate OrderDB
+
+OrderService --> OrderCtrl : updatedOrder
+deactivate OrderService
+
+OrderCtrl --> Seller : 200 OK
+deactivate OrderCtrl
+
+@enduml

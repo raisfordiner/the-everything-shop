@@ -1,0 +1,27 @@
+@startuml
+!theme plain
+title Reporting: Sales Report Sequence
+
+actor "Admin" as Admin
+participant "ReportController" as ReportCtrl
+participant "ReportService" as ReportService
+participant "Order (DB)" as OrderDB
+
+Admin -> ReportCtrl : GET /reports/sales?dateRange=...
+activate ReportCtrl
+
+ReportCtrl -> ReportService : getSalesReport(startDate, endDate)
+activate ReportService
+
+ReportService -> OrderDB : aggregate(sum: total, groupBy: date, where: status=DELIVERED)
+activate OrderDB
+OrderDB --> ReportService : data
+deactivate OrderDB
+
+ReportService --> ReportCtrl : formattedReport
+deactivate ReportService
+
+ReportCtrl --> Admin : 200 OK
+deactivate ReportCtrl
+
+@enduml

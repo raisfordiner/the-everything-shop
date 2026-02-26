@@ -1,0 +1,23 @@
+@startuml
+left to right direction
+skinparam packageStyle rectangle
+
+actor Seller
+actor PromotionModule
+
+rectangle "The Everything Shop" {
+  package "EP-06: Promotions" {
+    usecase "**Manage Promotions**" as UC_PROMO
+    usecase "UC-41: Create Promotion" as UC41
+    usecase "UC-44: Create Clearance Event" as UC44
+    usecase "UC-45: Record Clearance Rev." as UC45
+  }
+}
+
+' Relationships
+UC_PROMO ..> UC41 : <<include>>
+UC_PROMO ..> UC44 : <<include>>
+Seller --> UC_PROMO
+PromotionModule --> UC45
+
+@enduml

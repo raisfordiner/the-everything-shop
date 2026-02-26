@@ -1,2 +1,0 @@
-- Nguyên tắc thiết kế
-- Các màn hình chính

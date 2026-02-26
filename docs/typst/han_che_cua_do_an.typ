@@ -1,2 +1,0 @@
-- Các vấn đề chưa giải quyết
-- Nguyên nhân

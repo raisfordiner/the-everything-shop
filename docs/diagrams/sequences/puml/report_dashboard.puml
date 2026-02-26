@@ -1,0 +1,32 @@
+@startuml
+!theme plain
+title Reporting: Dashboard Stats Sequence
+
+actor "Admin" as Admin
+participant "ReportController" as ReportCtrl
+participant "ReportService" as ReportService
+participant "Database" as DB
+
+Admin -> ReportCtrl : GET /reports/dashboard
+activate ReportCtrl
+
+ReportCtrl -> ReportService : getDashboardStats()
+activate ReportService
+
+par
+    ReportService -> DB : countUsers()
+else
+    ReportService -> DB : countOrders(status=PENDING)
+else
+    ReportService -> DB : sumRevenue(today)
+else
+    ReportService -> DB : getLowStockProducts()
+end
+
+ReportService --> ReportCtrl : statsJson
+deactivate ReportService
+
+ReportCtrl --> Admin : 200 OK
+deactivate ReportCtrl
+
+@enduml

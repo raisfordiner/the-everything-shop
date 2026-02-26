@@ -1,0 +1,36 @@
+@startuml
+!theme plain
+title Product: Update Stock Sequence
+
+actor "Seller" as Seller
+participant "ProductController" as ProdCtrl
+participant "ProductService" as ProdService
+participant "Product (DB)" as ProdDB
+
+Seller -> ProdCtrl : PATCH /products/:id (stockQuantity)
+activate ProdCtrl
+
+ProdCtrl -> ProdService : updateProduct(id, data)
+activate ProdService
+
+ProdService -> ProdDB : findUnique(id)
+activate ProdDB
+ProdDB --> ProdService : product
+deactivate ProdDB
+
+alt User is Owner
+  ProdService -> ProdDB : update(id, data)
+  activate ProdDB
+  ProdDB --> ProdService : updatedProduct
+  deactivate ProdDB
+else Not Owner
+  ProdService --> ProdCtrl : throw Unauthorized
+end
+
+ProdService --> ProdCtrl : updatedProduct
+deactivate ProdService
+
+ProdCtrl --> Seller : 200 OK
+deactivate ProdCtrl
+
+@enduml

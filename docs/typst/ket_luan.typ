@@ -1,2 +1,0 @@
-- Tổng kết kết quả đạt được
-- Giá trị của hệ thống

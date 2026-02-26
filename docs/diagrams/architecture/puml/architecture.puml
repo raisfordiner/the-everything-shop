@@ -1,0 +1,42 @@
+@startuml
+!theme plain
+title Overall System Architecture (3-Tier)
+
+node "Client Layer (Frontend)" {
+  [React (Vite)] as Frontend
+  note right of Frontend
+    - **Language**: JavaScript/JSX
+    - **State**: Redux Toolkit
+    - **UI Library**: Ant Design
+    - **Routing**: React Router
+    - **Styling**: Sass / CSS
+  end note
+}
+
+node "Server Layer (Backend)" {
+  [Node.js + Express API] as Backend
+  note right of Backend
+    - **Language**: TypeScript
+    - **Docs**: Swagger UI
+    - **Auth**: JWT + Bcrypt
+    - **Logging**: Pino
+  end note
+}
+
+node "Data Layer" {
+  database "PostgreSQL" as DB
+  [Prisma ORM] as ORM
+}
+
+cloud "External Services" {
+  [S3 / MinIO] as Storage
+  [Nodemailer / Mailhog] as Email
+}
+
+Frontend --> Backend : HTTP/JSON Requests
+Backend --> ORM : Type-safe Queries
+ORM --> DB : SQL
+Backend --> Storage : Image Uploads
+Backend --> Email : Transactional Emails
+
+@enduml

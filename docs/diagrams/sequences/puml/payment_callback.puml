@@ -1,0 +1,32 @@
+@startuml
+!theme plain
+title Payment: Callback Sequence (IPN)
+
+participant "PaymentGateway" as Gateway
+participant "PaymentController" as PayCtrl
+participant "OrderService" as OrderService
+participant "Payment (DB)" as PayDB
+
+Gateway -> PayCtrl : GET /payment/vnpay_return (params)
+activate PayCtrl
+
+PayCtrl -> PayCtrl : verifySignature(params)
+
+alt Signature Valid
+    PayCtrl -> OrderService : updatePaymentStatus(orderId, status: SUCCESS)
+    activate OrderService
+    
+    OrderService -> PayDB : update(where: orderId, status: PAID)
+    OrderService -> PayDB : updateOrder(status: PROCESSING)
+    
+    OrderService --> PayCtrl : success
+    deactivate OrderService
+    
+    PayCtrl --> Gateway : 200 OK (RspCode: 00)
+else Invalid Signature
+    PayCtrl --> Gateway : 200 OK (RspCode: 97)
+end
+
+deactivate PayCtrl
+
+@enduml

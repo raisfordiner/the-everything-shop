@@ -1,2 +1,0 @@
-- Mô hình kiến trúc hệ thống
-- Sơ đồ kiến trúc

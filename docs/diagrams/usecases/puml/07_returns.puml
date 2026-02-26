@@ -1,0 +1,25 @@
+@startuml
+left to right direction
+skinparam packageStyle rectangle
+
+actor Customer
+actor Seller
+actor OrderManagementModule
+
+rectangle "The Everything Shop" {
+  package "EP-07: Returns" {
+    usecase "UC-31: View Order Details" as UC31
+    usecase "UC-46: Request Return" as UC46
+    usecase "UC-47: Approve/Reject Return" as UC47
+    usecase "UC-48: Update Inv. on Return" as UC48
+  }
+}
+
+' Relationships
+Customer --> UC46
+UC46 .> UC31 : <<extend>>
+Seller --> UC47
+UC48 ..> UC47 : <<include>>
+OrderManagementModule --> UC48
+
+@enduml

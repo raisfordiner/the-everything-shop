@@ -1,0 +1,37 @@
+@startuml
+!theme plain
+title Order: Add to Cart Sequence
+
+actor "Customer" as User
+participant "CartController" as CartCtrl
+participant "CartService" as CartService
+participant "Cart (DB)" as CartDB
+
+User -> CartCtrl : POST /cart/items
+activate CartCtrl
+
+CartCtrl -> CartService : addCartItem(cartId, variantId, qty)
+activate CartService
+
+CartService -> CartDB : findCart(cartId)
+CartService -> CartDB : findProductVariant(variantId)
+
+alt Item Exists
+    CartService -> CartDB : update(id, quantity + qty)
+    activate CartDB
+    CartDB --> CartService : updatedItem
+    deactivate CartDB
+else New Item
+    CartService -> CartDB : create(productVariantId, qty)
+    activate CartDB
+    CartDB --> CartService : newItem
+    deactivate CartDB
+end
+
+CartService --> CartCtrl : cartItem
+deactivate CartService
+
+CartCtrl --> User : 200 OK
+deactivate CartCtrl
+
+@enduml

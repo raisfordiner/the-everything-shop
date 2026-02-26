@@ -1,0 +1,205 @@
+@startuml
+!theme plain
+hide circle
+skinparam linetype ortho
+
+' --- Entities ---
+
+entity "User" {
+  *id : String <<PK>>
+  --
+  username : String
+  email : String
+  role : UserRole
+}
+
+entity "Customer" {
+  *id : String <<PK>>
+  --
+  userId : String <<FK>>
+}
+
+entity "Seller" {
+  *id : String <<PK>>
+  --
+  userId : String <<FK>>
+}
+
+entity "Admin" {
+  *id : String <<PK>>
+  --
+  userId : String <<FK>>
+}
+
+entity "Order" {
+  *id : String <<PK>>
+  --
+  customerId : String <<FK>>
+  addressId : String <<FK>>
+  status : OrderStatus
+}
+
+entity "OrderItem" {
+  *id : String <<PK>>
+  --
+  orderId : String <<FK>>
+  productVariantId : String <<FK>>
+  quantity : Int
+}
+
+entity "Address" {
+  *id : String <<PK>>
+  --
+  customerId : String <<FK>>
+  address : String
+}
+
+entity "Payment" {
+  *id : String <<PK>>
+  --
+  orderId : String <<FK>>
+  amount : Float
+  status : PaymentStatus
+}
+
+entity "Return" {
+  *id : String <<PK>>
+  --
+  orderId : String <<FK>>
+  status : ReturnStatus
+}
+
+entity "Cancellation" {
+  *id : String <<PK>>
+  --
+  orderId : String <<FK>>
+  status : CancellationStatus
+}
+
+entity "Cart" {
+  *id : String <<PK>>
+  --
+  customerId : String <<FK>>
+}
+
+entity "CartItem" {
+  *id : String <<PK>>
+  --
+  cartId : String <<FK>>
+  productVariantId : String <<FK>>
+  quantity : Int
+}
+
+entity "Product" {
+  *id : String <<PK>>
+  --
+  name : String
+  stockQuantity : Int
+  price : Float
+  categoryId : String <<FK>>
+  createdBy : String <<FK>>
+}
+
+entity "ProductVariant" {
+  *id : String <<PK>>
+  --
+  productId : String <<FK>>
+  quantity : Int
+}
+
+entity "Category" {
+  *id : String <<PK>>
+  --
+  name : String
+}
+
+entity "Promotion" {
+  *id : String <<PK>>
+  --
+  name : String
+  createdBy : String <<FK>>
+}
+
+entity "Coupon" {
+  *id : String <<PK>>
+  --
+  code : String
+  promotionId : String <<FK>>
+}
+
+entity "ClearanceEvent" {
+  *id : String <<PK>>
+  --
+  promotionId : String <<FK>>
+}
+
+entity "Review" {
+  *id : String <<PK>>
+  --
+  rating : Int
+  orderItemId : String <<FK>>
+  customerId : String <<FK>>
+}
+
+entity "Notification" {
+  *id : String <<PK>>
+  --
+  userId : String <<FK>>
+  message : String
+}
+
+entity "Report" {
+  *id : String <<PK>>
+  --
+  reportType : ReportType
+  generatedBy : String <<FK>>
+}
+
+' --- Relationships ---
+
+' Force Vertical Flow
+User -[hidden]down- Customer
+Customer -[hidden]down- Order
+Order -[hidden]down- OrderItem
+
+' User Hierarchy
+User ||..|| Customer
+User ||..|| Seller
+User ||..|| Admin
+
+' Customer Related
+Customer ||--o{ Order
+Customer ||--o{ Address
+Customer ||..|| Cart
+Customer ||--o{ Review
+
+' Order Related
+Order ||--|{ OrderItem
+Order ||..|| Payment
+Order ||..|| Return
+Order ||..|| Cancellation
+Order }o--|| Address
+
+' Cart Related
+Cart ||--|{ CartItem
+
+' Product Related
+Seller ||--o{ Product
+Category ||--|{ Product
+Product ||--o{ ProductVariant
+Product ||--o{ Promotion
+
+' Order Items
+OrderItem ||..|| ProductVariant
+OrderItem ||..|| Review
+CartItem ||..|| ProductVariant
+
+' Admin Related
+Admin ||--o{ Promotion
+Admin ||--o{ Report
+
+' Promotion Related
+Promotion ||--o{ Coupon
+Promotion ||--o{ ClearanceEvent
+
+@enduml

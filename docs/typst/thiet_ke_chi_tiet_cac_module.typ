@@ -1,3 +1,0 @@
-- Mô tả từng module
-- Luồng xử lý
-- Giao tiếp giữa các module

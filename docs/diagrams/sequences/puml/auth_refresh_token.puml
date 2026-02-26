@@ -1,0 +1,40 @@
+@startuml
+!theme plain
+title Auth: Token Refresh Sequence
+
+actor "User" as User
+participant "AuthController" as AuthCtrl
+participant "AuthService" as AuthService
+participant "User (DB)" as UserDB
+participant "TokenService" as Token
+
+User -> AuthCtrl : POST /auth/refresh (Cookie: refreshToken)
+activate AuthCtrl
+
+AuthCtrl -> AuthService : refreshToken(token)
+activate AuthService
+
+AuthService -> Token : verify(token)
+activate Token
+Token --> AuthService : payload
+deactivate Token
+
+AuthService -> UserDB : findById(userId)
+activate UserDB
+UserDB --> AuthService : user
+deactivate UserDB
+
+AuthService -> AuthService : validateRefreshToken(user, token)
+
+AuthService -> Token : generateTokens(user)
+activate Token
+Token --> AuthService : {newAccess}
+deactivate Token
+
+AuthService --> AuthCtrl : newAccessToken
+deactivate AuthService
+
+AuthCtrl --> User : 200 OK (Set-Cookie: newAccessToken)
+deactivate AuthCtrl
+
+@enduml
